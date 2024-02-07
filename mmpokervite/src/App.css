@@ -1,0 +1,9 @@
+#root {
+  max-width: 1280px;
+  margin: 0;
+  /* padding: 2rem; */
+  margin-top: 50px;
+  background-color: blue;
+  width: 100%;
+  /* min-height: 100vh; */
+}

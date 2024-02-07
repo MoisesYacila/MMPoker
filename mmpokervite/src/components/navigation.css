@@ -1,0 +1,12 @@
+.navigation a {
+    color: white
+}
+
+.navigation a:hover {
+    color: #edede9;
+}
+
+/* .navigation .links {
+    display: flex;
+    justify-content: space-around;
+} */
