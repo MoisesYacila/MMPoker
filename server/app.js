@@ -14,9 +14,14 @@ mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
     });
 
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send('MoisoGenio');
+})
+
+app.post('/players', async (req, res) => {
+    res.send(req.body);
 })
 
 app.listen(8080, () => {

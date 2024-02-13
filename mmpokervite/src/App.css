@@ -1,9 +1,7 @@
 #root {
-  max-width: 1280px;
-  margin: 0;
-  /* padding: 2rem; */
-  margin-top: 50px;
-  background-color: blue;
+  margin-top: 4rem;
+  padding: 2rem;
+  background-color: #f5f3f4;
   width: 100%;
-  /* min-height: 100vh; */
+
 }
