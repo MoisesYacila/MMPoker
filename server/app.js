@@ -20,8 +20,10 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-    res.send('MoisoGenio');
+app.get('/players', async (req, res) => {
+    const players = await Player.find({});
+    // players.forEach(player => console.log(player.name))
+    res.send(players);
 })
 
 //Post request handling adding players to DB

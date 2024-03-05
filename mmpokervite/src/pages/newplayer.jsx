@@ -3,12 +3,14 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export default function NewPlayer() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [submitted, setSubmitted] = useState(false);
 
-    //Submit handler
+    // //Submit handler
     const postPlayer = (e) => {
         //Prevent redirect to server side response: res.send(req.body)
         e.preventDefault();
@@ -19,7 +21,8 @@ export default function NewPlayer() {
         axios.post('http://localhost:8080/players', {
             name: finalName
         }).then((response) => {
-            console.log(response)
+            //Set submitted to true to let react know to redirect
+            setSubmitted(true);
             setFirstName('');
             setLastName('');
         }).catch(function (error) {
@@ -54,7 +57,8 @@ export default function NewPlayer() {
                     sx={{ width: '30%', marginBottom: '1rem' }} required />
                 <Button variant="contained" size='large' type='submit'>Add Player</Button>
             </Box>
+            {/* When submitted is true, react will redirect back to the players page */}
+            {submitted ? <Navigate to='/players' replace={true} /> : null}
         </Box>
-
     )
 }

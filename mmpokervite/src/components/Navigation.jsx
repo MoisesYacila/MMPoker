@@ -21,7 +21,6 @@ export default function Navigation() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, justifyContent: 'space-around' }}>
                         <Link to='/'>M&M Poker Nights</Link>
                     </Typography>
-                    {/* <div className='links'> */}
                     <LinkButton>
                         <Typography><Link to='/leaderboard'>Leaderboard</Link></Typography>
                     </LinkButton>
@@ -37,8 +36,6 @@ export default function Navigation() {
                     <LinkButton>
                         <Typography><Link to='/signup'>Sign Up</Link></Typography>
                     </LinkButton>
-                    {/* </div> */}
-
 
                 </Toolbar>
             </AppBar>
