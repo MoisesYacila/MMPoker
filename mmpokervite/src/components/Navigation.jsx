@@ -15,8 +15,8 @@ const LinkButton = styled(Button)({
 
 export default function Navigation() {
     return (
-        <Box className='navigation' sx={{ flexGrow: 1 }}>
-            <AppBar sx={{ display: 'flex', justifyContent: 'space-around' }}>
+        <Box className='navigation'>
+            <AppBar position='sticky' sx={{ display: 'flex', justifyContent: 'space-around' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, justifyContent: 'space-around' }}>
                         <Link to='/'>M&M Poker Nights</Link>
