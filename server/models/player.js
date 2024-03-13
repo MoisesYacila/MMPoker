@@ -5,12 +5,12 @@ const PlayerSchema = new Schema({
     name: String,
     nationality: {
         type: String,
-        enum: ['us', 'nic', 'spa', 'mex', 'ven', 'arg']
+        enum: ['US', 'NI', 'ES', 'MX', 'VE', 'AR']
     },
     gamesPlayed: Number,
     wins: Number,
     itmFinishes: Number,
-    bubbles: Number,
+    onTheBubble: Number,
     bounties: Number,
     rebuys: Number,
     addOns: Number,

@@ -22,16 +22,22 @@ app.use(bodyParser.json());
 
 app.get('/players', async (req, res) => {
     const players = await Player.find({});
-    // players.forEach(player => console.log(player.name))
     res.send(players);
 })
 
 //Post request handling adding players to DB
 app.post('/players', async (req, res) => {
     console.log(req.body)
-    const name = req.body.name;
-    const player = new Player({ name: name });
+    const { name, country, gamesPlayed, wins, itmFinishes, bubbles, bounties,
+        rebuys, addOns, winnings } = req.body;
+    const player = new Player({
+        name: name, nationality: country, gamesPlayed: gamesPlayed, wins: wins,
+        itmFinishes: itmFinishes, onTheBubble: bubbles, bounties: bounties,
+        rebuys: rebuys, addOns: addOns, winnings: winnings
+    });
     await player.save();
+
+
     //Check if this is necessary.
     //e.preventDefault() on the form submit handler avoids getting to this page
     res.send(req.body);
