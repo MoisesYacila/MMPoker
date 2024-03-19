@@ -25,15 +25,20 @@ app.get('/players', async (req, res) => {
     res.send(players);
 })
 
+app.get('/players/:id', async (req, res) => {
+    const player = await Player.findById(req.params.id);
+    res.send(player);
+})
+
 //Post request handling adding players to DB
 app.post('/players', async (req, res) => {
     console.log(req.body)
-    const { name, country, gamesPlayed, wins, itmFinishes, bubbles, bounties,
-        rebuys, addOns, winnings } = req.body;
+    //Destructure from req.body and add player with all the info to DB
+    const { name, country } = req.body;
     const player = new Player({
-        name: name, nationality: country, gamesPlayed: gamesPlayed, wins: wins,
-        itmFinishes: itmFinishes, onTheBubble: bubbles, bounties: bounties,
-        rebuys: rebuys, addOns: addOns, winnings: winnings
+        name: name, nationality: country, gamesPlayed: 0, wins: 0,
+        itmFinishes: 0, onTheBubble: 0, bounties: 0,
+        rebuys: 0, addOns: 0, winnings: 0
     });
     await player.save();
 

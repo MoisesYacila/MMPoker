@@ -23,15 +23,7 @@ export default function NewPlayer() {
         //Send post request for express to handle and clear the inputs of the form
         axios.post('http://localhost:8080/players', {
             name: finalName,
-            country: nationality,
-            gamesPlayed: 0,
-            wins: 0,
-            itmFinishes: 0,
-            bubbles: 0,
-            bounties: 0,
-            rebuys: 0,
-            addOns: 0,
-            winnings: 0
+            country: nationality
         }).then((response) => {
             //Set submitted to true to let react know to redirect
             setSubmitted(true);

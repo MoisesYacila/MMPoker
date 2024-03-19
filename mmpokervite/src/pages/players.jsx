@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import List from '@mui/material/List';
@@ -14,6 +14,8 @@ import Box from '@mui/material/Box';
 
 export default function Players() {
     const [players, setPlayers] = useState([]);
+    //The Navigate component didn't work as expected when used inside a onClick callback, so we can use this instead
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get('http://localhost:8080/players')
@@ -23,6 +25,7 @@ export default function Players() {
                 setPlayers(playersArr);
             })
     }, [])
+
     return (
         <div>
             <h1>Players</h1>
@@ -32,7 +35,15 @@ export default function Players() {
                     {players.map((player, i) => {
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
-                                <ListItemButton>
+                                <ListItemButton onClick={async () => {
+                                    const link = `/players/${player._id}`;
+                                    await axios.get(`http://localhost:8080/players/${player._id}`)
+                                        .then((res) => {
+                                            console.log(res.data);
+                                            navigate(link, { state: { playerData: res.data } });
+
+                                        });
+                                }}>
                                     <ListItemIcon>
                                         {/* There has to be a better way to do this. Research later */}
                                         {player.nationality === "US" ? <Us /> : null}
@@ -46,8 +57,6 @@ export default function Players() {
                                     <IconButton>
                                         <ClearIcon></ClearIcon>
                                     </IconButton>
-
-
                                 </ListItemButton>
                             </ListItem>)
                     })}

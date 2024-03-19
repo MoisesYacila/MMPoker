@@ -8,6 +8,7 @@ import Forum from './pages/forum.jsx'
 import Players from './pages/players.jsx'
 import Stats from './pages/stats.jsx'
 import NewPlayer from './pages/newplayer.jsx'
+import Player from './pages/player.jsx'
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import RootLayout from './layouts/RootLayout.jsx'
 import PlayersLayout from './layouts/PlayersLayout.jsx'
@@ -19,6 +20,7 @@ const router = createBrowserRouter(createRoutesFromElements((
     <Route path='/players' element={<PlayersLayout />}>
       <Route path='/players' element={<Players />}></Route>
       <Route path='/players/new' element={<NewPlayer />}></Route>
+      <Route path='/players/:id' element={<Player />}></Route>
     </Route>
     <Route path='/forum' element={<Forum />}></Route>
     <Route path='/stats' element={<Stats />}></Route>
