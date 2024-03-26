@@ -30,6 +30,11 @@ app.get('/players/:id', async (req, res) => {
     res.send(player);
 })
 
+app.delete('/players/:id', async (req, res) => {
+    const player = await Player.findByIdAndDelete(req.params.id);
+    res.send(player);
+})
+
 //Post request handling adding players to DB
 app.post('/players', async (req, res) => {
     console.log(req.body)

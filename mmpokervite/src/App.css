@@ -17,3 +17,12 @@
 #flags-select {
   width: 30%;
 }
+
+.player-data {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  margin-bottom: 5rem;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
