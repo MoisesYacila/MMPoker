@@ -11,13 +11,18 @@ import NewPlayer from './pages/newplayer.jsx'
 import Player from './pages/player.jsx'
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import RootLayout from './layouts/RootLayout.jsx'
-import PlayersLayout from './layouts/PlayersLayout.jsx'
+import MainLayout from './layouts/MainLayout.jsx'
+import NewGame from './pages/newgame.jsx'
 
 const router = createBrowserRouter(createRoutesFromElements((
   <Route path='/' element={<RootLayout />}>
-    <Route path='/' element={<App />}></Route>
-    <Route path='/leaderboard' element={<Leaderboard />}></Route>
-    <Route path='/players' element={<PlayersLayout />}>
+    <Route path='/' element={<App />}></Route>Main
+    <Route path='/leaderboard' element={<MainLayout />}>
+      <Route path='/leaderboard' element={<Leaderboard />}></Route>
+      <Route path='/leaderboard/new' element={<NewGame />}></Route>
+    </Route>
+
+    <Route path='/players' element={<MainLayout />}>
       <Route path='/players' element={<Players />}></Route>
       <Route path='/players/new' element={<NewPlayer />}></Route>
       <Route path='/players/:id' element={<Player />}></Route>
