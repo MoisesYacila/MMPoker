@@ -19,7 +19,6 @@ export default function Leaderboard() {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
                 setPlayers(playersArr);
-                console.log(playersArr)
             })
         // .catch((err) => { console.log(err) })
     }, [])
@@ -176,7 +175,7 @@ export default function Leaderboard() {
                                 setPlayers(sorted);
                             }}>
                                 <TableSortLabel direction={order}>
-                                    Add Ons
+                                    Add Ons ($)
                                 </TableSortLabel>
                             </TableCell>
                             <TableCell align='center'>

@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
+import { Navigate } from 'react-router-dom';
+import axios from 'axios';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -9,11 +12,73 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 
 export default function NewGame() {
+    const [players, setPlayers] = useState([]);
     const [numPlayers, setNumPlayers] = useState(5);
     const [rows, setRows] = useState(Array(5));
+    const [submitted, setSubmitted] = useState(false);
+
+    //Gets the players from DB and adds the data to players array
+    useEffect(() => {
+        axios.get('http://localhost:8080/players')
+            .then((res) => {
+                let playersArr = [];
+                res.data.forEach(player => playersArr.push(player));
+                setPlayers(playersArr);
+            })
+    }, []);
+
+    //WILL DO THIS AT A LATER TIME
+    const handlePlayerSelectChange = (event, child) => {
+        // console.log(event);
+        //When we select a player, we want the player to own the current row, and disappear from the other selects
+    }
+
+    //Submit handler for the form
+    const handleSubmit = (e) => {
+        //Create array where we will save the data
+        //This is an array of objects, where each object has the information of one player and their stats in the game
+        //The array will collect data in order, so it will be sorted by player position in the game
+        const gameData = Array(numPlayers);
+
+        //Prevents res.send response on server side
+        e.preventDefault();
+
+        //e.target gets the form and all the text fields in it, so we can access each individual piece of data by
+        //accessing it in the correct element of the array. After checking in dev tools, I found that all data is on
+        //even number indices in the array, it's multiplied by 14 because it's 7 items on each row and there is an extra
+        //element in between the data
+        for (let i = 0; i < numPlayers; i++) {
+            gameData[i] = {
+                id: e.target[i * 14].value,
+                earnings: e.target[(i * 14) + 2].value,
+                itm: e.target[(i * 14) + 4].value,
+                otb: e.target[(i * 14) + 6].value,
+                bounties: e.target[(i * 14) + 8].value,
+                rebuys: e.target[(i * 14) + 10].value,
+                addOns: e.target[(i * 14) + 12].value
+            }
+            // console.log("id " + e.target[i * 14].value);
+            // console.log("earnings " + e.target[(i * 14) + 2].value);
+            // console.log("in the money? " + e.target[(i * 14) + 4].value)
+            // console.log("on the bubble? " + e.target[(i * 14) + 6].value)
+            // console.log("bounties " + e.target[(i * 14) + 8].value)
+            // console.log("rebuys " + e.target[(i * 14) + 10].value)
+            // console.log("add ons " + e.target[(i * 14) + 12].value)
+        }
+
+        //Send patch request and send the data to the server side
+        axios.patch("http://localhost:8080/players", { data: gameData })
+            .then((response) => {
+                setSubmitted(true); //to know when to redirect
+                console.log(response);
+            }).catch(function (error) {
+                console.log(error);
+            });
+
+
+    }
 
     function buildRows(num) {
         for (let i = 0; i < num; i++) {
@@ -21,26 +86,48 @@ export default function NewGame() {
                 <TableCell align="center">{i + 1}</TableCell>
                 <TableCell align="center">
                     <TextField select
-                        label="Player"
-                        defaultValue='1'>
-                        <MenuItem value={1}>Player 1</MenuItem>
-                        <MenuItem value={2}>Player 2</MenuItem>
-                        <MenuItem value={3}>Player 3</MenuItem>
+                        defaultValue='-1' id={`${i + 1}`} name={`player-${i}`} onChange={handlePlayerSelectChange}>
+                        <MenuItem value='-1'>Select a player</MenuItem>
+                        {players.map((player, i) => {
+                            return (
+                                <MenuItem key={i + 1} value={player._id}>{player.name}</MenuItem>
+                            )
+                        })}
                     </TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField></TextField>
-                </TableCell>
-                <TableCell align="center"><Checkbox></Checkbox></TableCell>
-                <TableCell align="center"><Checkbox></Checkbox></TableCell>
-                <TableCell align="center">
-                    <TextField></TextField>
+                    <TextField name="earnings" sx={{ width: '35%' }}></TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField></TextField>
+                    <TextField
+                        select
+                        id="itm-select"
+                        defaultValue='no'
+                        name="itm"
+                    >
+                        <MenuItem value='yes'>Yes</MenuItem>
+                        <MenuItem value='no'>No</MenuItem>
+                    </TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField></TextField>
+                    <TextField
+                        select
+                        id="otb-select"
+                        defaultValue='no'
+                        name="otb"
+                    >
+                        <MenuItem value='yes'>Yes</MenuItem>
+                        <MenuItem value='no'>No</MenuItem>
+                    </TextField>
+                </TableCell>
+                <TableCell align="center">
+                    <TextField name="bounties" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                </TableCell>
+                <TableCell align="center">
+                    <TextField name="rebuys" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                </TableCell>
+                <TableCell align="center">
+                    <TextField name="addOns" defaultValue={0} sx={{ width: '35%' }}></TextField>
                 </TableCell>
             </TableRow>
         }
@@ -48,17 +135,16 @@ export default function NewGame() {
 
     buildRows(numPlayers);
 
+    //Event handler for selecting how many players in the game
     const handleChange = (event) => {
-        // console.log(rows)
-        setNumPlayers(event.target.value);
-        // console.log(event.target.value);
-        // console.log(numPlayers);
+        let num = event.target.value;
+        setNumPlayers(num);
         setRows([]);
-        buildRows(event.target.value);
+        buildRows(num);
     };
 
     return (
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
             <h1>New Game</h1>
             <FormControl fullWidth sx={{ alignItems: 'center' }} >
                 <TextField
@@ -78,28 +164,42 @@ export default function NewGame() {
                 </TextField>
             </FormControl>
 
-            <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell align="center">Player</TableCell>
-                            <TableCell align="center">Earnings</TableCell>
-                            <TableCell align="center">ITM</TableCell>
-                            <TableCell align="center">OTB</TableCell>
-                            <TableCell align="center">Bounties</TableCell>
-                            <TableCell align="center">Rebuys</TableCell>
-                            <TableCell align="center">Add Ons</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows.map(row => {
-                            return row;
-                        })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
+            {/* <form method="POST" action="http://localhost:8080/players?_method=PATCH" > */}
+            <Box component='form'
+                method="POST"
+                action="http://localhost:8080/players?_method=PATCH"
+                onSubmit={handleSubmit}
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell align="center">Player</TableCell>
+                                <TableCell align="center">Earnings ($)</TableCell>
+                                <TableCell align="center">ITM</TableCell>
+                                <TableCell align="center">OTB</TableCell>
+                                <TableCell align="center">Bounties</TableCell>
+                                <TableCell align="center">Rebuys</TableCell>
+                                <TableCell align="center">Add Ons ($)</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {/* The array rows contains everything that is in the table body */}
+                            {rows.map(row => {
+                                return row;
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <Button variant="contained" type="submit"
+                    sx={{ width: '8%', marginBottom: '1rem' }}
+                >
+                    Add Game
+                </Button>
+            </Box>
+            {/* When submitted, redirect back to the leaderboard page */}
+            {submitted ? <Navigate to='/leaderboard' replace={true} /> : null}
         </Box>
     )
 }
