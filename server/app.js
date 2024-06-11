@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 const Player = require('./models/player');
+const Game = require('./models/game');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 
@@ -54,6 +55,47 @@ app.post('/players', async (req, res) => {
 
     //Check if this is necessary.
     //e.preventDefault() on the form submit handler avoids getting to this page
+    res.send(req.body);
+})
+
+//Post request to add games to DB
+app.post('/games', async (req, res) => {
+    //Get info from request
+    const { data, numPlayers, prizePool } = req.body;
+
+    //gameData will be part of the Game object
+    const gameData = new Array(numPlayers);
+    const currDate = new Date();
+
+    //The data array is an array of objects with all the info about each player's stats in this game
+    //Revise this later: No need to do all of this, when we can just add the data array directly to Game object
+    //Input validation required tho
+    data.forEach((player, i) => {
+        if (player._id !== '-1') {
+            const playerData = {
+                player: player._id,
+                itm: player.itm,
+                otb: player.otb,
+                profit: parseInt(player.earnings),
+                rebuys: player.rebuys,
+                bounties: player.bounties,
+                addOns: player.addOns
+            }
+            gameData[i] = playerData;
+        }
+
+    })
+
+    //Create a new game and add all the information
+    const newGame = new Game({
+        date: new Date(currDate.getFullYear(), currDate.getMonth(), currDate.getDate()),
+        numPlayers: numPlayers,
+        prizePool: prizePool,
+        leaderboard: gameData
+    })
+
+    //Save to DB
+    await newGame.save();
     res.send(req.body);
 })
 

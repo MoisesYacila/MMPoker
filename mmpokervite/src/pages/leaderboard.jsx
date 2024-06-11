@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import axios from 'axios';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,6 +13,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 export default function Leaderboard() {
     const [players, setPlayers] = useState([]);
     const [order, setOrder] = useState('asc');
+    const navigate = useNavigate();
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
         axios.get('http://localhost:8080/players')
@@ -205,7 +207,15 @@ export default function Leaderboard() {
                             return (
                                 <TableRow key={player._id}>
                                     <TableCell>{i + 1}</TableCell>
-                                    <TableCell >{player.name}</TableCell>
+                                    <TableCell >
+                                        <Button sx={{ textTransform: 'none' }} onClick={async () => {
+                                            const link = `/players/${player._id}`;
+                                            await axios.get(`http://localhost:8080/players/${player._id}`)
+                                                .then((res) => {
+                                                    navigate(link, { state: { playerData: res.data } });
+                                                });
+                                        }}>{player.name}</Button>
+                                    </TableCell>
                                     <TableCell align='center'>{player.gamesPlayed}</TableCell>
                                     <TableCell align='center'>{player.wins}</TableCell>
                                     <TableCell align='center'>{player.itmFinishes}</TableCell>

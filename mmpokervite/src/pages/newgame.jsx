@@ -18,6 +18,7 @@ export default function NewGame() {
     const [numPlayers, setNumPlayers] = useState(5);
     const [rows, setRows] = useState(Array(5));
     const [submitted, setSubmitted] = useState(false);
+    const [gameInfo, setGameInfo] = useState([]);
 
     //Gets the players from DB and adds the data to players array
     useEffect(() => {
@@ -35,22 +36,20 @@ export default function NewGame() {
         //When we select a player, we want the player to own the current row, and disappear from the other selects
     }
 
-    //Submit handler for the form
-    const handleSubmit = (e) => {
+    //Sends a patch request to update the players stats after the new game
+    const updatePlayers = async (e) => {
         //Create array where we will save the data
         //This is an array of objects, where each object has the information of one player and their stats in the game
         //The array will collect data in order, so it will be sorted by player position in the game
-        const gameData = Array(numPlayers);
-
-        //Prevents res.send response on server side
-        e.preventDefault();
+        let gameData = [];
+        let prizePool = 20 * numPlayers; //Without counting the bounties
 
         //e.target gets the form and all the text fields in it, so we can access each individual piece of data by
         //accessing it in the correct element of the array. After checking in dev tools, I found that all data is on
         //even number indices in the array, it's multiplied by 14 because it's 7 items on each row and there is an extra
         //element in between the data
         for (let i = 0; i < numPlayers; i++) {
-            gameData[i] = {
+            gameData.push({
                 id: e.target[i * 14].value,
                 earnings: e.target[(i * 14) + 2].value,
                 itm: e.target[(i * 14) + 4].value,
@@ -58,18 +57,16 @@ export default function NewGame() {
                 bounties: e.target[(i * 14) + 8].value,
                 rebuys: e.target[(i * 14) + 10].value,
                 addOns: e.target[(i * 14) + 12].value
-            }
-            // console.log("id " + e.target[i * 14].value);
-            // console.log("earnings " + e.target[(i * 14) + 2].value);
-            // console.log("in the money? " + e.target[(i * 14) + 4].value)
-            // console.log("on the bubble? " + e.target[(i * 14) + 6].value)
-            // console.log("bounties " + e.target[(i * 14) + 8].value)
-            // console.log("rebuys " + e.target[(i * 14) + 10].value)
-            // console.log("add ons " + e.target[(i * 14) + 12].value)
+            })
+
+            //Update the original prize pool to reflect add ons and rebuys
+            prizePool += parseInt(gameData[i].addOns) + parseInt(gameData[i].rebuys * 20);
         }
 
+        console.log(prizePool);
+
         //Send patch request and send the data to the server side
-        axios.patch("http://localhost:8080/players", { data: gameData })
+        await axios.patch("http://localhost:8080/players", { data: gameData })
             .then((response) => {
                 setSubmitted(true); //to know when to redirect
                 console.log(response);
@@ -77,7 +74,24 @@ export default function NewGame() {
                 console.log(error);
             });
 
+        //Send post request to create a the new game
+        await axios.post('http://localhost:8080/games', {
+            data: gameData,
+            numPlayers: numPlayers,
+            prizePool: prizePool
+        })
+            .then((response) => {
+                console.log(response)
+            }).catch(function (error) {
+                console.log(error);
+            });
+    }
 
+    //Submit handler for the form
+    const handleSubmit = async (e) => {
+        //Prevents res.send response on server side
+        e.preventDefault();
+        await updatePlayers(e);
     }
 
     function buildRows(num) {
