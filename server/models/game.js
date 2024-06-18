@@ -7,10 +7,7 @@ const GameSchema = new Schema({
     numPlayers: Number,
     prizePool: Number,
     leaderboard: [{
-        player: {
-            type: Schema.Types.ObjectId,
-            ref: "Player"
-        },
+        player: String,
         itm: Boolean,
         otb: Boolean,
         profit: Number,

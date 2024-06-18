@@ -1,11 +1,39 @@
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Box from '@mui/material/Box';
 import '../App.css';
+import axios from 'axios';
 
 export default function Player() {
     //useLocation helps retrieve the data we passed in the navigate function that took us to this page
     const location = useLocation();
     const playerData = location.state.playerData;
+    const [gameList, setGameList] = useState([]);
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
+
+    //This gets the list of games from the DB and saves them in the gameList array
+    //The server responds with the data we need, and we save it to an array in state for future use
+    useEffect(() => {
+        axios.get(`http://localhost:8080/games/${playerData._id}`)
+            .then((res) => {
+                let gamesArr = [];
+                res.data.forEach(game => {
+                    gamesArr.push(game);
+                    setGameList(gamesArr);
+                })
+                console.log(res.data);
+            })
+            .catch((err) => { console.log(err) })
+    }, [])
+
     return (
         <div>
             <h1>{playerData.name}</h1>
@@ -21,6 +49,27 @@ export default function Player() {
                 <Typography variant='h4'>Rebuys: {playerData.rebuys}</Typography>
                 <Typography variant='h4'>Add Ons: ${playerData.addOns}</Typography>
             </div>
+            <h2>Games</h2>
+            <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <List sx={{ width: '25%' }}>
+                    {gameList.map((game, i) => {
+                        const gameDay = new Date(game.date)
+                        return (
+                            <ListItem disablePadding key={i} sx={{ width: '100%' }}>
+                                <ListItemButton onClick={() => {
+                                    //GET DATA FROM SPECIFIC GAME AND REDIRECT TO THE PAGE OF THAT GAME
+                                }}>
+                                    <ListItemText primary={`Home Game - ${gameDay.getDate()} ${monthNames[gameDay.getMonth()]} 
+                                ${gameDay.getFullYear()}`}
+                                        sx={{ textAlign: 'center', fontWeight: 'bold' }} />
+                                </ListItemButton>
+
+                            </ListItem>
+                        )
+                    })}
+
+                </List>
+            </Box>
         </div>
     )
 }

@@ -23,7 +23,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
 
-
 //Handling requests
 app.get('/players', async (req, res) => {
     const players = await Player.find({});
@@ -33,6 +32,14 @@ app.get('/players', async (req, res) => {
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);
     res.send(player);
+})
+
+app.get('/games/:id', async (req, res) => {
+    const { id } = req.params;
+    //Mongoose way of finding all the games that a player has played
+    //Checks if the player we are looking for is in the game
+    const games = await Game.find({ "leaderboard.player": id })
+    res.send(games);
 })
 
 app.delete('/players/:id', async (req, res) => {
@@ -73,10 +80,10 @@ app.post('/games', async (req, res) => {
     data.forEach((player, i) => {
         if (player._id !== '-1') {
             const playerData = {
-                player: player._id,
+                player: player.player,
                 itm: player.itm,
                 otb: player.otb,
-                profit: parseInt(player.earnings),
+                profit: parseInt(player.profit),
                 rebuys: player.rebuys,
                 bounties: player.bounties,
                 addOns: player.addOns
@@ -105,24 +112,24 @@ app.patch('/players', async (req, res) => {
     const { data } = req.body;
 
     data.forEach(async (player, i) => {
-        if (player.id !== '-1') {
+        if (player.player !== '-1') {
             //Mongoose syntax, increase games played by 1
-            await Player.findByIdAndUpdate(player.id, { $inc: { gamesPlayed: +1 } });
+            await Player.findByIdAndUpdate(player.player, { $inc: { gamesPlayed: +1 } });
 
             //Increase one to stats if player made it to the money or was on the bubble
             if (player.itm === 'yes')
-                await Player.findByIdAndUpdate(player.id, { $inc: { itmFinishes: +1 } });
+                await Player.findByIdAndUpdate(player.player, { $inc: { itmFinishes: +1 } });
             if (player.otb === 'yes')
-                await Player.findByIdAndUpdate(player.id, { $inc: { onTheBubble: +1 } });
+                await Player.findByIdAndUpdate(player.player, { $inc: { onTheBubble: +1 } });
 
             //index 0 means first row, this player has won
             if (i === 0)
-                await Player.findByIdAndUpdate(player.id, { $inc: { wins: +1 } });
+                await Player.findByIdAndUpdate(player.player, { $inc: { wins: +1 } });
 
             //Update earnings bounties, rebuys and add ons for everyone
-            await Player.findByIdAndUpdate(player.id, {
+            await Player.findByIdAndUpdate(player.player, {
                 $inc: {
-                    winnings: +player.earnings,
+                    winnings: +player.profit,
                     bounties: +player.bounties,
                     rebuys: +player.rebuys,
                     addOns: +player.addOns

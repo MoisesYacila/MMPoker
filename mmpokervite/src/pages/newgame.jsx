@@ -50,8 +50,8 @@ export default function NewGame() {
         //element in between the data
         for (let i = 0; i < numPlayers; i++) {
             gameData.push({
-                id: e.target[i * 14].value,
-                earnings: e.target[(i * 14) + 2].value,
+                player: e.target[i * 14].value,
+                profit: e.target[(i * 14) + 2].value,
                 itm: e.target[(i * 14) + 4].value,
                 otb: e.target[(i * 14) + 6].value,
                 bounties: e.target[(i * 14) + 8].value,

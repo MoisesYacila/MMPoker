@@ -208,6 +208,8 @@ export default function Leaderboard() {
                                 <TableRow key={player._id}>
                                     <TableCell>{i + 1}</TableCell>
                                     <TableCell >
+                                        {/* When we click on a player's button, we want to request their info from the DB
+                                        and pass it in the navigate state object for retrieval at the player's page */}
                                         <Button sx={{ textTransform: 'none' }} onClick={async () => {
                                             const link = `/players/${player._id}`;
                                             await axios.get(`http://localhost:8080/players/${player._id}`)
