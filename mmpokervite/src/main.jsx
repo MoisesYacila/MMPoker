@@ -13,6 +13,7 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 import RootLayout from './layouts/RootLayout.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
 import NewGame from './pages/newgame.jsx'
+import Game from './pages/game.jsx'
 
 const router = createBrowserRouter(createRoutesFromElements((
   <Route path='/' element={<RootLayout />}>
@@ -30,6 +31,7 @@ const router = createBrowserRouter(createRoutesFromElements((
     <Route path='/forum' element={<Forum />}></Route>
     <Route path='/stats' element={<Stats />}></Route>
     <Route path='/signup' element={<SignUp />}></Route>
+    <Route path='/games/:id' element={<Game />}></Route>
   </Route>
 )))
 

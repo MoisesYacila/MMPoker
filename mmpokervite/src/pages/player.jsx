@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -18,6 +18,7 @@ export default function Player() {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
 
+    const navigate = useNavigate(); //for link redirect
 
     //This gets the list of games from the DB and saves them in the gameList array
     //The server responds with the data we need, and we save it to an array in state for future use
@@ -56,8 +57,15 @@ export default function Player() {
                         const gameDay = new Date(game.date)
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
-                                <ListItemButton onClick={() => {
-                                    //GET DATA FROM SPECIFIC GAME AND REDIRECT TO THE PAGE OF THAT GAME
+                                <ListItemButton onClick={async () => {
+                                    //Link matches router stucture set in main.jsx
+                                    //axios link matches express route endpoint
+                                    const link = `/games/${game._id}`;
+                                    await axios.get(`http://localhost:8080/games/game/${game._id}`)
+                                        .then((res) => {
+                                            navigate(link, { state: { gameData: res.data } });
+                                        });
+                                    console.log(link);
                                 }}>
                                     <ListItemText primary={`Home Game - ${gameDay.getDate()} ${monthNames[gameDay.getMonth()]} 
                                 ${gameDay.getFullYear()}`}

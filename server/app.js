@@ -34,12 +34,21 @@ app.get('/players/:id', async (req, res) => {
     res.send(player);
 })
 
+//This gets the games that a player with the specified id has played
+//The id here is a player id
 app.get('/games/:id', async (req, res) => {
     const { id } = req.params;
     //Mongoose way of finding all the games that a player has played
     //Checks if the player we are looking for is in the game
     const games = await Game.find({ "leaderboard.player": id })
     res.send(games);
+})
+
+//The id here is a game id
+//Gets one specific game for show
+app.get('/games/game/:id', async (req, res) => {
+    const game = await Game.findById(req.params.id);
+    res.send(game);
 })
 
 app.delete('/players/:id', async (req, res) => {
