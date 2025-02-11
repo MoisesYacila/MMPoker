@@ -34,7 +34,7 @@ app.get('/players/:id', async (req, res) => {
     res.send(player);
 })
 
-//This gets the games that a player with the specified id has played
+//This gets a list of games for a player with a given id
 //The id here is a player id
 app.get('/games/:id', async (req, res) => {
     const { id } = req.params;

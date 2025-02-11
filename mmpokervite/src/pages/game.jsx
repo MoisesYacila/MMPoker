@@ -16,7 +16,7 @@ export default function Game() {
     //useLocation helps retrieve the data we passed in the navigate function that took us to this page
     const location = useLocation();
     const gameData = location.state.gameData;
-    
+
     //Activate navigate
     const navigate = useNavigate();
 
@@ -73,15 +73,15 @@ export default function Game() {
                                         <TableCell>{i + 1}</TableCell>
                                         <TableCell>
                                             {/* player is an object, so we need to access the player.player to get the id, then send data to navigate function */}
-                                            <Button sx={{textTransform:'none'}} onClick={async() => {
+                                            <Button sx={{ textTransform: 'none' }} onClick={async () => {
                                                 const link = `/players/${player.player}`;
                                                 await axios.get(`http://localhost:8080/players/${player.player}`)
-                                                .then((res) => {
-                                                    navigate(link, { state: { playerData: res.data } });
-                                                });
+                                                    .then((res) => {
+                                                        navigate(link, { state: { playerData: res.data } });
+                                                    });
                                             }}>{playerName[i]}</Button>
-                                            
-                                            </TableCell>
+
+                                        </TableCell>
                                         <TableCell align='center'>{player.profit}</TableCell>
                                         <TableCell align='center'>{player.rebuys}</TableCell>
                                         <TableCell align='center'>{player.addOns}</TableCell>
@@ -94,9 +94,17 @@ export default function Game() {
                 </Table>
             </TableContainer>
 
-            <Box sx={{display: 'flex', justifyContent: 'space-evenly', marginBottom: '2rem', width: '15%'}}>
-                <Button variant='contained' color='success' endIcon={<ModeEditIcon/>}>Edit</Button>
-                <Button variant='contained' color='error'endIcon={<DeleteIcon/>}>Delete</Button>
+            <Box sx={{ display: 'flex', justifyContent: 'space-evenly', marginBottom: '2rem', width: '15%' }}>
+                <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
+                    let id = gameData._id;
+                    let link = `/games/${id}/edit`;
+                    console.dir(gameData); //for debug
+                    await axios.get(`http://localhost:8080/games/game/${id}`)
+                        .then(() => {
+                            navigate(link, { state: { gameData: gameData } })
+                        })
+                }}>Edit</Button>
+                <Button variant='contained' color='error' endIcon={<DeleteIcon />}>Delete</Button>
             </Box>
 
         </Box>
