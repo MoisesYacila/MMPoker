@@ -26,6 +26,9 @@ export default function Game() {
     //We will save the names for the leaderboard, since they are not saved in the Game object
     const [playerName, setPlayerName] = useState([]);
 
+    //We can get an array with all the players to use on load on the edit page
+    const [allPlayers, setAllPlayers] = useState([]);
+
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this
         async function getPlayerNames() {
@@ -41,6 +44,16 @@ export default function Game() {
         }
 
         getPlayerNames();
+    }, []);
+
+    //Doing this to use on the edit page, this way the information we need is available to use on the first render
+    useEffect(() => {
+        axios.get('http://localhost:8080/players')
+            .then((res) => {
+                let playersArr = [];
+                res.data.forEach(player => playersArr.push(player));
+                setAllPlayers(playersArr);
+            })
     }, []);
 
 
@@ -101,7 +114,7 @@ export default function Game() {
                     console.dir(gameData); //for debug
                     await axios.get(`http://localhost:8080/games/game/${id}`)
                         .then(() => {
-                            navigate(link, { state: { gameData: gameData } })
+                            navigate(link, { state: { gameData: gameData, players: allPlayers } })
                         })
                 }}>Edit</Button>
                 <Button variant='contained' color='error' endIcon={<DeleteIcon />}>Delete</Button>
