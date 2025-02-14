@@ -1,14 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Button from '@mui/material/Button';
+import {
+    Box, Table, TableBody,
+    TableCell, TableContainer, TableHead,
+    TableRow, Button, Stack
+} from '@mui/material';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -107,18 +104,19 @@ export default function Game() {
                 </Table>
             </TableContainer>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-evenly', marginBottom: '2rem', width: '15%' }}>
+            <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
                 <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
                     let id = gameData._id;
                     let link = `/games/${id}/edit`;
                     console.dir(gameData); //for debug
                     await axios.get(`http://localhost:8080/games/game/${id}`)
                         .then(() => {
+                            //The format is nameWeAreGivingIt : variableThatAlreadyExists
                             navigate(link, { state: { gameData: gameData, players: allPlayers } })
                         })
                 }}>Edit</Button>
                 <Button variant='contained' color='error' endIcon={<DeleteIcon />}>Delete</Button>
-            </Box>
+            </Stack>
 
         </Box>
     )

@@ -150,6 +150,39 @@ app.patch('/players', async (req, res) => {
     res.send("Received patch request");
 })
 
+//Patch request to handle the edited games and update the stats for the players involved
+app.patch('/players/edit/:id', async (req, res) => {
+    const { oldData, newData } = req.body;
+    const { id } = req.params;
+
+    // console.log(oldData);
+    // console.log(newData);
+
+    //Use two sets to check if we need to change the gamesPlayed stat for every player involved in the edit
+    let oldSet = new Set();
+    let newSet = new Set();
+    oldData.leaderboard.forEach((player) => { oldSet.add(player.player) });
+    newData.forEach((player) => { newSet.add(player.player) });
+
+    newSet.forEach(async (player, i) => {
+        //Check if we added a player, and update the global stats for that player
+        if (!oldSet.has(player)) {
+            //Mongoose syntax, increase games played by 1
+            console.log('A new player has been added to the game')
+            // await Player.findByIdAndUpdate(player.player, { $inc: { gamesPlayed: +1 } });
+        }
+    })
+
+    oldSet.forEach(async (player, i) => {
+        //Check if we removed a player, and update the global stats for that player
+        if (!newSet.has(player)) {
+            console.log('A player has been removed from the game');
+        }
+    })
+
+    res.send('Received EDIT patch request');
+})
+
 app.listen(8080, () => {
     console.log("Server listening on port 8080");
 })

@@ -39,7 +39,7 @@ export default function NewGame() {
     //Sends a patch request to update the players stats after the new game
     const updatePlayers = async (e) => {
         //Create array where we will save the data
-        //This is an array of objects, where each object has the information of one player and their stats in the game
+        //This is an array of objects, where each object has the information of one player and their stats in this game
         //The array will collect data in order, so it will be sorted by player position in the game
         let gameData = [];
         let prizePool = 20 * numPlayers; //Without counting the bounties

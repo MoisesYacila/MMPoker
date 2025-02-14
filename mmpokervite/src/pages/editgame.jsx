@@ -5,8 +5,10 @@ import Box from '@mui/material/Box';
 import {
     FormControl, TextField, MenuItem,
     TableContainer, Table, TableHead,
-    TableRow, TableCell, TableBody
+    TableRow, TableCell, TableBody, Stack, Button
 } from "@mui/material";
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 export default function EditGame() {
     //useLocation helps retrieve the data we passed in the navigate function that took us to this page
@@ -17,6 +19,7 @@ export default function EditGame() {
 
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
+    const [submitted, setSubmitted] = useState(false);
 
     //Using the Array.from function to build each row on the edit page
     //el is the current element, which is unused here
@@ -104,6 +107,42 @@ export default function EditGame() {
         console.log(gameData);
     }, [numPlayers])
 
+    const updateGame = async (e) => {
+        let gameInfo = [];
+        let prizePool = 20 * numPlayers; //Without counting the bounties
+
+        for (let i = 0; i < numPlayers; i++) {
+            gameInfo.push({
+                player: e.target[i * 14].value,
+                profit: e.target[(i * 14) + 2].value,
+                itm: e.target[(i * 14) + 4].value,
+                otb: e.target[(i * 14) + 6].value,
+                bounties: e.target[(i * 14) + 8].value,
+                rebuys: e.target[(i * 14) + 10].value,
+                addOns: e.target[(i * 14) + 12].value
+            })
+
+            //Update the original prize pool to reflect add ons and rebuys
+            prizePool += parseInt(gameInfo[i].addOns) + parseInt(gameInfo[i].rebuys * 20);
+        }
+
+        //Send patch request and send the data to the server side
+        //The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
+        await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, { oldData: gameData, newData: gameInfo })
+            .then((response) => {
+                setSubmitted(true); //to know when to redirect
+                console.log(response);
+            }).catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(e);
+        updateGame(e);
+    }
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
             <h1>Edit Game</h1>
@@ -128,7 +167,7 @@ export default function EditGame() {
             <Box component='form'
                 method="POST"
                 action="http://localhost:8080/players?_method=PATCH"
-                onSubmit={() => { }} //handle submit
+                onSubmit={handleSubmit} //handle submit
                 sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
                 <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
@@ -150,7 +189,10 @@ export default function EditGame() {
                         </TableBody>
                     </Table>
                 </TableContainer>
-
+                <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
+                    <Button type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
+                    <Button variant="contained" color='error' endIcon={<CancelIcon />}>Cancel</Button>
+                </Stack>
             </Box>
         </Box>
 
