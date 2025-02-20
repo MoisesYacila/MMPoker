@@ -115,8 +115,9 @@ export default function EditGame() {
             gameInfo.push({
                 player: e.target[i * 14].value,
                 profit: e.target[(i * 14) + 2].value,
-                itm: e.target[(i * 14) + 4].value,
-                otb: e.target[(i * 14) + 6].value,
+                //This will be true only if the string equals yes, and false otherwise
+                itm: e.target[(i * 14) + 4].value === 'yes',
+                otb: e.target[(i * 14) + 6].value === 'yes',
                 bounties: e.target[(i * 14) + 8].value,
                 rebuys: e.target[(i * 14) + 10].value,
                 addOns: e.target[(i * 14) + 12].value
@@ -139,7 +140,6 @@ export default function EditGame() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(e);
         updateGame(e);
     }
 
