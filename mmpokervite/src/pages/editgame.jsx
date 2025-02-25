@@ -114,13 +114,13 @@ export default function EditGame() {
         for (let i = 0; i < numPlayers; i++) {
             gameInfo.push({
                 player: e.target[i * 14].value,
-                profit: e.target[(i * 14) + 2].value,
+                profit: parseInt(e.target[(i * 14) + 2].value),
                 //This will be true only if the string equals yes, and false otherwise
                 itm: e.target[(i * 14) + 4].value === 'yes',
                 otb: e.target[(i * 14) + 6].value === 'yes',
-                bounties: e.target[(i * 14) + 8].value,
-                rebuys: e.target[(i * 14) + 10].value,
-                addOns: e.target[(i * 14) + 12].value
+                bounties: parseInt(e.target[(i * 14) + 8].value),
+                rebuys: parseInt(e.target[(i * 14) + 10].value),
+                addOns: parseInt(e.target[(i * 14) + 12].value)
             })
 
             //Update the original prize pool to reflect add ons and rebuys

@@ -162,150 +162,121 @@ app.patch('/players/edit/:id', async (req, res) => {
     oldData.leaderboard.forEach((player) => { oldSet.add(player.player) });
     newData.forEach((player) => { newSet.add(player.player) });
 
-    // console.log(oldData);
-    // console.log(newData);
+    //Use map for O(1) lookups
+    const oldMap = new Map();
+    oldData.leaderboard.forEach((player) => {
+        oldMap.set(player.player, player);
+    });
 
     // Check if we added or removed a player, and update the global stats for that player
-    const arrSet = Array.from(newSet, async (player, i) => {
+    Array.from(newSet, async (player, i) => {
         // Sets should never be empty, so this should work
         if (i == 0) {
-            //Will check against the first value of oldSet, if we have a different winner, update data in DB
+            // Will check against the first value of oldSet, if we have a different winner, update data in DB
             const oldWinner = oldSet.values().next().value;
             if (player != oldWinner) {
-                console.log('Winner has changed');
-                console.log('Adding a win to ' + player);
-                console.log('Removing a win from ' + oldWinner);
-                // await Player.findByIdAndUpdate(player, { $inc: { wins: +1 } });
-                // await Player.findByIdAndUpdate(oldWinner, { $inc: { wins: -1 } });
+                await Player.findByIdAndUpdate(player, { $inc: { wins: +1 } });
+                await Player.findByIdAndUpdate(oldWinner, { $inc: { wins: -1 } });
             }
         }
 
-        //We added a new player to the game
+        // We added a new player to the game
         if (!oldSet.has(player)) {
-            //Mongoose syntax to increase stats
-            // await Player.findByIdAndUpdate(player, { $inc: { gamesPlayed: +1 } });
-            console.log('Adding one game to new player and updating stats')
-            //Increase one to the stats if player made it to the money or was on the bubble
-            // if (newData[i].itm === 'yes')
-            //     await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
-            // if (newData[i].otb === 'yes')
-            //     await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
+            // Mongoose syntax to increase stats
+            await Player.findByIdAndUpdate(player, { $inc: { gamesPlayed: +1 } });
 
-            //Update earnings bounties, rebuys and add ons
-            // await Player.findByIdAndUpdate(player, {
-            //     $inc: {
-            //         winnings: +newData[i].profit,
-            //         bounties: +newData[i].bounties,
-            //         rebuys: +newData[i].rebuys,
-            //         addOns: +newData[i].addOns
-            //     }
-            // });
+            // Increase one to the stats if player made it to the money or was on the bubble
+            if (newData[i].itm)
+                await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
+            if (newData[i].otb)
+                await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
+
+            //Update all other stats
+            await Player.findByIdAndUpdate(player, {
+                $inc: {
+                    winnings: +newData[i].profit,
+                    bounties: +newData[i].bounties,
+                    rebuys: +newData[i].rebuys,
+                    addOns: +newData[i].addOns
+                }
+            });
         }
 
         //This player was already in the game
         else {
-            //ADD TRY CATCH
             //Compare everything and update
-            try {
-                //Player is in the same position in before and after edit. Check stats and update if necessary
-                if (player == oldData.leaderboard[i].player) {
-                    const currData = await Player.findById(player);
-                    console.log(currData.name);
+            const currPlayerData = oldMap.get(player);
 
-                    //Check and update ITM and OTB stats
-                    if (newData[i].itm != oldData.leaderboard[i].itm) {
-                        console.log('Updating ITM')
-                        console.log(newData[i].itm)
-                        console.log(oldData.leaderboard[i].itm)
-                        // if (newData[i].itm == 'yes')
-
-                        //     await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
-                        // else
-                        //     await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: -1 } });
-                    }
-
-                    if (newData[i].otb != oldData.leaderboard[i].otb) {
-                        console.log('Updating OTB')
-                        console.log(newData[i].otb)
-                        console.log(oldData.leaderboard[i].otb)
-                        // if (newData[i].otb == 'yes')
-                        //     await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
-                        // else
-                        //     await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
-                    }
-
-                    //If any other stat has changed update it
-                    if (newData[i].profit != oldData.leaderboard[i].profit
-                        || newData[i].rebuys != oldData.leaderboard[i].rebuys
-                        || newData[i].bounties != oldData.leaderboard[i].bounties
-                        || newData[i].addOns != oldData.leaderboard[i].addOns) {
-
-                        const diffProfit = newData[i].profit - oldData.leaderboard[i].profit;
-                        const diffRebuys = newData[i].rebuys - oldData.leaderboard[i].rebuys;
-                        const diffBounties = newData[i].bounties - oldData.leaderboard[i].bounties;
-                        const diffAddOns = newData[i].addOns - oldData.leaderboard[i].addOns;
-
-                        console.log('Updating other stats')
-                        console.log('Net diference in profit: ' + diffProfit)
-                        console.log('Net diference in rebuys: ' + diffRebuys)
-                        console.log('Net diference in bounties: ' + diffBounties)
-                        console.log('Net diference in add ons: ' + diffAddOns)
-
-                        // await Player.findByIdAndUpdate(player, {
-                        //     $inc: {
-                        //         winnings: +diffProfit,
-                        //         bounties: +diffBounties,
-                        //         rebuys: +diffRebuys,
-                        //         addOns: +diffAddOns
-                        //     }
-                        // });
-                    }
-
-                }
-            } catch (error) {
-                //Carry on
-                console.log('Out of bounds exception')
+            //Update ITM and OTB if they changed. They're both booleans
+            if (newData[i].itm != currPlayerData.itm) {
+                if (newData[i].itm)
+                    await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
+                else
+                    await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: -1 } });
             }
 
+            if (newData[i].otb != currPlayerData.otb) {
+                if (newData[i].otb)
+                    await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
+                else
+                    await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
+            }
+
+            //If any other stat has changed update it
+            if (newData[i].profit != currPlayerData.profit
+                || newData[i].rebuys != currPlayerData.rebuys
+                || newData[i].bounties != currPlayerData.bounties
+                || newData[i].addOns != currPlayerData.addOns) {
+
+                // Calculate the net difference between their old stat and their new stat
+                const diffProfit = newData[i].profit - currPlayerData.profit;
+                const diffRebuys = newData[i].rebuys - currPlayerData.rebuys;
+                const diffBounties = newData[i].bounties - currPlayerData.bounties;
+                const diffAddOns = newData[i].addOns - currPlayerData.addOns;
+
+                // Update everything else
+                await Player.findByIdAndUpdate(player, {
+                    $inc: {
+                        winnings: +diffProfit,
+                        bounties: +diffBounties,
+                        rebuys: +diffRebuys,
+                        addOns: +diffAddOns
+                    }
+                });
+            }
         }
-
-        return player; //otherwise nothing will be added to the resulting array
-
-    })
-
-    const resolvedArr = await Promise.all(arrSet);
-    console.log(resolvedArr);
-    // newSet.forEach(async (player, i) => {
-
-    // })
+    });
 
     //If a player is deleted from the game, delete stats for this game on their profile
-    // oldSet.forEach(async (player, i) => {
-    //     if (!newSet.has(player)) {
-    //         //Mongoose syntax, decrease games played by 1
-    //         //Already decreased wins if it was needed
-    //         await Player.findByIdAndUpdate(player, { $inc: { gamesPlayed: -1 } });
+    oldSet.forEach(async (player, i) => {
+        if (!newSet.has(player)) {
+            const currPlayerData = oldMap.get(player);
 
-    //         //Decrease one to the stats if player made it to the money or was on the bubble
-    //         if (oldData.leaderboard[i].itm === 'yes')
-    //             await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: -1 } });
-    //         if (oldData.leaderboard[i].otb === 'yes')
-    //             await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
+            //Mongoose syntax, decrease games played by 1
+            //Already decreased wins if it was needed
+            await Player.findByIdAndUpdate(player, { $inc: { gamesPlayed: -1 } });
 
-    //         //Update earnings bounties, rebuys and add ons
-    //         await Player.findByIdAndUpdate(player, {
-    //             $inc: {
-    //                 winnings: -oldData.leaderboard[i].profit,
-    //                 bounties: -oldData.leaderboard[i].bounties,
-    //                 rebuys: -oldData.leaderboard[i].rebuys,
-    //                 addOns: -oldData.leaderboard[i].addOns
-    //             }
-    //         });
-    //     }
-    //     else {
+            //Decrease one to the stats if player made it to the money or was on the bubble
+            if (currPlayerData.itm)
+                await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: -1 } });
 
-    //     }
-    // })
+            if (currPlayerData.otb)
+                await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
+
+            //Update earnings bounties, rebuys and add ons
+            await Player.findByIdAndUpdate(player, {
+                $inc: {
+                    winnings: -currPlayerData.profit,
+                    bounties: -currPlayerData.bounties,
+                    rebuys: -currPlayerData.rebuys,
+                    addOns: -currPlayerData.addOns
+                }
+            });
+        }
+    });
+
+    //Update leaderboard
+    await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length });
 
     res.send('Received EDIT patch request');
 })
