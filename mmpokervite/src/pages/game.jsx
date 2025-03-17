@@ -20,7 +20,7 @@ export default function Game() {
     //date is a string in the gameData object, so we create a Date object to work with it more efficiently
     const gameDate = new Date(gameData.date);
 
-    //We will save the names for the leaderboard, since they are not saved in the Game object
+    //We will save the names for the game standings, since they are not saved in the Game object
     const [playerName, setPlayerName] = useState([]);
 
     //We can get an array with all the players to use on load on the edit page

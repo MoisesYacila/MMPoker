@@ -16,6 +16,7 @@ export default function EditGame() {
     const gameData = location.state.gameData;
     const allPlayers = location.state.players;
     const initialPlayers = gameData.numPlayers;
+    const navigate = useNavigate();
 
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
@@ -103,7 +104,7 @@ export default function EditGame() {
 
     //Only call buildRows when numPlayers changes
     useEffect(() => {
-        buildRows(numPlayers)
+        buildRows(numPlayers);
         console.log(gameData);
     }, [numPlayers])
 
@@ -138,9 +139,18 @@ export default function EditGame() {
             });
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+        //This link is for the redirect
+        let link = `/games/${gameData._id}`;
         e.preventDefault();
-        updateGame(e);
+
+        //Update game and get new game from DB, use await in both to do them in order
+        await updateGame(e);
+        await axios.get(`http://localhost:8080/games/game/${gameData._id}`)
+            .then((res) => {
+                //redirect and pass the new game data to show on the next page
+                navigate(link, { state: { gameData: res.data } });
+            });
     }
 
     return (
