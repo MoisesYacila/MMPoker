@@ -17,6 +17,7 @@ export default function EditGame() {
     const allPlayers = location.state.players;
     const initialPlayers = gameData.numPlayers;
     const navigate = useNavigate();
+    const link = `/games/${gameData._id}`; //This link is for the redirect
 
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
@@ -140,8 +141,7 @@ export default function EditGame() {
     }
 
     const handleSubmit = async (e) => {
-        //This link is for the redirect
-        let link = `/games/${gameData._id}`;
+        //Preventing default form behavior, so we can work with the data
         e.preventDefault();
 
         //Update game and get new game from DB, use await in both to do them in order
@@ -201,7 +201,9 @@ export default function EditGame() {
                 </TableContainer>
                 <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
                     <Button type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
-                    <Button variant="contained" color='error' endIcon={<CancelIcon />}>Cancel</Button>
+                    <Button variant="contained" color='error' onClick={() => {
+                        navigate(link, { state: { gameData } }); //short hand notation equivalent to gameData: gameData
+                    }} endIcon={<CancelIcon />}>Cancel</Button>
                 </Stack>
             </Box>
         </Box>
