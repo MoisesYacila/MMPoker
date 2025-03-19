@@ -8,11 +8,17 @@ import {
 } from '@mui/material';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 
 export default function Game() {
     //useLocation helps retrieve the data we passed in the navigate function that took us to this page
     const location = useLocation();
     const gameData = location.state.gameData;
+    const gameId = gameData._id;
 
     //Activate navigate
     const navigate = useNavigate();
@@ -25,6 +31,9 @@ export default function Game() {
 
     //We can get an array with all the players to use on load on the edit page
     const [allPlayers, setAllPlayers] = useState([]);
+
+    //For control of dialog
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this
@@ -52,6 +61,15 @@ export default function Game() {
                 setAllPlayers(playersArr);
             })
     }, []);
+
+    //Handlers for open and closing dialog (from Material UI)
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
 
 
@@ -106,18 +124,37 @@ export default function Game() {
 
             <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
                 <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
-                    let id = gameData._id;
-                    let link = `/games/${id}/edit`;
+                    let link = `/games/${gameId}/edit`;
                     console.dir(gameData); //for debug
-                    await axios.get(`http://localhost:8080/games/game/${id}`)
+                    await axios.get(`http://localhost:8080/games/game/${gameId}`)
                         .then(() => {
                             //The format is nameWeAreGivingIt : variableThatAlreadyExists
                             navigate(link, { state: { gameData: gameData, players: allPlayers } })
                         })
                 }}>Edit</Button>
-                <Button variant='contained' color='error' endIcon={<DeleteIcon />}>Delete</Button>
+                <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
             </Stack>
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Permanently Delete Game?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        You are about to permanently delete this game.
+                        Are you sure you want to delete this game? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={async () => {
+                        await axios.delete(`http://localhost:8080/games/game/${gameId}`)
+                            .then(() => {
+                                console.log('Game deleted (TEST)');
+                                handleClose();
+                                navigate(`/leaderboard`);
+                            });
 
+                    }}>Delete</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     )
 }

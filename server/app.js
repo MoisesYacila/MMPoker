@@ -51,9 +51,45 @@ app.get('/games/game/:id', async (req, res) => {
     res.send(game);
 })
 
+//Delete one player
 app.delete('/players/:id', async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
     res.send(player);
+})
+
+//Delete one game
+app.delete('/games/game/:id', async (req, res) => {
+    const id = req.params.id
+    const game = await Game.findById(id);
+
+    //Go through every player and remove their stats in this game
+    game.leaderboard.forEach(async (player, i) => {
+        //In order so i == 0 means this player won
+        if (i == 0)
+            await Player.findByIdAndUpdate(player.player, { $inc: { wins: -1 } });
+        if (player.itm)
+            await Player.findByIdAndUpdate(player.player, { $inc: { itmFinishes: -1 } });
+        if (player.otb)
+            await Player.findByIdAndUpdate(player.player, { $inc: { onTheBubble: -1 } });
+
+        //Delete the rest of the stats for this game
+        await Player.findByIdAndUpdate(player.player, {
+            $inc: {
+                winnings: -player.profit,
+                bounties: -player.bounties,
+                rebuys: -player.rebuys,
+                addOns: -player.addOns,
+                gamesPlayed: -1
+            }
+        });
+
+        //Delete actual game
+        await Game.findByIdAndDelete(id);
+    });
+
+    console.log(game);
+
+    res.send('Deleted game (TEST)');
 })
 
 //Post request handling adding players to DB
@@ -263,7 +299,7 @@ app.patch('/players/edit/:id', async (req, res) => {
             if (currPlayerData.otb)
                 await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
 
-            //Update earnings bounties, rebuys and add ons
+            //Update earnings, bounties, rebuys and add ons
             await Player.findByIdAndUpdate(player, {
                 $inc: {
                     winnings: -currPlayerData.profit,
