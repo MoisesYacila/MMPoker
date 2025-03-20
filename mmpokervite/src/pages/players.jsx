@@ -16,6 +16,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Alert from '@mui/material/Alert';
+import Collapse from '@mui/material/Collapse';
 
 
 
@@ -23,8 +25,14 @@ import DialogActions from '@mui/material/DialogActions';
 export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
-    const [id, setId] = useState('');
-    const [name, setName] = useState('');
+    const [openAlert, setOpenAlert] = useState(false);
+
+    // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
+    const [playerData, setPlayerData] = useState({
+        id: '',
+        name: '',
+        gamesPlayed: 0
+    });
     //The Navigate component didn't work as expected when used inside a onClick callback, so we can use this instead
     const navigate = useNavigate();
 
@@ -38,18 +46,47 @@ export default function Players() {
             })
     }, [])
 
-    //Handlers for open and closing dialog (from Material UI)
-    const handleOpen = () => {
-        setOpen(true);
+    // Since we made an object, when the id is any different from its initial value, that means the object is updated
+    // We can call handleOpen. This only happens when the object changes
+    useEffect(() => {
+        if (playerData.id != '')
+            handleOpen();
+    }, [playerData])
+
+    // When an user tries to delete a game, we want to check if the player is in any game
+    // If they are, we will tell the user that they need to remove the player from all the games before deleting it
+    // When gamesPlayed is 0, then they will be allowed to delete the player
+    const handleOpen = async () => {
+        // Get the player to check the stats
+        await axios.get(`http://localhost:8080/players/${playerData.id}`)
+            .then((res) => {
+                // Allowed to delete
+                if (playerData.gamesPlayed == 0)
+                    setOpen(true);
+                // Prompt user to edit games and remove this player from them if they want to delete them
+                else
+                    setOpenAlert(true);
+            });
     };
 
     const handleClose = () => {
         setOpen(false);
     };
 
-
     return (
         <div>
+            {/* Alert to show when player should not be deleted. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='warning' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
+                </Alert>
+            </Collapse>
             <h1>Players</h1>
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Link to='/players/new'>Add Player</Link>
@@ -58,7 +95,7 @@ export default function Players() {
                     {players.map((player, i) => {
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
-                                {/* async callback that gets, the clicked player, and links to their personal page */}
+                                {/* async callback that gets the clicked player, and links to their personal page */}
                                 <ListItemButton onClick={async () => {
                                     const link = `/players/${player._id}`;
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
@@ -83,10 +120,13 @@ export default function Players() {
                                 <IconButton onClick={async () => {
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
                                         .then((res) => {
-                                            setName(res.data.name)
-                                        })
-                                    handleOpen();
-                                    setId(player._id);
+                                            // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data
+                                            setPlayerData({
+                                                id: res.data._id,
+                                                name: res.data.name,
+                                                gamesPlayed: res.data.gamesPlayed
+                                            });
+                                        });
                                 }}>
                                     <ClearIcon></ClearIcon>
                                 </IconButton>
@@ -98,7 +138,7 @@ export default function Players() {
                 <DialogTitle>Permanently Delete Player?</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        You are about to permanently delete {name}.
+                        You are about to permanently delete {playerData.name}.
                         Are you sure you want to delete this player? This action cannot be undone.
                     </DialogContentText>
                 </DialogContent>
@@ -106,20 +146,20 @@ export default function Players() {
                     <Button onClick={handleClose}>Cancel</Button>
                     {/* Delete function once confirmation is received, update the players array using setPlayers for re-render */}
                     <Button onClick={async (e) => {
-                        await axios.delete(`http://localhost:8080/players/${id}`)
+                        await axios.delete(`http://localhost:8080/players/${playerData.id}`)
                             .then((res) => {
                                 console.log(`Deleted ${res.data.name} from DB`);
                                 let newArr = [];
-                                // Creates a new array with all the players except the one who we are deleting
+                                // Creates a new array with all the players except the one being deleted
                                 // if the id is equal the fuction won't add this to the array because this is
-                                //the one we are deleting
-                                newArr = players.filter((player) => player._id != id);
+                                // the one we are deleting
+                                newArr = players.filter((player) => player._id != playerData.id);
                                 setPlayers(newArr);
                             })
                         handleClose();
                     }}>Delete</Button>
                 </DialogActions>
             </Dialog>
-        </div >
+        </div>
     )
 }

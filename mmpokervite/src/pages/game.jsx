@@ -71,8 +71,6 @@ export default function Game() {
         setOpen(false);
     };
 
-
-
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1>Home Game</h1>
@@ -134,6 +132,7 @@ export default function Game() {
                 }}>Edit</Button>
                 <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
             </Stack>
+            {/* Syntax from Material UI */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Permanently Delete Game?</DialogTitle>
                 <DialogContent>
@@ -144,14 +143,13 @@ export default function Game() {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
+                    {/* Call delete function, and redirect to leaderboard when deletion is confirmed */}
                     <Button onClick={async () => {
                         await axios.delete(`http://localhost:8080/games/game/${gameId}`)
                             .then(() => {
-                                console.log('Game deleted (TEST)');
                                 handleClose();
                                 navigate(`/leaderboard`);
                             });
-
                     }}>Delete</Button>
                 </DialogActions>
             </Dialog>
