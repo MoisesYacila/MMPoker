@@ -17,9 +17,6 @@ a:hover {
 
 body {
   margin: 0;
-  /* display: flex;
-  min-width: 320px;
-  height: 100vh; */
 }
 
 h1 {
@@ -41,6 +38,11 @@ button {
 
 button:hover {
   border-color: #646cff;
+}
+
+.hide {
+  /* !important helps us override Material UI styles */
+  display: none !important;
 }
 
 /* button:focus,
