@@ -29,6 +29,154 @@ app.get('/players', async (req, res) => {
     res.send(players);
 })
 
+// Get the top player(s) for each stat
+// Important to have this endpoint before /players/:id, otherwise it will try to get the player with the id 'leaders' and return an error
+app.get('/players/leaders', async (req, res) => {
+    // MongoDB aggregation operation
+    // This is new to me, so I will describe everything in detail
+
+    // We get the top players for each category and return them in an object
+    // We can use facet to get multiple pipelines in one query
+    const topPlayers = await Player.aggregate().facet({
+        // Steps
+        // 1. Find the max number of wins (group)
+        // 2. Lookup the players with that number of wins (DB JOIN, lookup)
+        // 3. In case of a tie, split players into separate documents (unwind)
+        // 4. Removes the outer object, so we don't have a nested array (replaceRoot)
+        "mostGames": [
+            {
+                // Not grouping by anything, just getting the max num of games played. That's why we set _id to null
+                $group: { _id: null, maxGames: { $max: "$gamesPlayed" } }
+            },
+            {
+                // Lookup the players with that number of games played
+                // We use $lookup to join the players collection with the result of the previous step
+                // We use the maxGames field from the last step to join with the gamesPlayed field in the players collection
+                // This will return an array of players called topPlayers with the max number of games played
+                $lookup: {
+                    from: "players",
+                    localField: "maxGames",
+                    foreignField: "gamesPlayed",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+        // Same idea for the rest of the categories
+        "mostWins": [{
+
+            $group: { _id: null, maxWins: { $max: "$wins" } }
+        },
+        {
+
+            $lookup: {
+                from: "players",
+                localField: "maxWins",
+                foreignField: "wins",
+                as: "topPlayers"
+            }
+        },
+        { $unwind: "$topPlayers" },
+        { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+        "mostWinnings": [
+            {
+                $group: { _id: null, maxWinnings: { $max: "$winnings" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxWinnings",
+                    foreignField: "winnings",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+        "mostITM": [
+            {
+                $group: { _id: null, maxITM: { $max: "$itmFinishes" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxITM",
+                    foreignField: "itmFinishes",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+        "mostOTB": [
+            {
+                $group: { _id: null, maxOTB: { $max: "$onTheBubble" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxOTB",
+                    foreignField: "onTheBubble",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+
+        "mostBounties": [
+            {
+                $group: { _id: null, maxBounties: { $max: "$bounties" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxBounties",
+                    foreignField: "bounties",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+
+        "mostRebuys": [
+            {
+                $group: { _id: null, maxRebuys: { $max: "$rebuys" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxRebuys",
+                    foreignField: "rebuys",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ],
+        "mostAddOns": [
+            {
+                $group: { _id: null, maxAddOns: { $max: "$addOns" } }
+            },
+            {
+                $lookup: {
+                    from: "players",
+                    localField: "maxAddOns",
+                    foreignField: "addOns",
+                    as: "topPlayers"
+                }
+            },
+            { $unwind: "$topPlayers" },
+            { $replaceRoot: { newRoot: "$topPlayers" } }
+        ]
+
+    });
+    res.send(topPlayers);
+})
+
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);
     res.send(player);

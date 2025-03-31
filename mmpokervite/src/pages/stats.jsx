@@ -1,8 +1,14 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import {
+    Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography,
+    List, ListItem, ListItemText, ListItemButton, Divider
+} from '@mui/material';
+
 
 export default function Stats() {
     const [mode, setMode] = useState('most');
+    const [totalLeaders, setTotalLeaders] = useState({});
 
     // We will toggle the hide class to only show one of the two categories of stats
     const handleChange = (e, newValue) => {
@@ -19,6 +25,18 @@ export default function Stats() {
             console.log('Value is ' + newValue);
         }
     }
+
+    useEffect(() => {
+        // Get the total leaders from the DB
+        async function getTotalLeaders() {
+            await axios.get('http://localhost:8080/players/leaders')
+                .then((res) => {
+                    setTotalLeaders(res.data[0]);
+                })
+        }
+
+        getTotalLeaders();
+    }, []);
 
     return (
         <Box>
@@ -45,6 +63,18 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most Games Played
                         </Typography>
+                        <List>
+                            {/* We might not have the data by the time the first render happens, so if we don't have anything, render null */}
+                            {/* This avoids undefined error */}
+                            {totalLeaders.mostGames ? totalLeaders.mostGames.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.gamesPlayed}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
@@ -52,6 +82,16 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most Wins
                         </Typography>
+                        <List>
+                            {totalLeaders.mostWins ? totalLeaders.mostWins.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.wins}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
@@ -59,6 +99,16 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most Profit
                         </Typography>
+                        <List>
+                            {totalLeaders.mostWinnings ? totalLeaders.mostWinnings.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.winnings}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
@@ -66,6 +116,16 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most In The Money
                         </Typography>
+                        <List>
+                            {totalLeaders.mostITM ? totalLeaders.mostITM.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.itmFinishes}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
@@ -73,6 +133,33 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most On The Bubble
                         </Typography>
+                        <List>
+                            {totalLeaders.mostOTB ? totalLeaders.mostOTB.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.onTheBubble}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
+                    </CardContent>
+                </Card>
+                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                    <CardContent>
+                        <Typography variant='h5' component='div' align='center'>
+                            Most Bounties
+                        </Typography>
+                        <List>
+                            {totalLeaders.mostBounties ? totalLeaders.mostBounties.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.bounties}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
@@ -80,13 +167,33 @@ export default function Stats() {
                         <Typography variant='h5' component='div' align='center'>
                             Most Rebuys
                         </Typography>
+                        <List>
+                            {totalLeaders.mostRebuys ? totalLeaders.mostRebuys.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.rebuys}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
                 <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
-                            Most Add Ons ($)
+                            Most Add Ons
                         </Typography>
+                        <List>
+                            {totalLeaders.mostAddOns ? totalLeaders.mostAddOns.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.addOns}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
                     </CardContent>
                 </Card>
             </Box>
@@ -111,6 +218,13 @@ export default function Stats() {
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most On The Bubble %
+                        </Typography>
+                    </CardContent>
+                </Card>
+                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                    <CardContent>
+                        <Typography variant='h5' component='div' align='center'>
+                            Most Bounties per Game
                         </Typography>
                     </CardContent>
                 </Card>
