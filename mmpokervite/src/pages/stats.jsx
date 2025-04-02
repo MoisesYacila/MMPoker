@@ -9,9 +9,17 @@ import {
 export default function Stats() {
     const [mode, setMode] = useState('most');
     const [totalLeaders, setTotalLeaders] = useState({});
+    const [averageLeaders, setAverageLeaders] = useState({});
 
     // We will toggle the hide class to only show one of the two categories of stats
-    const handleChange = (e, newValue) => {
+    const handleChange = async (e, newValue) => {
+        if (averageLeaders.bestAverageProfit == null) {
+            await axios.get('http://localhost:8080/players/leaders/average')
+                .then((res) => {
+                    setAverageLeaders(res.data);
+                    console.log(res.data);
+                })
+        }
         // Value will be null if we click on the same button multiple times
         // Toggle classes only when the value actually changes
         if (newValue != null) {
@@ -29,12 +37,11 @@ export default function Stats() {
     useEffect(() => {
         // Get the total leaders from the DB
         async function getTotalLeaders() {
-            await axios.get('http://localhost:8080/players/leaders')
+            await axios.get('http://localhost:8080/players/leaders/total')
                 .then((res) => {
                     setTotalLeaders(res.data[0]);
                 })
         }
-
         getTotalLeaders();
     }, []);
 
@@ -56,9 +63,11 @@ export default function Stats() {
             </ToggleButtonGroup>
 
             {/* Set of total stats */}
-            <Box className='total-stats' sx={{ display: 'flex', marginTop: '2rem', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+            {/* display: 'flex',  , flexWrap: 'wrap', justifyContent: 'space-around'  */}
+            {/* , alignSelf: 'flex-start' */}
+            <Box className='total-stats'>
                 {/* From Material UI */}
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='total-stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Games Played
@@ -77,58 +86,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
-                    <CardContent>
-                        <Typography variant='h5' component='div' align='center'>
-                            Most Wins
-                        </Typography>
-                        <List>
-                            {totalLeaders.mostWins ? totalLeaders.mostWins.map((player, i) => {
-                                return (<ListItem disablePadding key={i}>
-                                    <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.wins}`} />
-                                    </ListItemButton>
-                                </ListItem>)
-                            }) : null
-                            }
-                        </List>
-                    </CardContent>
-                </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
-                    <CardContent>
-                        <Typography variant='h5' component='div' align='center'>
-                            Most Profit
-                        </Typography>
-                        <List>
-                            {totalLeaders.mostWinnings ? totalLeaders.mostWinnings.map((player, i) => {
-                                return (<ListItem disablePadding key={i}>
-                                    <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.winnings}`} />
-                                    </ListItemButton>
-                                </ListItem>)
-                            }) : null
-                            }
-                        </List>
-                    </CardContent>
-                </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
-                    <CardContent>
-                        <Typography variant='h5' component='div' align='center'>
-                            Most In The Money
-                        </Typography>
-                        <List>
-                            {totalLeaders.mostITM ? totalLeaders.mostITM.map((player, i) => {
-                                return (<ListItem disablePadding key={i}>
-                                    <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.itmFinishes}`} />
-                                    </ListItemButton>
-                                </ListItem>)
-                            }) : null
-                            }
-                        </List>
-                    </CardContent>
-                </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='total-stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most On The Bubble
@@ -145,7 +103,41 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='total-stats-card'>
+                    <CardContent>
+                        <Typography variant='h5' component='div' align='center'>
+                            Most Wins
+                        </Typography>
+                        <List>
+                            {totalLeaders.mostWins ? totalLeaders.mostWins.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.wins}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
+                    </CardContent>
+                </Card>
+                <Card className='total-stats-card'>
+                    <CardContent>
+                        <Typography variant='h5' component='div' align='center'>
+                            Most In The Money
+                        </Typography>
+                        <List>
+                            {totalLeaders.mostITM ? totalLeaders.mostITM.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.itmFinishes}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
+                    </CardContent>
+                </Card>
+                <Card className='total-stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Bounties
@@ -162,7 +154,24 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='total-stats-card'>
+                    <CardContent>
+                        <Typography variant='h5' component='div' align='center'>
+                            Most Profit
+                        </Typography>
+                        <List>
+                            {totalLeaders.mostWinnings ? totalLeaders.mostWinnings.map((player, i) => {
+                                return (<ListItem disablePadding key={i}>
+                                    <ListItemButton>
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.winnings}`} />
+                                    </ListItemButton>
+                                </ListItem>)
+                            }) : null
+                            }
+                        </List>
+                    </CardContent>
+                </Card>
+                <Card className='total-stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Rebuys
@@ -179,7 +188,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='total-stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Add Ons

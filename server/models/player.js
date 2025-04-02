@@ -15,7 +15,7 @@ const PlayerSchema = new Schema({
     rebuys: Number,
     addOns: Number,
     winnings: Number
-})
+});
 
 const Player = mongoose.model('Player', PlayerSchema);
 module.exports = Player;

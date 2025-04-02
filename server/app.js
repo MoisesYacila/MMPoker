@@ -29,9 +29,9 @@ app.get('/players', async (req, res) => {
     res.send(players);
 })
 
-// Get the top player(s) for each stat
+// Get the top player(s) for each stat total
 // Important to have this endpoint before /players/:id, otherwise it will try to get the player with the id 'leaders' and return an error
-app.get('/players/leaders', async (req, res) => {
+app.get('/players/leaders/total', async (req, res) => {
     // MongoDB aggregation operation
     // This is new to me, so I will describe everything in detail
 
@@ -174,6 +174,189 @@ app.get('/players/leaders', async (req, res) => {
         ]
 
     });
+    res.send(topPlayers);
+})
+
+app.get('/players/leaders/average', async (req, res) => {
+    // MongoDB aggregation operation
+    // Still new to me, so I will describe everything in detail
+    const topPlayers = await Player.aggregate([
+        {
+            // Make sure we only get players that have played at least one game
+            $match: { gamesPlayed: { $gt: 0 } }
+        },
+        {
+            // Calculate the stats we need for each player
+            // We use $addFields to add new fields to the player object
+            $addFields: {
+                avgProfit: { $divide: ["$winnings", "$gamesPlayed"] },
+                itmPercentage: { $divide: ["$itmFinishes", "$gamesPlayed"] },
+                otbPercentage: { $divide: ["$onTheBubble", "$gamesPlayed"] },
+                avgBounties: { $divide: ["$bounties", "$gamesPlayed"] },
+                avgRebuys: { $divide: ["$rebuys", "$gamesPlayed"] },
+                avgAddOns: { $divide: ["$addOns", "$gamesPlayed"] }
+            }
+        },
+        {
+            // $facet allows us to perform independent queries at the same time
+            // Each field inside $facet is its own pipeline that gets processed separately
+            $facet: {
+                "bestAvgProfit": [
+                    // Sort by avgProfit in descending order
+                    { $sort: { avgProfit: -1 } },
+                    // In the avgProfit category, we are getting the first value, which is the highest and storing it in maxAvgProfit
+                    // $group gets all the values and then takes the first one
+                    { $group: { _id: null, maxAvgProfit: { $first: "$avgProfit" } } },
+
+                    // Find players with the maxAvgProfit
+                    // $lookup is a join operation that allows us to join two collections together
+                    // We are joining the players collection with the result of the previous step
+                    {
+                        $lookup: {
+                            from: "players",
+                            // Temporary variable to have access to the maxAvgProfit value in $lookup
+                            let: { maxProfit: "$maxAvgProfit" },
+                            // Recomputes the avgProfit for each player and uses $match to find the player(s) with the maxAvgProfit
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        avgProfit: { $divide: ["$winnings", "$gamesPlayed"] }
+                                    }
+                                },
+                                // The $$ is to access the variable we created in the previous step, otherwise, we wouldn't be able to access it
+                                { $match: { $expr: { $eq: ["$avgProfit", "$$maxProfit"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    // Unwind the topPlayers array to get each player in a separate document
+                    { $unwind: "$topPlayers" },
+                    // Add the category name to the player object
+                    { $addFields: { category: "Profit Per Game" } },
+                    //Remove the outer object, so we don't have a nested array
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ],
+                // Same idea for the rest of the categories
+                "bestITM": [
+                    { $sort: { itmPercentage: -1 } },
+                    { $group: { _id: null, maxITM: { $first: "$itmPercentage" } } },
+                    {
+                        $lookup: {
+                            from: "players",
+                            let: { maxITM: "$maxITM" },
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        itmPercentage: { $divide: ["$itmFinishes", "$gamesPlayed"] }
+                                    }
+                                },
+                                { $match: { $expr: { $eq: ["$itmPercentage", "$$maxITM"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    { $unwind: "$topPlayers" },
+                    { $addFields: { category: "ITM Percentage" } },
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ],
+                "mostOTB": [
+                    { $sort: { otbPercentage: -1 } },
+                    { $group: { _id: null, maxOTB: { $first: "$otbPercentage" } } },
+                    {
+                        $lookup: {
+                            from: "players",
+                            let: { maxOTB: "$maxOTB" },
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        otbPercentage: { $divide: ["$onTheBubble", "$gamesPlayed"] }
+                                    }
+                                },
+                                { $match: { $expr: { $eq: ["$otbPercentage", "$$maxOTB"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    { $unwind: "$topPlayers" },
+                    { $addFields: { category: "OTB Percentage" } },
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ],
+                "mostAvgBounties": [
+                    { $sort: { avgBounties: -1 } },
+                    { $group: { _id: null, maxAvgBounties: { $first: "$avgBounties" } } },
+                    {
+                        $lookup: {
+                            from: "players",
+                            let: { maxAvgBounties: "$maxAvgBounties" },
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        avgBounties: { $divide: ["$bounties", "$gamesPlayed"] }
+                                    }
+                                },
+                                { $match: { $expr: { $eq: ["$avgBounties", "$$maxAvgBounties"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    { $unwind: "$topPlayers" },
+                    { $addFields: { category: "Average Bounties" } },
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ],
+                "mostAvgRebuys": [
+                    { $sort: { avgRebuys: -1 } },
+                    { $group: { _id: null, maxAvgRebuys: { $first: "$avgRebuys" } } },
+                    {
+                        $lookup: {
+                            from: "players",
+                            let: { maxAvgRebuys: "$maxAvgRebuys" },
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        avgRebuys: { $divide: ["$rebuys", "$gamesPlayed"] }
+                                    }
+                                },
+                                { $match: { $expr: { $eq: ["$avgRebuys", "$$maxAvgRebuys"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    { $unwind: "$topPlayers" },
+                    { $addFields: { category: "Average Rebuys" } },
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ],
+                "mostAvgAddOns": [
+                    { $sort: { avgAddOns: -1 } },
+                    { $group: { _id: null, maxAvgAddOns: { $first: "$avgAddOns" } } },
+                    {
+                        $lookup: {
+                            from: "players",
+                            let: { maxAvgAddOns: "$maxAvgAddOns" },
+                            pipeline: [
+                                { $match: { gamesPlayed: { $gt: 0 } } },
+                                {
+                                    $addFields: {
+                                        avgAddOns: { $divide: ["$addOns", "$gamesPlayed"] }
+                                    }
+                                },
+                                { $match: { $expr: { $eq: ["$avgAddOns", "$$maxAvgAddOns"] } } }
+                            ],
+                            as: "topPlayers"
+                        }
+                    },
+                    { $unwind: "$topPlayers" },
+                    { $addFields: { category: "Average Add Ons" } },
+                    { $replaceRoot: { newRoot: "$topPlayers" } }
+                ]
+            }
+        }
+    ]);
+
     res.send(topPlayers);
 })
 
