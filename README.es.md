@@ -1,3 +1,6 @@
+# 🌍 Language / Idioma
+[English](README.md) (🇬🇧 🇪🇺)
+
 # M&M Poker Nights ♦️♠️♥️♣️
 ## Seguimiento de Liga de Poker
 
