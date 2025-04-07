@@ -1,3 +1,10 @@
+---
+
+## 🌍 Language / Idioma
+
+ [Español](README.es.md) (🇪🇸)
+
+
 # M&M Poker Nights ♦️♠️♥️♣️
 ## Poker League Tracker
 
