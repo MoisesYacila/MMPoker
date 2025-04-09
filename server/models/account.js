@@ -1,21 +1,20 @@
 const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
+const passportGoogle = require('passport-google-oauth');
 const Schema = mongoose.Schema;
 
 const AccountSchema = new Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
+    // We only need email here because passport-local-mongoose will automatically add the username and password fields
     email: {
         type: String,
         required: true,
         unique: true
     },
-    //DONT SAVE PASSWORD LIKE THIS, I WILL FIX THIS BEFORE APP GOES LIVE
-    password: String,
     admin: Boolean
-})
+});
+
+// Set up passport-local-mongoose
+AccountSchema.plugin(passportLocalMongoose);
 
 const Account = mongoose.model('Account', AccountSchema);
 module.exports = Account;

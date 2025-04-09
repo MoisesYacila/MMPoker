@@ -2,10 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
+const Account = require('./models/account');
 const Player = require('./models/player');
 const Game = require('./models/game');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const session = require('express-session');
 
 //Connect to DB
 mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
@@ -19,9 +23,31 @@ mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
 
 //Check documentation if there are any questions with these
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
+
+// Setting up session and passport, from the documentation
+const sessionConfig = {
+    secret: 'secret',   // Change this to a random string in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        // Sets the max age of the cookie to 1 week
+        maxAge: 1000 * 60 * 60 * 24 * 7
+        //secure: true, // Set to true if using HTTPS, consider this for production
+    }
+};
+
+//Important to use session before passport.initialize() and passport.session()
+app.use(session(sessionConfig));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Setting up passport according to its documentation
+passport.use(Account.createStrategy());
+passport.serializeUser(Account.serializeUser());
+passport.deserializeUser(Account.deserializeUser());
 
 //Handling requests
 app.get('/players', async (req, res) => {
@@ -421,7 +447,21 @@ app.delete('/games/game/:id', async (req, res) => {
     console.log(game);
 
     res.send('Deleted game (TEST)');
-})
+});
+
+// Post request handling sign ups
+app.post('/signup', async (req, res) => {
+    // Destructure data from req.body
+    const { username, password, email } = req.body;
+
+    // Make an account with the data from the form
+    // We don't initially pass the password to the Account constructor 
+    // because the register method will hash it for us and store the hashed password it in the DB
+    const account = new Account({ username, email });
+    const registeredAccount = await Account.register(account, password);
+    console.log(registeredAccount);
+    res.send(registeredAccount);
+});
 
 //Post request handling adding players to DB
 app.post('/players', async (req, res) => {
