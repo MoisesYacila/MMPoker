@@ -34,7 +34,7 @@ export default function Navigation() {
                         <Typography><Link to='/stats'>Stats</Link></Typography>
                     </LinkButton>
                     <LinkButton>
-                        <Typography><Link to='/signup'>Sign Up</Link></Typography>
+                        <Typography><Link to='/login'>Log In</Link></Typography>
                     </LinkButton>
 
                 </Toolbar>

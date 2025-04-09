@@ -2,13 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
-import SignUp from './pages/signup.jsx'
+import LogIn from './pages/login.jsx'
 import Leaderboard from './pages/leaderboard.jsx';
 import Forum from './pages/forum.jsx'
 import Players from './pages/players.jsx'
 import Stats from './pages/stats.jsx'
 import NewPlayer from './pages/newplayer.jsx'
-import Player from './pages/player.jsx'
+import Player from './pages/player.jsx';
+import SignUp from './pages/signup.jsx';
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import RootLayout from './layouts/RootLayout.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
@@ -31,11 +32,12 @@ const router = createBrowserRouter(createRoutesFromElements((
     </Route>
     <Route path='/forum' element={<Forum />}></Route>
     <Route path='/stats' element={<Stats />}></Route>
-    <Route path='/signup' element={<SignUp />}></Route>
+    <Route path='/login' element={<LogIn />}></Route>
     <Route path='/games/:id' element={<MainLayout />}>
       <Route path='/games/:id' element={<Game />}></Route>
       <Route path='/games/:id/edit' element={<EditGame />}></Route>
     </Route>
+    <Route path='/signup' element={<SignUp />}></Route>
 
   </Route>
 )))
