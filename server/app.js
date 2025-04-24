@@ -22,7 +22,11 @@ mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
     });
 
 //Check documentation if there are any questions with these
-app.use(cors());
+app.use(cors({
+    // Need these to allow React to interact with the server
+    origin: 'http://localhost:5173', // React app URL
+    credentials: true, // Allow credentials (cookies) to be sent
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
@@ -461,6 +465,34 @@ app.post('/signup', async (req, res) => {
     const registeredAccount = await Account.register(account, password);
     console.log(registeredAccount);
     res.send(registeredAccount);
+});
+
+// Post request handling log in
+app.post('/login', async (req, res, next) => {
+    // Passport custom callback function to handle login and pass over info to React
+    passport.authenticate('local', (err, user, info) => {
+        // Passport error
+        if (err) {
+            return next(err);
+        }
+        // Checks if the credentials are valid
+        if (!user) {
+            return res.status(401).json('Invalid username or password');
+        }
+
+        // Function provided by passport, sets up the session
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+
+            // If login is successful, send a response to the client with the user info
+            // Important to return and not just do res.json
+            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email } });
+        });
+
+        // Call the middleware function with req and res
+    })(req, res, next);
 });
 
 //Post request handling adding players to DB
