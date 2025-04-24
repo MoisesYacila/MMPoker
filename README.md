@@ -87,7 +87,7 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/MoisesYacila/mmpokervite.git
+   git clone https://github.com/MoisesYacila/mmpoker.git
    cd mmpokervite
 
 2. Install Dependecies

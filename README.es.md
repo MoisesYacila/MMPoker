@@ -86,7 +86,7 @@ Pronto agregaré imágenes del ranking, formularios de partida y vistas de estad
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/MoisesYacila/mmpokervite.git
+   git clone https://github.com/MoisesYacila/mmpoker.git
    cd mmpokervite
 2. Instala las dependencias:
    ```bash
