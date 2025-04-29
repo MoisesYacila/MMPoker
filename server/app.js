@@ -414,12 +414,20 @@ app.get('/games/game/:id', async (req, res) => {
 
 //Delete one player
 app.delete('/players/:id', async (req, res) => {
+    // Don't allow deleting players user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     const player = await Player.findByIdAndDelete(req.params.id);
     res.send(player);
 })
 
 //Delete one game
 app.delete('/games/game/:id', async (req, res) => {
+    // Don't allow deleting games user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     const id = req.params.id
     const game = await Game.findById(id);
 
@@ -458,13 +466,20 @@ app.post('/signup', async (req, res) => {
     // Destructure data from req.body
     const { username, password, email } = req.body;
 
-    // Make an account with the data from the form
-    // We don't initially pass the password to the Account constructor 
-    // because the register method will hash it for us and store the hashed password it in the DB
-    const account = new Account({ username, email });
-    const registeredAccount = await Account.register(account, password);
-    console.log(registeredAccount);
-    res.send(registeredAccount);
+    // Try/catch to handle errors during sign up
+    try {
+        // Make an account with the data from the form
+        // We don't initially pass the password to the Account constructor 
+        // because the register method will hash it for us and store the hashed password it in the DB
+        // Make one user admin to restrict certain actions
+        const account = new Account({ username, email, admin: true });
+        const registeredAccount = await Account.register(account, password);
+        console.log(registeredAccount);
+        res.send(registeredAccount);
+    }
+    catch (err) {
+        return res.status(500).send(err);
+    }
 });
 
 // Post request handling log in

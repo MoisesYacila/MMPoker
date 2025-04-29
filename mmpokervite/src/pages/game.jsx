@@ -145,7 +145,9 @@ export default function Game() {
                     <Button onClick={handleClose}>Cancel</Button>
                     {/* Call delete function, and redirect to leaderboard when deletion is confirmed */}
                     <Button onClick={async () => {
-                        await axios.delete(`http://localhost:8080/games/game/${gameId}`)
+                        await axios.delete(`http://localhost:8080/games/game/${gameId}`, {
+                            withCredentials: true // Protected route, so we need to make sure the user is logged in
+                        })
                             .then(() => {
                                 handleClose();
                                 navigate(`/leaderboard`);

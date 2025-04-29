@@ -26,6 +26,7 @@ export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
+    const [openAlert2, setOpenAlert2] = useState(false);
 
     // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
@@ -46,8 +47,9 @@ export default function Players() {
             })
     }, [])
 
-    // Since we made an object, when the id is any different from its initial value, that means the object is updated
-    // We can call handleOpen. This only happens when the object changes
+    // Initially, playerData is empty. When any changes are detected, those will trigger this useEffect
+    // After that, the id will have the value of the player we are trying to delete, and we can call handleOpen
+    // to check if the player can be deleted or not
     useEffect(() => {
         if (playerData.id != '')
             handleOpen();
@@ -85,6 +87,18 @@ export default function Players() {
                     </IconButton>
                 }>
                     This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
+                </Alert>
+            </Collapse>
+            {/* Alert users that they need to be logged in to delete*/}
+            <Collapse in={openAlert2}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert2(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    Must be logged in to delete a player.
                 </Alert>
             </Collapse>
             <h1>Players</h1>
@@ -146,7 +160,9 @@ export default function Players() {
                     <Button onClick={handleClose}>Cancel</Button>
                     {/* Delete function once confirmation is received, update the players array using setPlayers for re-render */}
                     <Button onClick={async (e) => {
-                        await axios.delete(`http://localhost:8080/players/${playerData.id}`)
+                        await axios.delete(`http://localhost:8080/players/${playerData.id}`, {
+                            withCredentials: true // Protected route, so we need to make sure the user is logged in
+                        })
                             .then((res) => {
                                 console.log(`Deleted ${res.data.name} from DB`);
                                 let newArr = [];
@@ -155,7 +171,10 @@ export default function Players() {
                                 // the one we are deleting
                                 newArr = players.filter((player) => player._id != playerData.id);
                                 setPlayers(newArr);
-                            })
+                            }).catch((err) => {
+                                console.log(err);
+                                setOpenAlert2(true);
+                            });
                         handleClose();
                     }}>Delete</Button>
                 </DialogActions>
