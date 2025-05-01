@@ -12,12 +12,15 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import { Collapse, Alert, IconButton } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 
 export default function NewGame() {
     const [players, setPlayers] = useState([]);
     const [numPlayers, setNumPlayers] = useState(5);
     const [rows, setRows] = useState(Array(5));
     const [submitted, setSubmitted] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false);
     const [gameInfo, setGameInfo] = useState([]);
 
     //Gets the players from DB and adds the data to players array
@@ -70,8 +73,9 @@ export default function NewGame() {
             .then((response) => {
                 setSubmitted(true); //to know when to redirect
                 console.log(response);
-            }).catch(function (error) {
+            }).catch((error) => {
                 console.log(error);
+                setOpenAlert(true); //Show alert if operation fails
             });
 
         //Send post request to create a the new game
@@ -82,8 +86,9 @@ export default function NewGame() {
         })
             .then((response) => {
                 console.log(response)
-            }).catch(function (error) {
+            }).catch((error) => {
                 console.log(error);
+                setOpenAlert(true); //Show alert if operation fails
             });
     }
 
@@ -158,63 +163,77 @@ export default function NewGame() {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-            <h1>New Game</h1>
-            <FormControl fullWidth sx={{ alignItems: 'center' }} >
-                <TextField
-                    select
-                    id="player-number"
-                    label="Number of Players"
-                    defaultValue='5'
-                    sx={{ width: '15%' }}
-                    onChange={handleChange}
-                >
-                    <MenuItem value={5}>5</MenuItem>
-                    <MenuItem value={6}>6</MenuItem>
-                    <MenuItem value={7}>7</MenuItem>
-                    <MenuItem value={8}>8</MenuItem>
-                    <MenuItem value={9}>9</MenuItem>
-                    <MenuItem value={10}>10</MenuItem>
-                </TextField>
-            </FormControl>
+        <div>
+            {/* Alert to show if operation fails. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    Must be signed in to create a game.
+                </Alert>
+            </Collapse>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                <h1>New Game</h1>
+                <FormControl fullWidth sx={{ alignItems: 'center' }} >
+                    <TextField
+                        select
+                        id="player-number"
+                        label="Number of Players"
+                        defaultValue='5'
+                        sx={{ width: '15%' }}
+                        onChange={handleChange}
+                    >
+                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={6}>6</MenuItem>
+                        <MenuItem value={7}>7</MenuItem>
+                        <MenuItem value={8}>8</MenuItem>
+                        <MenuItem value={9}>9</MenuItem>
+                        <MenuItem value={10}>10</MenuItem>
+                    </TextField>
+                </FormControl>
 
-            {/* <form method="POST" action="http://localhost:8080/players?_method=PATCH" > */}
-            {/* Actually both POST and PATCH requests are sent on the handleSubmit, but it doesn´t matter which one we use on the form component */}
-            <Box component='form'
-                method="POST"
-                action="http://localhost:8080/players?_method=PATCH"
-                onSubmit={handleSubmit}
-                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell></TableCell>
-                                <TableCell align="center">Player</TableCell>
-                                <TableCell align="center">Earnings ($)</TableCell>
-                                <TableCell align="center">ITM</TableCell>
-                                <TableCell align="center">OTB</TableCell>
-                                <TableCell align="center">Bounties</TableCell>
-                                <TableCell align="center">Rebuys</TableCell>
-                                <TableCell align="center">Add Ons ($)</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {/* The array rows contains everything that is in the table body */}
-                            {rows.map(row => {
-                                return row;
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <Button variant="contained" type="submit"
-                    sx={{ width: '8%', marginBottom: '1rem' }}
-                >
-                    Add Game
-                </Button>
+                {/* <form method="POST" action="http://localhost:8080/players?_method=PATCH" > */}
+                {/* Actually both POST and PATCH requests are sent on the handleSubmit, but it doesn´t matter which one we use on the form component */}
+                <Box component='form'
+                    method="POST"
+                    action="http://localhost:8080/players?_method=PATCH"
+                    onSubmit={handleSubmit}
+                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell align="center">Player</TableCell>
+                                    <TableCell align="center">Earnings ($)</TableCell>
+                                    <TableCell align="center">ITM</TableCell>
+                                    <TableCell align="center">OTB</TableCell>
+                                    <TableCell align="center">Bounties</TableCell>
+                                    <TableCell align="center">Rebuys</TableCell>
+                                    <TableCell align="center">Add Ons ($)</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {/* The array rows contains everything that is in the table body */}
+                                {rows.map(row => {
+                                    return row;
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Button variant="contained" type="submit"
+                        sx={{ width: '8%', marginBottom: '1rem' }}
+                    >
+                        Add Game
+                    </Button>
+                </Box>
+                {/* When submitted, redirect back to the leaderboard page */}
+                {submitted ? <Navigate to='/leaderboard' replace={true} /> : null}
             </Box>
-            {/* When submitted, redirect back to the leaderboard page */}
-            {submitted ? <Navigate to='/leaderboard' replace={true} /> : null}
-        </Box>
+        </div>
     )
 }

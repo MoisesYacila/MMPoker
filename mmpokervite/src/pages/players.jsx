@@ -98,7 +98,7 @@ export default function Players() {
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Must be logged in to delete a player.
+                    Must be logged in to add or delete a player.
                 </Alert>
             </Collapse>
             <h1>Players</h1>

@@ -414,7 +414,7 @@ app.get('/games/game/:id', async (req, res) => {
 
 //Delete one player
 app.delete('/players/:id', async (req, res) => {
-    // Don't allow deleting players user is not authenticated
+    // Don't allow operation if user is not authenticated
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
@@ -424,7 +424,7 @@ app.delete('/players/:id', async (req, res) => {
 
 //Delete one game
 app.delete('/games/game/:id', async (req, res) => {
-    // Don't allow deleting games user is not authenticated
+    // Don't allow operation if user is not authenticated
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
@@ -512,6 +512,10 @@ app.post('/login', async (req, res, next) => {
 
 //Post request handling adding players to DB
 app.post('/players', async (req, res) => {
+    // Don't allow operation if user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     console.log(req.body)
     //Destructure from req.body and add player with all the info to DB
     const { name, country } = req.body;
@@ -530,6 +534,10 @@ app.post('/players', async (req, res) => {
 
 //Post request to add games to DB
 app.post('/games', async (req, res) => {
+    // Don't allow operation if user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     //Get info from request
     const { data, numPlayers, prizePool } = req.body;
 
@@ -572,6 +580,10 @@ app.post('/games', async (req, res) => {
 
 // Patch request handles the new games, and it updates the stats for all the players involved
 app.patch('/players', async (req, res) => {
+    // Don't allow operation if user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     console.log(req.body)
     const { data } = req.body;
 
@@ -607,6 +619,10 @@ app.patch('/players', async (req, res) => {
 
 //Patch request to handle the edited games and update the stats for the players involved
 app.patch('/players/edit/:id', async (req, res) => {
+    // Don't allow operation if user is not authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).send('Unauthorized');
+    }
     const { oldData, newData } = req.body;
     const { id } = req.params;
 
@@ -619,6 +635,7 @@ app.patch('/players/edit/:id', async (req, res) => {
     //Use map for O(1) lookups
     const oldMap = new Map();
     oldData.leaderboard.forEach((player) => {
+        // The key is the player id, and the value is the player object which contains all the stats
         oldMap.set(player.player, player);
     });
 
