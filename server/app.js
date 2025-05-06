@@ -10,6 +10,7 @@ const methodOverride = require('method-override');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const isLoggedIn = require('./middleware.js');
 
 //Connect to DB
 mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
@@ -390,6 +391,13 @@ app.get('/players/leaders/average', async (req, res) => {
     res.send(topPlayers);
 })
 
+// app.get('/loggedin', (req, res) => {
+//     if (!req.isAuthenticated()) {
+//         return res.send(false);
+//     }
+//     res.send(true);
+// })
+
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);
     res.send(player);
@@ -413,21 +421,13 @@ app.get('/games/game/:id', async (req, res) => {
 })
 
 //Delete one player
-app.delete('/players/:id', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
+app.delete('/players/:id', isLoggedIn, async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
     res.send(player);
 })
 
 //Delete one game
-app.delete('/games/game/:id', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
+app.delete('/games/game/:id', isLoggedIn, async (req, res) => {
     const id = req.params.id
     const game = await Game.findById(id);
 
@@ -484,6 +484,7 @@ app.post('/signup', async (req, res) => {
 
 // Post request handling log in
 app.post('/login', async (req, res, next) => {
+    // Remember to add the withCredentials: true to the axios request in the front end
     // Passport custom callback function to handle login and pass over info to React
     passport.authenticate('local', (err, user, info) => {
         // Passport error
@@ -511,12 +512,7 @@ app.post('/login', async (req, res, next) => {
 });
 
 //Post request handling adding players to DB
-app.post('/players', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
-    console.log(req.body)
+app.post('/players', isLoggedIn, async (req, res) => {
     //Destructure from req.body and add player with all the info to DB
     const { name, country } = req.body;
     const player = new Player({
@@ -533,11 +529,7 @@ app.post('/players', async (req, res) => {
 })
 
 //Post request to add games to DB
-app.post('/games', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
+app.post('/games', isLoggedIn, async (req, res) => {
     //Get info from request
     const { data, numPlayers, prizePool } = req.body;
 
@@ -579,12 +571,7 @@ app.post('/games', async (req, res) => {
 })
 
 // Patch request handles the new games, and it updates the stats for all the players involved
-app.patch('/players', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
-    console.log(req.body)
+app.patch('/players', isLoggedIn, async (req, res) => {
     const { data } = req.body;
 
     data.forEach(async (player, i) => {
@@ -618,11 +605,7 @@ app.patch('/players', async (req, res) => {
 })
 
 //Patch request to handle the edited games and update the stats for the players involved
-app.patch('/players/edit/:id', async (req, res) => {
-    // Don't allow operation if user is not authenticated
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
+app.patch('/players/edit/:id', isLoggedIn, async (req, res) => {
     const { oldData, newData } = req.body;
     const { id } = req.params;
 

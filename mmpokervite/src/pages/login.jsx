@@ -5,11 +5,15 @@ import {
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import axios from "axios";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function LogIn() {
-    const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    // Get the error message from the previous page or an empty object if not available
+    let { message, openAlertLink } = location.state || {};
+    const [openAlert, setOpenAlert] = useState(false);
+    const [openAlert2, setOpenAlert2] = useState(openAlertLink);
 
     const handleSubmit = (e) => {
         console.log("Form submitted");
@@ -46,6 +50,17 @@ export default function LogIn() {
                     </IconButton>
                 }>
                     Invalid credentials. Please check your username and password.
+                </Alert>
+            </Collapse>
+            <Collapse in={openAlert2}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert2(false);
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    {message}
                 </Alert>
             </Collapse>
             <Box component='form'

@@ -26,7 +26,6 @@ export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
-    const [openAlert2, setOpenAlert2] = useState(false);
 
     // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
@@ -87,18 +86,6 @@ export default function Players() {
                     </IconButton>
                 }>
                     This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
-                </Alert>
-            </Collapse>
-            {/* Alert users that they need to be logged in to delete*/}
-            <Collapse in={openAlert2}>
-                <Alert severity='error' action={
-                    <IconButton onClick={() => {
-                        setOpenAlert2(false)
-                    }}>
-                        <ClearIcon></ClearIcon>
-                    </IconButton>
-                }>
-                    Must be logged in to add or delete a player.
                 </Alert>
             </Collapse>
             <h1>Players</h1>
@@ -173,7 +160,7 @@ export default function Players() {
                                 setPlayers(newArr);
                             }).catch((err) => {
                                 console.log(err);
-                                setOpenAlert2(true);
+                                navigate(`/login`, { state: { message: 'Must be signed in to delete players.', openAlertLink: true } });
                             });
                         handleClose();
                     }}>Delete</Button>

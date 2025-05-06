@@ -5,11 +5,10 @@ import Box from '@mui/material/Box';
 import {
     FormControl, TextField, MenuItem,
     TableContainer, Table, TableHead,
-    TableRow, TableCell, TableBody, Stack, Button, Collapse, Alert, IconButton
+    TableRow, TableCell, TableBody, Stack, Button
 } from "@mui/material";
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ClearIcon from '@mui/icons-material/Clear';
 
 export default function EditGame() {
 
@@ -24,7 +23,6 @@ export default function EditGame() {
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
     const [success, setSucess] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
 
     //Using the Array.from function to build each row on the edit page
     //el is the current element, which is unused here
@@ -134,13 +132,15 @@ export default function EditGame() {
 
         //Send patch request and send the data to the server side
         //The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
-        await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, { oldData: gameData, newData: gameInfo })
+        // Important to pass the withCredentials option if we need to know if the user is logged in or not
+        await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, { oldData: gameData, newData: gameInfo }, { withCredentials: true })
             .then((response) => {
-                setSucess(true); //set success to true to know we can redirect
+                // Set success to true to know we can redirect
+                setSucess(true);
                 console.log(response);
             }).catch((error) => {
                 console.log(error);
-                setOpenAlert(true); //show alert if error occurs
+                navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
             });
     }
 
@@ -162,72 +162,58 @@ export default function EditGame() {
     }
 
     return (
-        <div>
-            {/* Alert to show if operation fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
-                    <IconButton onClick={() => {
-                        setOpenAlert(false)
-                    }}>
-                        <ClearIcon></ClearIcon>
-                    </IconButton>
-                }>
-                    Must be signed in to edit a game.
-                </Alert>
-            </Collapse>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                <h1>Edit Game</h1>
-                <FormControl fullWidth sx={{ alignItems: 'center' }}>
-                    <TextField
-                        select
-                        label='Number of Players'
-                        defaultValue={initialPlayers} //original number of players
-                        sx={{ width: '15%' }}
-                        onChange={(e) => {
-                            setNumPlayers(e.target.value)
-                        }}
-                    >
-                        <MenuItem value={5}>5</MenuItem>
-                        <MenuItem value={6}>6</MenuItem>
-                        <MenuItem value={7}>7</MenuItem>
-                        <MenuItem value={8}>8</MenuItem>
-                        <MenuItem value={9}>9</MenuItem>
-                        <MenuItem value={10}>10</MenuItem>
-                    </TextField>
-                </FormControl>
-                <Box component='form'
-                    method="POST"
-                    action="http://localhost:8080/players/edit/:id?_method=PATCH"
-                    onSubmit={handleSubmit} //handle submit
-                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+            <h1>Edit Game</h1>
+            <FormControl fullWidth sx={{ alignItems: 'center' }}>
+                <TextField
+                    select
+                    label='Number of Players'
+                    defaultValue={initialPlayers} //original number of players
+                    sx={{ width: '15%' }}
+                    onChange={(e) => {
+                        setNumPlayers(e.target.value)
+                    }}
                 >
-                    <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell></TableCell>
-                                    <TableCell align="center">Player</TableCell>
-                                    <TableCell align="center">Earnings ($)</TableCell>
-                                    <TableCell align="center">ITM</TableCell>
-                                    <TableCell align="center">OTB</TableCell>
-                                    <TableCell align="center">Bounties</TableCell>
-                                    <TableCell align="center">Rebuys</TableCell>
-                                    <TableCell align="center">Add Ons ($)</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
-                        <Button type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
-                        <Button variant="contained" color='error' onClick={() => {
-                            navigate(link, { state: { gameData } }); //short hand notation equivalent to gameData: gameData
-                        }} endIcon={<CancelIcon />}>Cancel</Button>
-                    </Stack>
-                </Box>
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={6}>6</MenuItem>
+                    <MenuItem value={7}>7</MenuItem>
+                    <MenuItem value={8}>8</MenuItem>
+                    <MenuItem value={9}>9</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                </TextField>
+            </FormControl>
+            <Box component='form'
+                method="POST"
+                action="http://localhost:8080/players/edit/:id?_method=PATCH"
+                onSubmit={handleSubmit} //handle submit
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+                <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell align="center">Player</TableCell>
+                                <TableCell align="center">Earnings ($)</TableCell>
+                                <TableCell align="center">ITM</TableCell>
+                                <TableCell align="center">OTB</TableCell>
+                                <TableCell align="center">Bounties</TableCell>
+                                <TableCell align="center">Rebuys</TableCell>
+                                <TableCell align="center">Add Ons ($)</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {rows}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
+                    <Button type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
+                    <Button variant="contained" color='error' onClick={() => {
+                        navigate(link, { state: { gameData } }); //short hand notation equivalent to gameData: gameData
+                    }} endIcon={<CancelIcon />}>Cancel</Button>
+                </Stack>
             </Box>
-        </div>
+        </Box>
     )
 }
