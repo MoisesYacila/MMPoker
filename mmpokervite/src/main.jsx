@@ -38,7 +38,6 @@ const router = createBrowserRouter(createRoutesFromElements((
       <Route path='/games/:id/edit' element={<EditGame />}></Route>
     </Route>
     <Route path='/signup' element={<SignUp />}></Route>
-
   </Route>
 )))
 

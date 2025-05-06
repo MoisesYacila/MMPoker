@@ -6,6 +6,7 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import axios from "axios";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useUser } from '../UserContext'
 
 export default function LogIn() {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function LogIn() {
     let { message, openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
+    const { setLoggedIn } = useUser();
 
     const handleSubmit = (e) => {
         console.log("Form submitted");
@@ -28,6 +30,7 @@ export default function LogIn() {
             withCredentials: true // Important for CORS validation
         }).then((res) => {
             console.log(res.data);
+            setLoggedIn(true);
             // Redirect to the leaderboard page after successful login
             navigate('/leaderboard');
         }).catch(err => {

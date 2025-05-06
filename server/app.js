@@ -391,12 +391,13 @@ app.get('/players/leaders/average', async (req, res) => {
     res.send(topPlayers);
 })
 
-// app.get('/loggedin', (req, res) => {
-//     if (!req.isAuthenticated()) {
-//         return res.send(false);
-//     }
-//     res.send(true);
-// })
+// Checks if the user is logged in or not
+app.get('/loggedin', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.send(false);
+    }
+    res.send(true);
+})
 
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);

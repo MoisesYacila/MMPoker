@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 import './navigation.css';
+import { useUser } from '../UserContext';
 
 //Using styled function which is provided by Material UI to override default styles on reusable components
 const LinkButton = styled(Button)({
@@ -14,6 +15,7 @@ const LinkButton = styled(Button)({
 })
 
 export default function Navigation() {
+    const { loggedIn } = useUser();
     return (
         <Box className='navigation'>
             <AppBar position='sticky' sx={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -33,10 +35,17 @@ export default function Navigation() {
                     <LinkButton>
                         <Typography><Link to='/stats'>Stats</Link></Typography>
                     </LinkButton>
-                    <LinkButton>
-                        <Typography><Link to='/login'>Log In</Link></Typography>
-                    </LinkButton>
-
+                    {
+                        loggedIn ? (
+                            <LinkButton>
+                                <Typography><Link to='/logout'>Log Out</Link></Typography>
+                            </LinkButton>
+                        ) : (
+                            <LinkButton>
+                                <Typography><Link to='/login'>Log In</Link></Typography>
+                            </LinkButton>
+                        )
+                    }
                 </Toolbar>
             </AppBar>
         </Box>
