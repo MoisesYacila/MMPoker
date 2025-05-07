@@ -22,7 +22,6 @@ export default function EditGame() {
 
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
-    const [success, setSucess] = useState(false);
 
     //Using the Array.from function to build each row on the edit page
     //el is the current element, which is unused here
@@ -130,18 +129,29 @@ export default function EditGame() {
             prizePool += parseInt(gameInfo[i].addOns) + parseInt(gameInfo[i].rebuys * 20);
         }
 
-        //Send patch request and send the data to the server side
-        //The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
-        // Important to pass the withCredentials option if we need to know if the user is logged in or not
-        await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, { oldData: gameData, newData: gameInfo }, { withCredentials: true })
-            .then((response) => {
-                // Set success to true to know we can redirect
-                setSucess(true);
-                console.log(response);
-            }).catch((error) => {
-                console.log(error);
-                navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
-            });
+
+
+
+        // If user is logged in, we will be able to update the game, otherwise we will redirect to login page
+        try {
+            // Send patch request and send the data to the server side
+            // The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
+            // Important to pass the withCredentials option if we need to know if the user is logged in or not
+            await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, {
+                oldData: gameData, newData: gameInfo
+            }, { withCredentials: true });
+
+            // Get the new game data from the server to show on the next page
+            const res = await axios.get(`http://localhost:8080/games/game/${gameData._id}`);
+
+            // Redirect and pass the new game data to the next page
+            navigate(link, { state: { gameData: res.data } });
+        }
+        catch (error) {
+            console.log(error);
+            // If the user is not logged in, redirect to login page and show alert
+            navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -150,15 +160,6 @@ export default function EditGame() {
 
         //Update game
         await updateGame(e);
-
-        // If the user is logged in, we'll redirect them to the updated game page
-        if (success) {
-            await axios.get(`http://localhost:8080/games/game/${gameData._id}`)
-                .then((res) => {
-                    //redirect and pass the new game data to show on the next page
-                    navigate(link, { state: { gameData: res.data } });
-                });
-        }
     }
 
     return (
