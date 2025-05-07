@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
+import {
+    Alert, Collapse, IconButton, Button, Table,
+    TableBody, TableCell, TableContainer, TableHead, TableRow,
+    TableSortLabel
+} from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import { useAlert } from '../AlertContext';
+
 
 export default function Leaderboard() {
     const [players, setPlayers] = useState([]);
     const [order, setOrder] = useState('asc');
     const navigate = useNavigate();
+    const location = useLocation();
+
+    let { openAlertLink } = location.state || {};
+    const [openAlert, setOpenAlert] = useState(openAlertLink);
+    const { alertMessage } = useAlert();
+
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
         axios.get('http://localhost:8080/players')
@@ -27,6 +33,18 @@ export default function Leaderboard() {
     return (
         //Move div styles to css file
         <div style={{ textAlign: 'center' }}>
+            {/* Alert to show login/logout feedback. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='success' sx={{ backgroundColor: '#c8e6c9' }} action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    {alertMessage}
+                </Alert>
+            </Collapse>
             <h1>Leaderboard</h1>
             <Link to='/leaderboard/new'>Add Game</Link>
             <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
@@ -233,7 +251,5 @@ export default function Leaderboard() {
                 </Table>
             </TableContainer>
         </div>
-
-
     )
 }

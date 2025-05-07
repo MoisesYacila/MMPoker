@@ -7,6 +7,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import axios from "axios";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../UserContext'
+import { useAlert } from '../AlertContext';
 
 export default function LogIn() {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function LogIn() {
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
     const { setLoggedIn } = useUser();
+    const { setAlertMessage } = useAlert();
 
     const handleSubmit = (e) => {
         console.log("Form submitted");
@@ -32,7 +34,8 @@ export default function LogIn() {
             console.log(res.data);
             setLoggedIn(true);
             // Redirect to the leaderboard page after successful login
-            navigate('/leaderboard');
+            setAlertMessage('Welcome');
+            navigate('/leaderboard', { state: { openAlertLink: true } });
         }).catch(err => {
             console.error('Login failed:', err.response?.data || err.message);
             // Show alert if login fails

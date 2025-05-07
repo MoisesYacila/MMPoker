@@ -399,6 +399,17 @@ app.get('/loggedin', (req, res) => {
     res.send(true);
 })
 
+// Logout route
+app.get('/logout', (req, res, next) => {
+    // Passport syntax for logging out
+    req.logout((err) => {
+        if (err) {
+            return next(err);
+        }
+        res.send('Logged out successfully');
+    });
+})
+
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);
     res.send(player);
