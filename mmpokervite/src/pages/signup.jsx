@@ -6,10 +6,12 @@ import {
 import axios from "axios";
 import { Link, useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
+import { useUser } from '../UserContext';
 
 export default function SignUp() {
     const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
+    const { setLoggedIn } = useUser();
 
     const handleSubmit = (e) => {
         // Prevent the default form submission behavior
@@ -22,8 +24,9 @@ export default function SignUp() {
             firstName: e.target.first.value,
             lastName: e.target.last.value,
             password: e.target.password.value
-        }).then((res) => {
+        }, { withCredentials: true }).then((res) => {
             console.log(res.data);
+            setLoggedIn(true);
             navigate('/leaderboard');
         }).catch(err => {
             console.error('Sign up failed:', err.response?.data || err.message);

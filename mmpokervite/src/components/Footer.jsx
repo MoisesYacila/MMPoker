@@ -4,8 +4,7 @@ import './footer.css';
 export default function Footer() {
     return (
         <Box>
-            <footer className='footer'>&copy; M&M Poker 2024</footer>
+            <footer className='footer'>&copy; M&M Poker 2025</footer>
         </Box>
-
     )
 }

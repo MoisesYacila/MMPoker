@@ -474,7 +474,7 @@ app.delete('/games/game/:id', isLoggedIn, async (req, res) => {
 });
 
 // Post request handling sign ups
-app.post('/signup', async (req, res) => {
+app.post('/signup', async (req, res, next) => {
     // Destructure data from req.body
     const { username, password, email } = req.body;
 
@@ -486,8 +486,18 @@ app.post('/signup', async (req, res) => {
         // Make one user admin to restrict certain actions
         const account = new Account({ username, email, admin: true });
         const registeredAccount = await Account.register(account, password);
-        console.log(registeredAccount);
-        res.send(registeredAccount);
+
+        // Passport function to log in the user after signing up
+        req.logIn(registeredAccount, (err) => {
+            if (err) {
+                return next(err);
+            }
+            else {
+                console.log(registeredAccount);
+                console.log("User logged in after signing up");
+                res.send(registeredAccount);
+            }
+        });
     }
     catch (err) {
         return res.status(500).send(err);
