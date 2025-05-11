@@ -2,7 +2,7 @@
 ## 🌍 Language / Idioma
 [English](README.md) (🇬🇧 🇪🇺)
 
-# M&M Poker Nights ♦️♠️♥️♣️
+# M&M Poker ♦️♠️♥️♣️
 ## Seguimiento de Liga de Poker
 
 Una aplicación web full-stack para registrar partidas de poker, estadísticas de jugadores y clasificaciones para noches de poker entre amigos o ligas locales. Construida con el stack MERN (MongoDB, Express, React, Node.js), esta app calcula automáticamente estadísticas individuales y globales después de cada partida.
@@ -80,14 +80,14 @@ Pronto agregaré imágenes del ranking, formularios de partida y vistas de estad
 
 ### Requisitos
 - Node.js y npm
-- MongoDB (instalado localmente o en la nube)
+- MongoDB y MongoDB Shell (instalado localmente o en la nube)
 
 ### Pasos
 
 1. Clona el repositorio:
    ```bash
    git clone https://github.com/MoisesYacila/mmpoker.git
-   cd mmpokervite
+   cd mmpoker
 2. Instala las dependencias:
    ```bash
    # Frontend
@@ -144,5 +144,5 @@ Inspirado por las noches de poker con amigos. Construido como un proyecto para m
 
 ## 🎉 Nota final
 
-¡Disfruta gestionando tus noches de poker con **M&M Poker Nights**!
+¡Disfruta gestionando tus noches de poker con **M&M Poker**!
 
