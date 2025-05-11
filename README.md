@@ -5,7 +5,7 @@
  [Español](README.es.md) (🇪🇸)
 
 
-# M&M Poker Nights ♦️♠️♥️♣️
+# M&M Poker ♦️♠️♥️♣️
 ## Poker League Tracker
 
 A full-stack web app to track poker games, player stats, and rankings for casual poker nights or local leagues. Built with the MERN stack (MongoDB, Express, React, Node.js), this app automatically calculates individual and global stats after each game.
@@ -82,13 +82,13 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
 ## 🧑‍💻 How to Run Locally
 ### Prerequisites
 - Node.js and npm
-- MongoDB (running locally or in the cloud)
+- MongoDB and MongoDB Shell (running locally or in the cloud)
 
 ### Steps
 1. Clone the repository:
    ```bash
    git clone https://github.com/MoisesYacila/mmpoker.git
-   cd mmpokervite
+   cd mmpoker
 
 2. Install Dependecies
    ```bash
@@ -146,4 +146,4 @@ Inspired by poker nights with friends. Built as a project to level up my MERN st
 
 ## 🎉 Final Note
 
-Enjoy managing your poker games with **M&M Poker Nights**!
+Enjoy managing your poker games with **M&M Poker**!
