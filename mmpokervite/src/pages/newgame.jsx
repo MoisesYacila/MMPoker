@@ -31,10 +31,10 @@ export default function NewGame() {
     }, []);
 
     //WILL DO THIS AT A LATER TIME
-    const handlePlayerSelectChange = (event, child) => {
+    // const handlePlayerSelectChange = (event, child) => {
         // console.log(event);
         //When we select a player, we want the player to own the current row, and disappear from the other selects
-    }
+    // }
 
     //Sends a patch request to update the players stats after the new game
     const updatePlayers = async (e) => {
@@ -102,7 +102,7 @@ export default function NewGame() {
                 <TableCell align="center">{i + 1}</TableCell>
                 <TableCell align="center">
                     <TextField select
-                        defaultValue='-1' id={`${i + 1}`} name={`player-${i}`} onChange={handlePlayerSelectChange}>
+                        defaultValue='-1' id={`${i + 1}`} name={`player-${i}`}>
                         <MenuItem value='-1'>Select a player</MenuItem>
                         {players.map((player, i) => {
                             return (

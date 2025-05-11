@@ -1,4 +1,5 @@
 import axios from 'axios';
+import PropTypes from 'prop-types';
 import { createContext, useContext, useState, useEffect } from 'react';
 
 // Context allows us to share state across the website in a cleaner way
@@ -39,3 +40,8 @@ export const UserProvider = ({ children }) => {
 
 // Custom hook to use the UserContext in other components
 export const useUser = () => useContext(UserContext);
+
+// Ensures that 'children' are passed
+UserProvider.propTypes = {
+    children: PropTypes.node.isRequired, 
+};

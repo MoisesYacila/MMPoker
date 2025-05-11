@@ -138,7 +138,7 @@ export default function EditGame() {
             // The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
             // Important to pass the withCredentials option if we need to know if the user is logged in or not
             await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, {
-                oldData: gameData, newData: gameInfo
+                oldData: gameData, newData: gameInfo, prizePool
             }, { withCredentials: true });
 
             // Get the new game data from the server to show on the next page

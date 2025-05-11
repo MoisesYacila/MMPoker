@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-    Box, Button, Card, CardContent, FormControl,
+    Box, Button, Card, CardContent,
     TextField, Typography, Collapse, Alert, IconButton
 } from "@mui/material";
 import axios from "axios";
@@ -79,4 +79,4 @@ export default function SignUp() {
         </div>
 
     );
-};
+}

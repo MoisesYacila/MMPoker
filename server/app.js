@@ -628,7 +628,7 @@ app.patch('/players', isLoggedIn, async (req, res) => {
 
 //Patch request to handle the edited games and update the stats for the players involved
 app.patch('/players/edit/:id', isLoggedIn, async (req, res) => {
-    const { oldData, newData } = req.body;
+    const { oldData, newData, prizePool } = req.body;
     const { id } = req.params;
 
     //Use two sets to check if we need to change the gamesPlayed stat for every player involved in the edit
@@ -752,7 +752,7 @@ app.patch('/players/edit/:id', isLoggedIn, async (req, res) => {
     });
 
     //Update leaderboard
-    await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length });
+    await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length, prizePool });
 
     res.send('Received EDIT patch request');
 })

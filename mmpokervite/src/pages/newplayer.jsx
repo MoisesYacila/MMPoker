@@ -25,7 +25,7 @@ export default function NewPlayer() {
         axios.post('http://localhost:8080/players', {
             name: finalName,
             country: nationality
-        }, { withCredentials: true }).then((response) => {
+        }, { withCredentials: true }).then(() => {
             //Set submitted to true to let react know to redirect
             setSubmitted(true);
             setFirstName('');

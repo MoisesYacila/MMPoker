@@ -60,7 +60,7 @@ export default function Players() {
     const handleOpen = async () => {
         // Get the player to check the stats
         await axios.get(`http://localhost:8080/players/${playerData.id}`)
-            .then((res) => {
+            .then(() => {
                 // Allowed to delete
                 if (playerData.gamesPlayed == 0)
                     setOpen(true);
@@ -146,7 +146,7 @@ export default function Players() {
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
                     {/* Delete function once confirmation is received, update the players array using setPlayers for re-render */}
-                    <Button onClick={async (e) => {
+                    <Button onClick={async () => {
                         await axios.delete(`http://localhost:8080/players/${playerData.id}`, {
                             withCredentials: true // Protected route, so we need to make sure the user is logged in
                         })

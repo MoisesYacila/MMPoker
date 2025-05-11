@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {
     Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography,
-    List, ListItem, ListItemText, ListItemButton, Divider
+    List, ListItem, ListItemText, ListItemButton
 } from '@mui/material';
 
 
