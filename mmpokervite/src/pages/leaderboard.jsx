@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
+import { useUser } from '../UserContext';
 
 
 export default function Leaderboard() {
@@ -15,6 +16,7 @@ export default function Leaderboard() {
     const [order, setOrder] = useState('asc');
     const navigate = useNavigate();
     const location = useLocation();
+    const { loggedIn } = useUser();
 
     let { openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(openAlertLink);
@@ -46,7 +48,7 @@ export default function Leaderboard() {
                 </Alert>
             </Collapse>
             <h1>Leaderboard</h1>
-            <Link to='/leaderboard/new'>Add Game</Link>
+            {loggedIn ? <Link to='/leaderboard/new'>Add Game</Link> : null}
             <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
                 <Table>
                     <TableHead>

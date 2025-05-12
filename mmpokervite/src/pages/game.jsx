@@ -13,6 +13,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import { useUser } from '../UserContext';
 
 export default function Game() {
     //useLocation helps retrieve the data we passed in the navigate function that took us to this page
@@ -34,6 +35,9 @@ export default function Game() {
 
     //For control of dialog
     const [open, setOpen] = useState(false);
+
+    // We need to check if the user is logged in to show the edit and delete buttons
+    const { loggedIn } = useUser();
 
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this
@@ -120,7 +124,7 @@ export default function Game() {
                 </Table>
             </TableContainer>
 
-            <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
+            {loggedIn ? <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
                 <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
                     let link = `/games/${gameId}/edit`;
                     console.dir(gameData); //for debug
@@ -131,7 +135,8 @@ export default function Game() {
                         })
                 }}>Edit</Button>
                 <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
-            </Stack>
+            </Stack> : null}
+
             {/* Syntax from Material UI */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Permanently Delete Game?</DialogTitle>

@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import PersonIcon from '@mui/icons-material/Person';
 import { Us, Ar, Mx, Ni, Es, Ve } from "react-flags-select";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -18,7 +19,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
-
+import { useUser } from '../UserContext';
 
 
 
@@ -26,6 +27,7 @@ export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
+    const { loggedIn } = useUser();
 
     // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
@@ -90,7 +92,7 @@ export default function Players() {
             </Collapse>
             <h1>Players</h1>
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Link to='/players/new'>Add Player</Link>
+                {loggedIn ? <Link to='/players/new'>Add Player</Link> : null}
                 <List sx={{ width: '25%' }}>
                     {/* Use the arr.map function to make a list of components */}
                     {players.map((player, i) => {
@@ -118,7 +120,7 @@ export default function Players() {
                                 </ListItemButton>
                                 {/* async callback that gets the player that we are trying to delete, and opens
                                 a confirmation dialog */}
-                                <IconButton onClick={async () => {
+                                {loggedIn ? <IconButton onClick={async () => {
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
                                         .then((res) => {
                                             // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data
@@ -130,7 +132,7 @@ export default function Players() {
                                         });
                                 }}>
                                     <ClearIcon></ClearIcon>
-                                </IconButton>
+                                </IconButton> : <PersonIcon></PersonIcon>}
                             </ListItem>)
                     })}
                 </List>
