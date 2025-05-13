@@ -12,7 +12,6 @@ import { useAlert } from '../AlertContext';
 
 
 export default function LogIn() {
-    // const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const navigate = useNavigate();
     const location = useLocation();
     // Get the error message from the previous page or an empty object if not available
@@ -47,9 +46,10 @@ export default function LogIn() {
 
     }
 
+    // Call to the backend to initiate Google login
+    // This will redirect the user to the Google login page
     const handleGoogleLogin = () => {
-        // Call to the backend to initiate Google login
-        // This will redirect the user to the Google login page
+        // We cannot use axios here because Google login requires a pure redirect
         window.location.href = "http://localhost:8080/auth/google";
     }
 
@@ -100,7 +100,5 @@ export default function LogIn() {
                 </Card>
             </Box>
         </div>
-
-
     )
 }

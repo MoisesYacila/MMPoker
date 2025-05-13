@@ -34,7 +34,7 @@ const googleConfig = {
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    scope: ['profile'],
+    scope: ['profile', 'email'],
     state: true
 };
 
@@ -71,11 +71,34 @@ passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
 // Set up Google authentication strategy
+// We use the config object we created above
+// This function requires the verify callback
 passport.use(new GoogleStrategy(googleConfig,
-    function verify(accessToken, refreshToken, profile, done) {
-        Account.findOrCreate({ googleId: profile.id }, function (err, account) {
+    // Passport syntax
+    // Here we want to know if an account exists with the given googleId, if so we want to log in the user
+    // If not, we want to create a new account with the given googleId
+    async function verify(accessToken, refreshToken, profile, done) {
+        try {
+            let account = await Account.findOne({ googleId: profile.id });
+
+            if (!account) {
+                account = new Account({
+                    googleId: profile.id,
+                    fullName: profile.displayName,
+                    username: profile.id,
+                    // Optional chaining
+                    // We are saying: If profile.emails and profile.emails[0] are not undefined,
+                    // then get the value, which is the email address
+                    email: profile.emails?.[0]?.value
+                });
+                await account.save();
+            }
+
+            // Pass the account to the done callback, which will be used by passport to log in the user
             return done(null, account);
-        });
+        } catch (err) {
+            return done(err);
+        }
     }
 ));
 
@@ -425,14 +448,17 @@ app.get('/loggedin', (req, res) => {
 })
 
 // Redirect to Google
+// This is the route that the user will hit when they want to log in with Google
+// With paspport, we are choosing Google, and we are asking for the profile and email information from Google
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-// Callback after Google auth
+// After Google Auth is completed, Google will redirect to this route
+// Passport will handle the authentication and redirect the user to the success or failure URL
 app.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
+    passport.authenticate("google", { failureRedirect: "http://localhost:5173/login" }),
     (req, res) => {
-        res.redirect("/dashboard"); // Success!
+        res.redirect("http://localhost:5173/leaderboard"); // Success!
     }
 );
 
@@ -513,7 +539,7 @@ app.delete('/games/game/:id', isLoggedIn, async (req, res) => {
 // Post request handling sign ups
 app.post('/signup', async (req, res, next) => {
     // Destructure data from req.body
-    const { username, password, email } = req.body;
+    const { username, password, email, firstName, lastName } = req.body;
 
     // Try/catch to handle errors during sign up
     try {
@@ -521,7 +547,7 @@ app.post('/signup', async (req, res, next) => {
         // We don't initially pass the password to the Account constructor 
         // because the register method will hash it for us and store the hashed password it in the DB
         // Make one user admin to restrict certain actions
-        const account = new Account({ username, email, admin: true });
+        const account = new Account({ username, email, fullName: `${firstName} ${lastName}`, admin: true });
         const registeredAccount = await Account.register(account, password);
 
         // Passport function to log in the user after signing up

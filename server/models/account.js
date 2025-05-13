@@ -10,6 +10,11 @@ const AccountSchema = new Schema({
         required: true,
         unique: true
     },
+    googleId: String,
+    fullName: {
+        type: String,
+        required: true
+    },
     admin: Boolean
 });
 
