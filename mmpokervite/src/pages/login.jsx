@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import {
-    Box, Button, Card, CardContent, 
+    Box, Button, Card, CardContent,
     TextField, Typography, Collapse, Alert, IconButton
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
+import GoogleIcon from '@mui/icons-material/Google';
 import axios from "axios";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../UserContext'
 import { useAlert } from '../AlertContext';
 
+
 export default function LogIn() {
+    // const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const navigate = useNavigate();
     const location = useLocation();
     // Get the error message from the previous page or an empty object if not available
@@ -42,6 +45,12 @@ export default function LogIn() {
             setOpenAlert(true);
         });
 
+    }
+
+    const handleGoogleLogin = () => {
+        // Call to the backend to initiate Google login
+        // This will redirect the user to the Google login page
+        window.location.href = "http://localhost:8080/auth/google";
     }
 
     return (
@@ -82,6 +91,10 @@ export default function LogIn() {
                         <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
                         <Button type="sumbit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Log In</Button>
+                        <Button variant='outlined' onClick={handleGoogleLogin}
+                            sx={{ display: 'flex', marginBottom: '1rem', width: '80%' }}>
+                            <GoogleIcon sx={{ marginRight: '1rem' }}></GoogleIcon>Log In with Google
+                        </Button>
                         <Typography sx={{ marginBottom: '1rem' }}>New to MMPoker? <Link to='/signup'>Create Account</Link> </Typography>
                     </CardContent>
                 </Card>

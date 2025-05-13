@@ -1,3 +1,8 @@
+// If we are in development mode, add our .env file to the environment variables
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -9,6 +14,7 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const session = require('express-session');
 const isLoggedIn = require('./middleware.js');
 
@@ -21,6 +27,16 @@ mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
         console.log("Database connection error.")
         console.log(err)
     });
+
+// Configuration for Google authentication
+// From passport-google-oauth20 documentation
+const googleConfig = {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    scope: ['profile'],
+    state: true
+};
 
 //Check documentation if there are any questions with these
 app.use(cors({
@@ -53,6 +69,15 @@ app.use(passport.session());
 passport.use(Account.createStrategy());
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
+
+// Set up Google authentication strategy
+passport.use(new GoogleStrategy(googleConfig,
+    function verify(accessToken, refreshToken, profile, done) {
+        Account.findOrCreate({ googleId: profile.id }, function (err, account) {
+            return done(null, account);
+        });
+    }
+));
 
 //Handling requests
 app.get('/players', async (req, res) => {
@@ -398,6 +423,18 @@ app.get('/loggedin', (req, res) => {
     }
     res.send(true);
 })
+
+// Redirect to Google
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+// Callback after Google auth
+app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    (req, res) => {
+        res.redirect("/dashboard"); // Success!
+    }
+);
 
 // Logout route
 app.get('/logout', (req, res, next) => {
