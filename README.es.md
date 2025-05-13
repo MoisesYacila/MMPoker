@@ -11,7 +11,7 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
 
 ---
 
-## 🚀 Funcionalidades (Hasta Ahora)
+## 🚀 Funcionalidades
 
 1. **Gestión de Jugadores**
    - Añadir nuevos jugadores con nombre y nacionalidad.
@@ -43,8 +43,13 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
      - Totales: más partidas jugadas, más victorias, más ganancias, etc.
      - Promedios: mejor ganancia promedio, % de finalizar en premios, % de finalizar en la burbuja (OTB - On The Bubble), etc.
    - Visualización clara usando tarjetas y listas.
+  
+5. **Autenticación**
+   - Registro e inicio de sesión con email y contraseña.
+   - Inicio de sesión con Google (OAuth 2.0).
+   - Gestión de sesión entre frontend y backend usando cookies.
 
-5. **Navegación**
+6. **Navegación**
    - Barra de navegación intuitiva con enlaces a las secciones clave:
      - Clasificación
      - Jugadores
@@ -67,6 +72,7 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
 - **Express**: Framework para construir APIs REST.
 - **MongoDB**: Base de datos NoSQL para jugadores y partidas.
 - **Mongoose**: ODM para gestionar esquemas y consultas.
+- **Passport.js**: Autenticación local y con Google.
 
 ---
 
@@ -119,20 +125,20 @@ Pronto agregaré imágenes del ranking, formularios de partida y vistas de estad
 
 ### Características próximas
 
-- **Autenticación de usuarios**  
-  Permitir a los usuarios registrarse, iniciar sesión y gestionar sus cuentas.
-
-- **Foro (Actualizaciones)**  
-  Página donde el administrador puede publicar actualizaciones, resultados y más sobre los juegos.
-
-- **Responsividad móvil**  
-  Mejorar la experiencia de usuario en dispositivos móviles.
-
-- **Panel de administración**  
-  Proporcionar una interfaz de administración para gestionar jugadores, juegos y publicaciones.
+- **Autorización**  
+  Restringir el acceso a ciertas funciones según el tipo de usuario (por ejemplo, solo administradores pueden editar o eliminar partidas.
 
 - **Manejo de errores**  
-  Crear diferentes páginas de error y deshabilitar ciertas acciones.
+  Implementar páginas de error personalizadas y mostrar mensajes claros cuando ocurran errores.
+
+- **Foro (Actualizaciones)**  
+  Página donde el administrador puede publicar actualizaciones, resultados y más sobre las partidas.
+
+- **Responsividad móvil**  
+  Mejorar la experiencia de usuario en dispositivos móviles y tablets.
+
+- **Panel de administración**  
+  Interfaz exclusiva para el administrador para gestionar jugadores, partidas y publicaciones de forma más eficiente.
 
 ---
 
