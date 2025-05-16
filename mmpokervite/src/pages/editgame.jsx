@@ -150,7 +150,15 @@ export default function EditGame() {
         catch (error) {
             console.log(error);
             // If the user is not logged in, redirect to login page and show alert
-            navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
+            if (error.status === 401) {
+                navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
+            }
+
+            // If the user is logged in, but is not an admin, redirect back to the game page and show alert
+            else if (error.status === 403) {
+                navigate(`${link}`, { state: { message: 'You do not have permission to edit this game.', openAlertLink: true, gameData } });
+            }
+
         }
     }
 

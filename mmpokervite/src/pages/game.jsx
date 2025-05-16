@@ -4,8 +4,10 @@ import axios from 'axios';
 import {
     Box, Table, TableBody,
     TableCell, TableContainer, TableHead,
-    TableRow, Button, Stack
+    TableRow, Button, Stack, Collapse, Alert,
+    IconButton
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
@@ -14,18 +16,19 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import { useUser } from '../UserContext';
+import { useAdmin } from '../AdminContext';
 
 export default function Game() {
-    //useLocation helps retrieve the data we passed in the navigate function that took us to this page
+    // useLocation is used to get the data from the previous page and it will contain the gameData object if we are coming from a game link
+    // otherwise, gameData will be an empty object, so we make the gameInfo and gameDate be either the gameData or an empty object, which we will update in the useEffect
     const location = useLocation();
     const gameData = location.state.gameData;
-    const gameId = gameData._id;
+    const gameId = gameData._id || {};
+    const [gameInfo, setGameInfo] = useState(location.state.gameData || {});
+    const [gameDate, setGameDate] = useState(new Date(gameData.date) || {});
 
     //Activate navigate
     const navigate = useNavigate();
-
-    //date is a string in the gameData object, so we create a Date object to work with it more efficiently
-    const gameDate = new Date(gameData.date);
 
     //We will save the names for the game standings, since they are not saved in the Game object
     const [playerName, setPlayerName] = useState([]);
@@ -33,11 +36,13 @@ export default function Game() {
     //We can get an array with all the players to use on load on the edit page
     const [allPlayers, setAllPlayers] = useState([]);
 
-    //For control of dialog
+    //For control of dialog and alert
     const [open, setOpen] = useState(false);
+    const openAlertLink = location.state.openAlertLink || false;
+    const [openAlert, setOpenAlert] = useState(openAlertLink);
 
-    // We need to check if the user is logged in to show the edit and delete buttons
-    const { loggedIn } = useUser();
+    // We need to check if the current user is an admin to show the edit and delete buttons
+    const { isAdmin } = useAdmin();
 
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this
@@ -53,7 +58,17 @@ export default function Game() {
             setPlayerName(playerArr);
         }
 
+        async function getGameData() {
+            await axios.get(`http://localhost:8080/games/game/${gameId}`)
+                .then((res) => {
+                    // console.log(res.data);
+                    // Set the gameInfo and gameDate state with the data from the server
+                    setGameInfo(res.data);
+                    setGameDate(new Date(res.data.date));
+                })
+        }
         getPlayerNames();
+        getGameData();
     }, []);
 
     //Doing this to use on the edit page, this way the information we need is available to use on the first render
@@ -76,95 +91,109 @@ export default function Game() {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h1>Home Game</h1>
-            <h2>{`${gameDate.getFullYear()}/${gameDate.getMonth() + 1}/${gameDate.getDate()}`}</h2>
-            <h3>Prize Pool: ${gameData.prizePool}</h3>
+        <div>
+            {/* Show in case the user is not allowed to edit the game */}
+            <Collapse in={openAlert}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    You do not have permission to edit this game.
+                </Alert>
+            </Collapse>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h1>Home Game</h1>
+                <h2>{`${gameDate.getFullYear()}/${gameDate.getMonth() + 1}/${gameDate.getDate()}`}</h2>
+                <h3>Prize Pool: ${gameInfo.prizePool}</h3>
 
-            <TableContainer sx={{ width: '75%', marginTop: '1rem', marginBottom: '2rem' }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            {/* Empty cells look better than name and position in my opinion */}
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
-                            <TableCell align='center'>Earnings ($)</TableCell>
-                            <TableCell align='center'>Rebuys</TableCell>
-                            <TableCell align='center'>Add Ons ($)</TableCell>
-                            <TableCell align='center'>Bounties</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {
-                            // Similar logic as on the leaderboard
-                            gameData.leaderboard.map((player, i) => {
-                                return (
-                                    <TableRow key={i}>
-                                        <TableCell>{i + 1}</TableCell>
-                                        <TableCell>
-                                            {/* player is an object, so we need to access the player.player to get the id, then send data to navigate function */}
-                                            <Button sx={{ textTransform: 'none' }} onClick={async () => {
-                                                const link = `/players/${player.player}`;
-                                                await axios.get(`http://localhost:8080/players/${player.player}`)
-                                                    .then((res) => {
-                                                        navigate(link, { state: { playerData: res.data } });
-                                                    });
-                                            }}>{playerName[i]}</Button>
+                <TableContainer sx={{ width: '75%', marginTop: '1rem', marginBottom: '2rem' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                {/* Empty cells look better than name and position in my opinion */}
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell align='center'>Earnings ($)</TableCell>
+                                <TableCell align='center'>Rebuys</TableCell>
+                                <TableCell align='center'>Add Ons ($)</TableCell>
+                                <TableCell align='center'>Bounties</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {
+                                // Similar logic as on the leaderboard
+                                gameInfo.leaderboard.map((player, i) => {
+                                    return (
+                                        <TableRow key={i}>
+                                            <TableCell>{i + 1}</TableCell>
+                                            <TableCell>
+                                                {/* player is an object, so we need to access the player.player to get the id, then send data to navigate function */}
+                                                <Button sx={{ textTransform: 'none' }} onClick={async () => {
+                                                    const link = `/players/${player.player}`;
+                                                    await axios.get(`http://localhost:8080/players/${player.player}`)
+                                                        .then((res) => {
+                                                            navigate(link, { state: { playerData: res.data } });
+                                                        });
+                                                }}>{playerName[i]}</Button>
 
-                                        </TableCell>
-                                        <TableCell align='center'>{player.profit}</TableCell>
-                                        <TableCell align='center'>{player.rebuys}</TableCell>
-                                        <TableCell align='center'>{player.addOns}</TableCell>
-                                        <TableCell align='center'>{player.bounties}</TableCell>
-                                    </TableRow>
-                                )
-                            })
-                        }
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                                            </TableCell>
+                                            <TableCell align='center'>{player.profit}</TableCell>
+                                            <TableCell align='center'>{player.rebuys}</TableCell>
+                                            <TableCell align='center'>{player.addOns}</TableCell>
+                                            <TableCell align='center'>{player.bounties}</TableCell>
+                                        </TableRow>
+                                    )
+                                })
+                            }
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-            {loggedIn ? <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
-                <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
-                    let link = `/games/${gameId}/edit`;
-                    console.dir(gameData); //for debug
-                    await axios.get(`http://localhost:8080/games/game/${gameId}`)
-                        .then(() => {
-                            //The format is nameWeAreGivingIt : variableThatAlreadyExists
-                            navigate(link, { state: { gameData: gameData, players: allPlayers } })
-                        })
-                }}>Edit</Button>
-                <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
-            </Stack> : null}
-
-            {/* Syntax from Material UI */}
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Permanently Delete Game?</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        You are about to permanently delete this game.
-                        Are you sure you want to delete this game? This action cannot be undone.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    {/* Call delete function, and redirect to leaderboard when deletion is confirmed */}
-                    <Button onClick={async () => {
-                        await axios.delete(`http://localhost:8080/games/game/${gameId}`, {
-                            withCredentials: true // Protected route, so we need to make sure the user is logged in
-                        })
+                {isAdmin ? <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
+                    <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
+                        let link = `/games/${gameInfo._id}/edit`;
+                        console.dir(gameInfo); //for debug
+                        await axios.get(`http://localhost:8080/games/game/${gameInfo._id}`)
                             .then(() => {
-                                console.log(`Deleted game ${gameId} from DB`);
-                                navigate(`/leaderboard`);
-                            }).catch((err) => {
-                                console.error(err);
-                                // Redirect to login and show alert if user is not logged in
-                                navigate(`/login`, { state: { message: 'Must be signed in to delete games.', openAlertLink: true } });
-                            });
-                        handleClose();
-                    }}>Delete</Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+                                //The format is nameWeAreGivingIt : variableThatAlreadyExists
+                                navigate(link, { state: { gameData: gameInfo, players: allPlayers } })
+                            })
+                    }}>Edit</Button>
+                    <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
+                </Stack> : null}
+
+                {/* Syntax from Material UI */}
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle>Permanently Delete Game?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            You are about to permanently delete this game.
+                            Are you sure you want to delete this game? This action cannot be undone.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        {/* Call delete function, and redirect to leaderboard when deletion is confirmed */}
+                        <Button onClick={async () => {
+                            await axios.delete(`http://localhost:8080/games/game/${gameInfo._id}`, {
+                                withCredentials: true // Protected route, so we need to make sure the user is logged in
+                            })
+                                .then(() => {
+                                    console.log(`Deleted game ${gameInfo._id} from DB`);
+                                    navigate(`/leaderboard`);
+                                }).catch((err) => {
+                                    console.error(err);
+                                    // Redirect to login and show alert if user is not logged in
+                                    navigate(`/login`, { state: { message: 'Must be signed in to delete games.', openAlertLink: true } });
+                                });
+                            handleClose();
+                        }}>Delete</Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
+        </div>
     )
 }

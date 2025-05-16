@@ -1,4 +1,3 @@
-import * as React from 'react';
 import axios from 'axios';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -10,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './navigation.css';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
+import { useAdmin } from '../AdminContext';
 
 //Using styled function which is provided by Material UI to override default styles on reusable components
 const LinkButton = styled(Button)({
@@ -17,18 +17,20 @@ const LinkButton = styled(Button)({
 })
 
 export default function Navigation() {
-    // We are using the useUser hook to get and set the loggedIn state from the UserContext
+    // We are using the custom hooks we made to handle several states in the application
     const { loggedIn, setLoggedIn } = useUser();
     const { setAlertMessage } = useAlert();
+    const { setIsAdmin } = useAdmin();
 
     const navigate = useNavigate();
 
     // Log out handler function
     const handleLogout = () => {
-        // Call the logout route, set the loggedIn state to false and redirect to the leaderboard page
+        // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
         axios.get('http://localhost:8080/logout', { withCredentials: true })
-            .then((res) => {
+            .then(() => {
                 setLoggedIn(false);
+                setIsAdmin(false);
                 setAlertMessage('Logged out.');
                 navigate('/leaderboard', { state: { openAlertLink: true } });
                 console.log('User logged out');

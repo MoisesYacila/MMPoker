@@ -16,7 +16,8 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const session = require('express-session');
-const isLoggedIn = require('./middleware.js');
+const { isLoggedIn, isAdmin } = require('./middleware.js');
+
 
 //Connect to DB
 mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
@@ -89,7 +90,8 @@ passport.use(new GoogleStrategy(googleConfig,
                     // Optional chaining
                     // We are saying: If profile.emails and profile.emails[0] are not undefined,
                     // then get the value, which is the email address
-                    email: profile.emails?.[0]?.value
+                    email: profile.emails?.[0]?.value,
+                    admin: false
                 });
                 await account.save();
             }
@@ -546,8 +548,8 @@ app.post('/signup', async (req, res, next) => {
         // Make an account with the data from the form
         // We don't initially pass the password to the Account constructor 
         // because the register method will hash it for us and store the hashed password it in the DB
-        // Make one user admin to restrict certain actions
-        const account = new Account({ username, email, fullName: `${firstName} ${lastName}`, admin: true });
+        // Make one user admin to restrict certain actions, but after that, we will set admin to false
+        const account = new Account({ username, email, fullName: `${firstName} ${lastName}`, admin: false });
         const registeredAccount = await Account.register(account, password);
 
         // Passport function to log in the user after signing up
@@ -589,7 +591,7 @@ app.post('/login', async (req, res, next) => {
 
             // If login is successful, send a response to the client with the user info
             // Important to return and not just do res.json
-            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email } });
+            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, isAdmin: user.admin } });
         });
 
         // Call the middleware function with req and res
@@ -690,7 +692,7 @@ app.patch('/players', isLoggedIn, async (req, res) => {
 })
 
 //Patch request to handle the edited games and update the stats for the players involved
-app.patch('/players/edit/:id', isLoggedIn, async (req, res) => {
+app.patch('/players/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
     const { oldData, newData, prizePool } = req.body;
     const { id } = req.params;
 
