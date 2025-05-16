@@ -14,7 +14,7 @@ A full-stack web app to track poker games, player stats, and rankings for casual
 
 ---
 
-## 🚀 Features (So Far)
+## 🚀 Features
 1. **Player Management**
    - Add new players with their names and nationalities.
    - View detailed player profiles, including:
@@ -46,7 +46,12 @@ A full-stack web app to track poker games, player stats, and rankings for casual
      - Average Stats: Best average profit, ITM percentage, OTB (On The Bubble) percentage, etc.
    - Visualize stats using cards and lists for easy readability.
 
-5. **Navigation**
+5. **Authentication**
+   - Users can **sign up** and **log in** securely with a local strategy.
+   - Google OAuth 2.0 integration for fast and secure third-party login.
+   - Logged-in users can access protected routes and perform restricted actions.
+
+6. **Navigation**
    - Intuitive navigation bar with links to key pages:
      - Leaderboard
      - Players
@@ -69,6 +74,7 @@ A full-stack web app to track poker games, player stats, and rankings for casual
 - **Express**: Web framework for building RESTful APIs.
 - **MongoDB**: NoSQL database for storing player and game data.
 - **Mongoose**: ODM for MongoDB to manage schemas and queries.
+- **Passport.js**: Authentication (Local + Google OAuth 2.0)
 
 
 ---
@@ -121,8 +127,11 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
 
 ### Upcoming Features
 
-- **User Authentication**  
-  Allow users to sign up, log in, and manage their accounts.
+- **Authorization**  
+  Restrict certain actions to admin users.
+
+- **Error Handling**  
+  Make different error pages, and restrict certain actions.
 
 - **Forum (Updates)**  
   Page where admin can post updates, results, and more on the games.
@@ -132,9 +141,6 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
 
 - **Admin Panel**  
   Provide an admin interface for managing players, games, and posts.
-
-- **Error Handling**  
-  Make different error pages, and restrict certain actions.
 
 ---
 
