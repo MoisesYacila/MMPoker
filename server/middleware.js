@@ -10,8 +10,12 @@ const isLoggedIn = (req, res, next) => {
 
 const isAdmin = (req, res, next) => {
     // Check if the user is authenticated and has admin privileges
-    if (!req.isAuthenticated() || !req.user.admin) {
-        // If not, send a 403 Forbidden response
+    if (!req.isAuthenticated()) {
+        // If not authenticated, send a 401 Unauthorized response
+        return res.status(401).send('Unauthorized');
+    }
+    if (!req.user.admin) {
+        // If not admin, send a 403 Forbidden response
         return res.status(403).send('Forbidden. Only admins can take this action.');
     }
     // If the user is an admin, continue to the next middleware or route handler

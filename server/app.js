@@ -475,6 +475,7 @@ app.get('/logout', (req, res, next) => {
     });
 })
 
+// Get one player
 app.get('/players/:id', async (req, res) => {
     const player = await Player.findById(req.params.id);
     res.send(player);
@@ -498,13 +499,13 @@ app.get('/games/game/:id', async (req, res) => {
 })
 
 //Delete one player
-app.delete('/players/:id', isLoggedIn, async (req, res) => {
+app.delete('/players/:id', isAdmin, async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
     res.send(player);
 })
 
 //Delete one game
-app.delete('/games/game/:id', isLoggedIn, async (req, res) => {
+app.delete('/games/game/:id', isAdmin, async (req, res) => {
     const id = req.params.id
     const game = await Game.findById(id);
 
@@ -616,7 +617,7 @@ app.post('/players', isLoggedIn, async (req, res) => {
 })
 
 //Post request to add games to DB
-app.post('/games', isLoggedIn, async (req, res) => {
+app.post('/games', isAdmin, async (req, res) => {
     //Get info from request
     const { data, numPlayers, prizePool } = req.body;
 
@@ -658,7 +659,7 @@ app.post('/games', isLoggedIn, async (req, res) => {
 })
 
 // Patch request handles the new games, and it updates the stats for all the players involved
-app.patch('/players', isLoggedIn, async (req, res) => {
+app.patch('/players', isAdmin, async (req, res) => {
     const { data } = req.body;
 
     data.forEach(async (player, i) => {
@@ -692,7 +693,7 @@ app.patch('/players', isLoggedIn, async (req, res) => {
 })
 
 //Patch request to handle the edited games and update the stats for the players involved
-app.patch('/players/edit/:id', isLoggedIn, isAdmin, async (req, res) => {
+app.patch('/players/edit/:id', isAdmin, async (req, res) => {
     const { oldData, newData, prizePool } = req.body;
     const { id } = req.params;
 

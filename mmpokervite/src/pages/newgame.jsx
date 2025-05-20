@@ -12,6 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import { useAlert } from '../AlertContext';
 
 export default function NewGame() {
     const [players, setPlayers] = useState([]);
@@ -19,6 +20,7 @@ export default function NewGame() {
     const [rows, setRows] = useState(Array(5));
     const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
+    const { setAlertMessage, setSeverity } = useAlert();
 
     //Gets the players from DB and adds the data to players array
     useEffect(() => {
@@ -32,8 +34,8 @@ export default function NewGame() {
 
     //WILL DO THIS AT A LATER TIME
     // const handlePlayerSelectChange = (event, child) => {
-        // console.log(event);
-        //When we select a player, we want the player to own the current row, and disappear from the other selects
+    // console.log(event);
+    //When we select a player, we want the player to own the current row, and disappear from the other selects
     // }
 
     //Sends a patch request to update the players stats after the new game
@@ -85,7 +87,15 @@ export default function NewGame() {
                 console.log(response)
             }).catch((error) => {
                 console.log(error);
-                navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                if (error.status === 401) {
+                    navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                }
+                else if (error.status === 403) {
+                    setAlertMessage('You do not have permission to create a game.');
+                    setSeverity('error');
+                    navigate(`/leaderboard`, { state: { openAlertLink: true } });
+                }
+
             });
     }
 

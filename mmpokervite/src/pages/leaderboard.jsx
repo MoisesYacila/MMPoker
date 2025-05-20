@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
-import { useUser } from '../UserContext';
+import { useAdmin } from '../AdminContext';
 
 
 export default function Leaderboard() {
@@ -16,11 +16,11 @@ export default function Leaderboard() {
     const [order, setOrder] = useState('asc');
     const navigate = useNavigate();
     const location = useLocation();
-    const { loggedIn } = useUser();
+    const { isAdmin } = useAdmin();
 
     let { openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(openAlertLink);
-    const { alertMessage } = useAlert();
+    const { alertMessage, severity } = useAlert();
 
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
@@ -28,6 +28,8 @@ export default function Leaderboard() {
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
+                // By default, we'll show the players sorted by their winnings
+                playersArr.sort((a, b) => { return b.winnings - a.winnings });
                 setPlayers(playersArr);
             })
         // .catch((err) => { console.log(err) })
@@ -37,7 +39,7 @@ export default function Leaderboard() {
         <div style={{ textAlign: 'center' }}>
             {/* Alert to show login/logout feedback. Syntax from MUI */}
             <Collapse in={openAlert}>
-                <Alert severity='success' sx={{ backgroundColor: '#c8e6c9' }} action={
+                <Alert severity={severity} sx={{ backgroundColor: severity == 'success' ? '#c8e6c9' : '#fdeded' }} action={
                     <IconButton onClick={() => {
                         setOpenAlert(false)
                     }}>
@@ -48,7 +50,7 @@ export default function Leaderboard() {
                 </Alert>
             </Collapse>
             <h1>Leaderboard</h1>
-            {loggedIn ? <Link to='/leaderboard/new'>Add Game</Link> : null}
+            {isAdmin ? <Link to='/leaderboard/new'>Add Game</Link> : null}
             <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
                 <Table>
                     <TableHead>

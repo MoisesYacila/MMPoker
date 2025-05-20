@@ -19,7 +19,7 @@ export default function LogIn() {
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
     const { setLoggedIn } = useUser();
-    const { setAlertMessage } = useAlert();
+    const { setAlertMessage, setSeverity } = useAlert();
     const { setIsAdmin } = useAdmin();
 
     const handleSubmit = (e) => {
@@ -39,6 +39,7 @@ export default function LogIn() {
             setIsAdmin(res.data.user.isAdmin);
             // Redirect to the leaderboard page after successful login
             setAlertMessage('Welcome');
+            setSeverity('success');
             navigate('/leaderboard', { state: { openAlertLink: true } });
         }).catch(err => {
             console.error('Login failed:', err.response?.data || err.message);

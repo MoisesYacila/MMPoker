@@ -6,9 +6,10 @@ const AlertContext = createContext();
 
 export const AlertProvider = ({ children }) => {
     const [alertMessage, setAlertMessage] = useState('');
+    const [severity, setSeverity] = useState('success'); // Default severity level
 
     return (
-        <AlertContext.Provider value={{ alertMessage, setAlertMessage }}>
+        <AlertContext.Provider value={{ alertMessage, setAlertMessage, severity, setSeverity }}>
             {children}
         </AlertContext.Provider>
     );
@@ -18,5 +19,5 @@ export const useAlert = () => useContext(AlertContext);
 
 // Ensures that 'children' are passed
 AlertProvider.propTypes = {
-    children: PropTypes.node.isRequired, 
+    children: PropTypes.node.isRequired,
 };
