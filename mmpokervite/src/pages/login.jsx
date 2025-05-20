@@ -9,7 +9,6 @@ import axios from "axios";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../UserContext'
 import { useAlert } from '../AlertContext';
-import { useAdmin } from '../AdminContext';
 
 export default function LogIn() {
     const navigate = useNavigate();
@@ -18,9 +17,8 @@ export default function LogIn() {
     let { message, openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
-    const { setLoggedIn } = useUser();
+    const { setLoggedIn, setIsAdmin } = useUser();
     const { setAlertMessage, setSeverity } = useAlert();
-    const { setIsAdmin } = useAdmin();
 
     const handleSubmit = (e) => {
         console.log("Form submitted");

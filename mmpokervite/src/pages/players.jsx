@@ -21,14 +21,11 @@ import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import { useUser } from '../UserContext';
 
-
-
 export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
-    const { loggedIn } = useUser();
-
+    const { loggedIn, isAdmin } = useUser();
     // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
         id: '',
@@ -120,7 +117,7 @@ export default function Players() {
                                 </ListItemButton>
                                 {/* async callback that gets the player that we are trying to delete, and opens
                                 a confirmation dialog */}
-                                {loggedIn ? <IconButton onClick={async () => {
+                                {isAdmin ? <IconButton onClick={async () => {
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
                                         .then((res) => {
                                             // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data

@@ -9,7 +9,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import './navigation.css';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
-import { useAdmin } from '../AdminContext';
 
 //Using styled function which is provided by Material UI to override default styles on reusable components
 const LinkButton = styled(Button)({
@@ -18,9 +17,8 @@ const LinkButton = styled(Button)({
 
 export default function Navigation() {
     // We are using the custom hooks we made to handle several states in the application
-    const { loggedIn, setLoggedIn } = useUser();
+    const { loggedIn, setLoggedIn, setIsAdmin } = useUser();
     const { setAlertMessage } = useAlert();
-    const { setIsAdmin } = useAdmin();
 
     const navigate = useNavigate();
 

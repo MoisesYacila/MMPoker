@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
-import { useAdmin } from '../AdminContext';
+import { useUser } from '../UserContext';
 
 
 export default function Leaderboard() {
@@ -16,7 +16,7 @@ export default function Leaderboard() {
     const [order, setOrder] = useState('asc');
     const navigate = useNavigate();
     const location = useLocation();
-    const { isAdmin } = useAdmin();
+    const { isAdmin } = useUser();
 
     let { openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(openAlertLink);

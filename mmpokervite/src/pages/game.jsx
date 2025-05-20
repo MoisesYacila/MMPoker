@@ -15,7 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { useAdmin } from '../AdminContext';
+import { useUser } from '../UserContext';
 
 export default function Game() {
     // useLocation is used to get the data from the previous page and it will contain the gameData object if we are coming from a game link
@@ -41,7 +41,7 @@ export default function Game() {
     const [openAlert, setOpenAlert] = useState(openAlertLink);
 
     // We need to check if the current user is an admin to show the edit and delete buttons
-    const { isAdmin } = useAdmin();
+    const { isAdmin } = useUser();
 
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this

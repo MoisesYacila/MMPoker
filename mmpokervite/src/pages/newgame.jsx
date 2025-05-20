@@ -67,17 +67,26 @@ export default function NewGame() {
 
         console.log(prizePool);
 
-        //Send patch request and send the data to the server side
+        // Send patch request and send the data to the server side
+        // Redirect with the correct error message if the operation fails
         await axios.patch("http://localhost:8080/players", { data: gameData }, { withCredentials: true })
             .then((response) => {
                 setSubmitted(true); //to know when to redirect
                 console.log(response);
             }).catch((error) => {
                 console.log(error);
-                navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                if (error.status === 401) {
+                    navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                }
+                else if (error.status === 403) {
+                    setAlertMessage('You do not have permission to create a game.');
+                    setSeverity('error');
+                    navigate(`/leaderboard`, { state: { openAlertLink: true } });
+                }
             });
 
         //Send post request to create a the new game
+        // Redirect with the correct error message if the operation fails
         await axios.post('http://localhost:8080/games', {
             data: gameData,
             numPlayers: numPlayers,
@@ -95,7 +104,6 @@ export default function NewGame() {
                     setSeverity('error');
                     navigate(`/leaderboard`, { state: { openAlertLink: true } });
                 }
-
             });
     }
 

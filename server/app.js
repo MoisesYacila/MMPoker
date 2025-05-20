@@ -449,6 +449,14 @@ app.get('/loggedin', (req, res) => {
     res.send(true);
 })
 
+// Checks if the user is an admin or not
+app.get('/isAdmin', (req, res) => {
+    if (!req.user || !req.user.admin) {
+        return res.send(false);
+    }
+    res.send(true);
+})
+
 // Redirect to Google
 // This is the route that the user will hit when they want to log in with Google
 // With paspport, we are choosing Google, and we are asking for the profile and email information from Google
