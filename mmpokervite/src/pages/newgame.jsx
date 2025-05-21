@@ -19,6 +19,17 @@ export default function NewGame() {
     const [numPlayers, setNumPlayers] = useState(5);
     const [rows, setRows] = useState(Array(5));
     const [submitted, setSubmitted] = useState(false);
+    // The valErrors array will be used to store the error status for each field in the form
+    // Initially, all fields are set to false (no errors)
+    const [valErrors, setValErrors] = useState(Array.from({ length: 5 }, () => {
+        return ({
+            player: false,
+            earnings: false,
+            bounties: false,
+            rebuys: false,
+            addOns: false
+        })
+    }));
     const navigate = useNavigate();
     const { setAlertMessage, setSeverity } = useAlert();
 
@@ -130,7 +141,19 @@ export default function NewGame() {
                     </TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField name="earnings" sx={{ width: '35%' }}></TextField>
+                    {/* valErrors[i]?.earnings will return undefined instead of thowing an error when we change the size
+                    of the array. Here we are saying use valErrors[i].earnings if it exists, otherwise use false*/}
+                    <TextField error={valErrors[i]?.earnings ?? false} onChange={(e) => {
+                        // When the callback is triggered, we want to check if the value is empty or not a number
+                        // If it is, we set the error to true, otherwise we set it to false
+                        const updatedErrors = [...valErrors];
+                        if (e.target.value == '' || isNaN(e.target.value)) {
+                            updatedErrors[i].earnings = true;
+                        } else {
+                            updatedErrors[i].earnings = false;
+                        }
+                        setValErrors(updatedErrors);
+                    }} helperText={valErrors[i]?.earnings ? 'Enter a number' : ''} name="earnings" sx={{ width: '35%' }}></TextField>
                 </TableCell>
                 <TableCell align="center">
                     <TextField
@@ -174,6 +197,16 @@ export default function NewGame() {
         let num = event.target.value;
         setNumPlayers(num);
         setRows([]);
+        // We reset the valErrors array to have the same length as the number of players
+        setValErrors(Array.from({ length: num }, () => {
+            return ({
+                player: false,
+                earnings: false,
+                bounties: false,
+                rebuys: false,
+                addOns: false
+            })
+        }));
         buildRows(num);
     };
 
