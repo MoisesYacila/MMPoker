@@ -5,8 +5,10 @@ import Box from '@mui/material/Box';
 import {
     FormControl, TextField, MenuItem,
     TableContainer, Table, TableHead,
-    TableRow, TableCell, TableBody, Stack, Button
+    TableRow, TableCell, TableBody, Stack, Button, Collapse,
+    Alert, IconButton
 } from "@mui/material";
+import ClearIcon from '@mui/icons-material/Clear';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CancelIcon from '@mui/icons-material/Cancel';
 
@@ -22,6 +24,8 @@ export default function EditGame() {
 
     const [numPlayers, setNumPlayers] = useState(initialPlayers);
     const [rows, setRows] = useState([]);
+
+    const [openAlert, setOpenAlert] = useState(false);
 
     //Using the Array.from function to build each row on the edit page
     //el is the current element, which is unused here
@@ -165,13 +169,24 @@ export default function EditGame() {
     const handleSubmit = async (e) => {
         //Preventing default form behavior, so we can work with the data
         e.preventDefault();
-
         //Update game
         await updateGame(e);
     }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+            {/* Alert to show if client side validation fails. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    Validation failed. Ensure all fields are filled out correctly.
+                </Alert>
+            </Collapse>
             <h1>Edit Game</h1>
             <FormControl fullWidth sx={{ alignItems: 'center' }}>
                 <TextField

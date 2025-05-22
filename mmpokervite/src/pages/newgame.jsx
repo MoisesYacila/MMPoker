@@ -1,17 +1,12 @@
 import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import {
+    Box, Collapse, Alert, IconButton, MenuItem, FormControl,
+    TextField, Button, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow
+} from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
 
 export default function NewGame() {
@@ -20,10 +15,10 @@ export default function NewGame() {
     const [rows, setRows] = useState(Array(5));
     const [submitted, setSubmitted] = useState(false);
     // The valErrors array will be used to store the error status for each field in the form
-    // Initially, all fields are set to false (no errors)
+    // Initially, all fields are set to false except player because no player is selected
     const [valErrors, setValErrors] = useState(Array.from({ length: 5 }, () => {
         return ({
-            player: false,
+            player: true,
             earnings: false,
             bounties: false,
             rebuys: false,
@@ -31,6 +26,7 @@ export default function NewGame() {
         })
     }));
     const navigate = useNavigate();
+    const [openAlert, setOpenAlert] = useState(false);
     const { setAlertMessage, setSeverity } = useAlert();
 
     //Gets the players from DB and adds the data to players array
@@ -96,7 +92,7 @@ export default function NewGame() {
                 }
             });
 
-        //Send post request to create a the new game
+        // Send post request to create a the new game
         // Redirect with the correct error message if the operation fails
         await axios.post('http://localhost:8080/games', {
             data: gameData,
@@ -122,15 +118,44 @@ export default function NewGame() {
     const handleSubmit = async (e) => {
         //Prevents res.send response on server side
         e.preventDefault();
+
+        // Check if any of the fields are empty or invalid
+        // If so, prevent submission and show an alert
+        const inGamePlayers = new Set();
+        for (let i = 0; i < numPlayers; i++) {
+            if (valErrors[i].earnings || valErrors[i].bounties || valErrors[i].rebuys ||
+                valErrors[i].addOns || valErrors[i].player || inGamePlayers.has(e.target[i * 14].value)) {
+                setOpenAlert(true);
+                return;
+            }
+
+            // Add the player to the set to ensure no duplicates
+            inGamePlayers.add(e.target[i * 14].value);
+        }
+
+        // If all fields are valid, proceed with the submission
         await updatePlayers(e);
     }
 
     function buildRows(num) {
+        // Probably better to use a temp array and then set the state once
         for (let i = 0; i < num; i++) {
             rows[i] = <TableRow key={i + 1}>
                 <TableCell align="center">{i + 1}</TableCell>
                 <TableCell align="center">
-                    <TextField select
+                    {/* valErrors[i]?.player will return undefined instead of throwing an error when we change the size
+                    of the array. Here we are saying use valErrors[i].players if it exists, otherwise use false*/}
+                    <TextField select error={valErrors[i]?.player ?? false} onChange={(e) => {
+                        const updatedErrors = [...valErrors];
+                        // If the value is -1, it means the player has not been selected, we set the error to true
+                        if (e.target.value == '-1') {
+                            updatedErrors[i].player = true;
+                        } else {
+                            updatedErrors[i].player = false;
+                        }
+                        // Update the valErrors array with the new error status
+                        setValErrors(updatedErrors);
+                    }} helperText={valErrors[i]?.player ? 'Select a player' : ''}
                         defaultValue='-1' id={`${i + 1}`} name={`player-${i}`}>
                         <MenuItem value='-1'>Select a player</MenuItem>
                         {players.map((player, i) => {
@@ -141,19 +166,18 @@ export default function NewGame() {
                     </TextField>
                 </TableCell>
                 <TableCell align="center">
-                    {/* valErrors[i]?.earnings will return undefined instead of thowing an error when we change the size
-                    of the array. Here we are saying use valErrors[i].earnings if it exists, otherwise use false*/}
                     <TextField error={valErrors[i]?.earnings ?? false} onChange={(e) => {
                         // When the callback is triggered, we want to check if the value is empty or not a number
                         // If it is, we set the error to true, otherwise we set it to false
+                        // Either way, we need to update the valErrors array
                         const updatedErrors = [...valErrors];
-                        if (e.target.value == '' || isNaN(e.target.value)) {
+                        if (e.target.value == '' || Number.isNaN(Number(e.target.value))) {
                             updatedErrors[i].earnings = true;
                         } else {
                             updatedErrors[i].earnings = false;
                         }
                         setValErrors(updatedErrors);
-                    }} helperText={valErrors[i]?.earnings ? 'Enter a number' : ''} name="earnings" sx={{ width: '35%' }}></TextField>
+                    }} helperText={valErrors[i]?.earnings ? 'Enter a number' : ''} name="earnings" defaultValue={0} sx={{ width: '35%' }}></TextField>
                 </TableCell>
                 <TableCell align="center">
                     <TextField
@@ -178,13 +202,44 @@ export default function NewGame() {
                     </TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField name="bounties" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                    <TextField error={valErrors[i]?.bounties ?? false} onChange={(e) => {
+                        // Similar logic as the earnings field, but we also want to check if the value is a positive integer
+                        const updatedErrors = [...valErrors];
+                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                            e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
+                            updatedErrors[i].bounties = true;
+                        } else {
+                            updatedErrors[i].bounties = false;
+                        }
+                        setValErrors(updatedErrors);
+                    }} helperText={valErrors[i]?.bounties ? 'Enter a positive integer' : ''}
+                        name="bounties" defaultValue={0} sx={{ width: '35%' }}></TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField name="rebuys" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                    <TextField error={valErrors[i]?.rebuys ?? false} onChange={(e) => {
+                        const updatedErrors = [...valErrors];
+                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                            e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
+                            updatedErrors[i].rebuys = true;
+                        } else {
+                            updatedErrors[i].rebuys = false;
+                        }
+                        setValErrors(updatedErrors);
+                    }} helperText={valErrors[i]?.rebuys ? 'Enter a positive integer' : ''}
+                        name="rebuys" defaultValue={0} sx={{ width: '35%' }}></TextField>
                 </TableCell>
                 <TableCell align="center">
-                    <TextField name="addOns" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                    <TextField error={valErrors[i]?.addOns ?? false} onChange={(e) => {
+                        const updatedErrors = [...valErrors];
+                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                            e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
+                            updatedErrors[i].addOns = true;
+                        } else {
+                            updatedErrors[i].addOns = false;
+                        }
+                        setValErrors(updatedErrors);
+                    }} helperText={valErrors[i]?.addOns ? 'Enter a positive integer' : ''}
+                        name="addOns" defaultValue={0} sx={{ width: '35%' }}></TextField>
                 </TableCell>
             </TableRow>
         }
@@ -197,21 +252,42 @@ export default function NewGame() {
         let num = event.target.value;
         setNumPlayers(num);
         setRows([]);
-        // We reset the valErrors array to have the same length as the number of players
-        setValErrors(Array.from({ length: num }, () => {
-            return ({
-                player: false,
-                earnings: false,
-                bounties: false,
-                rebuys: false,
-                addOns: false
-            })
-        }));
+
+        // We need to set the valErrors array size to the new number of players
+        const tempArr = [...valErrors];
+        // If the new number of players is less than the current length of valErrors, we slice it
+        // If it's greater, we fill the new elements with default values
+        if (num < valErrors.length) {
+            setValErrors(tempArr.slice(0, num));
+        }
+        else if (num > valErrors.length) {
+            setValErrors(tempArr.concat(Array.from({ length: num - valErrors.length }, () => {
+                return ({
+                    player: true,
+                    earnings: false,
+                    bounties: false,
+                    rebuys: false,
+                    addOns: false
+                })
+            })));
+        }
         buildRows(num);
     };
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+            {/* Alert to show if client side validation fails. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    Validation failed. Ensure all fields are filled out correctly and no players are repeated.
+                </Alert>
+            </Collapse>
             <h1>New Game</h1>
             <FormControl fullWidth sx={{ alignItems: 'center' }} >
                 <TextField
@@ -261,8 +337,7 @@ export default function NewGame() {
                     </Table>
                 </TableContainer>
                 <Button variant="contained" type="submit"
-                    sx={{ width: '8%', marginBottom: '1rem' }}
-                >
+                    sx={{ width: '8%', marginBottom: '1rem' }}>
                     Add Game
                 </Button>
             </Box>
