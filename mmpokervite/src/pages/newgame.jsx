@@ -171,7 +171,7 @@ export default function NewGame() {
                         // If it is, we set the error to true, otherwise we set it to false
                         // Either way, we need to update the valErrors array
                         const updatedErrors = [...valErrors];
-                        if (e.target.value == '' || Number.isNaN(Number(e.target.value))) {
+                        if (e.target.value.trim() == '' || Number.isNaN(Number(e.target.value))) {
                             updatedErrors[i].earnings = true;
                         } else {
                             updatedErrors[i].earnings = false;
@@ -205,7 +205,7 @@ export default function NewGame() {
                     <TextField error={valErrors[i]?.bounties ?? false} onChange={(e) => {
                         // Similar logic as the earnings field, but we also want to check if the value is a positive integer
                         const updatedErrors = [...valErrors];
-                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                        if (e.target.value.trim() == '' || Number.isNaN(Number(e.target.value)) ||
                             e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
                             updatedErrors[i].bounties = true;
                         } else {
@@ -218,7 +218,7 @@ export default function NewGame() {
                 <TableCell align="center">
                     <TextField error={valErrors[i]?.rebuys ?? false} onChange={(e) => {
                         const updatedErrors = [...valErrors];
-                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                        if (e.target.value.trim() == '' || Number.isNaN(Number(e.target.value)) ||
                             e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
                             updatedErrors[i].rebuys = true;
                         } else {
@@ -231,7 +231,7 @@ export default function NewGame() {
                 <TableCell align="center">
                     <TextField error={valErrors[i]?.addOns ?? false} onChange={(e) => {
                         const updatedErrors = [...valErrors];
-                        if (e.target.value == '' || Number.isNaN(Number(e.target.value)) ||
+                        if (e.target.value.trim() == '' || Number.isNaN(Number(e.target.value)) ||
                             e.target.value < 0 || !Number.isInteger(parseFloat(e.target.value))) {
                             updatedErrors[i].addOns = true;
                         } else {
