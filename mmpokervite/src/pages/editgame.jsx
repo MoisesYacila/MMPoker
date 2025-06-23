@@ -42,7 +42,6 @@ export default function EditGame() {
     //Using the Array.from function to build each row on the edit page
     //el is the current element, which is unused here
     function buildRows() {
-        // let rowPlayer, rowEarnings, rowITM, rowOTB, rowBounties, rowRebuys, rowAddOns;
         let newRows = Array.from({ length: numPlayers }, (el, i) => {
             // If we change the number of players, gameData.leaderboard[i] might be undefined, so we can use a try/catch to handle that
             // If undefined, set everything to default values
@@ -57,14 +56,6 @@ export default function EditGame() {
                     rebuys: data.rebuys ?? '0',
                     addOns: data.addOns ?? '0',
                 };
-                // rowPlayer = gameData.leaderboard[i].player;
-                // rowEarnings = gameData.leaderboard[i].profit;
-                // rowITM = gameData.leaderboard[i].itm ? 'yes' : 'no';
-                // rowOTB = gameData.leaderboard[i].otb ? 'yes' : 'no';
-                // rowBounties = gameData.leaderboard[i].bounties;
-                // rowRebuys = gameData.leaderboard[i].rebuys;
-                // rowAddOns = gameData.leaderboard[i].addOns;
-
             } catch (e) {
                 return {
                     player: '-1',
@@ -75,17 +66,7 @@ export default function EditGame() {
                     rebuys: '0',
                     addOns: '0',
                 };
-                // rowPlayer = '-1';
-                // rowEarnings = '0';
-                // rowITM = 'no';
-                // rowOTB = 'no';
-                // rowBounties = '0';
-                // rowRebuys = '0';
-                // rowAddOns = '0';
             }
-            // return (
-
-            // )
         })
         setRows(newRows);
     }
@@ -133,10 +114,6 @@ export default function EditGame() {
             //Update the original prize pool to reflect add ons and rebuys
             prizePool += parseInt(gameInfo[i].addOns) + parseInt(gameInfo[i].rebuys * 20);
         }
-
-
-
-
         // If user is logged in, we will be able to update the game, otherwise we will redirect to login page
         try {
             // Send patch request and send the data to the server side

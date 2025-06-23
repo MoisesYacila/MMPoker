@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { Collapse, Alert, IconButton } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import axios from 'axios';
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -12,12 +14,22 @@ export default function NewPlayer() {
     const [lastName, setLastName] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [nationality, setNationality] = useState("");
+    const [firstNameError, setFirstNameError] = useState(false);
+    const [lastNameError, setLastNameError] = useState(false);
+    const [nationalityError, setNationalityError] = useState(true);
+    const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
 
-    // //Submit handler
+    //Submit handler
     const postPlayer = (e) => {
         //Prevent redirect to server side response: res.send(req.body)
         e.preventDefault();
+
+        if (firstNameError || lastNameError || nationalityError) {
+            // If there are errors, do not submit the form and show an alert
+            setOpenAlert(true);
+            return;
+        }
 
         //Save full name in a variable, if we use useState for the name, it won't get the last character
         const finalName = `${firstName} ${lastName}`
@@ -35,8 +47,27 @@ export default function NewPlayer() {
             console.log(error);
         });
     }
+
+    const validateName = (name) => {
+        // RegEx to check if the input is a valid name, it checks for letters, accents, apostrophes, and hyphens
+        let trimmedName = name.trim();
+        return /^[A-Za-zÀ-ÿ' -]+$/.test(trimmedName) && trimmedName.length >= 2 && trimmedName.length <= 20;
+    }
+
     return (
         <Box>
+            {/* Alert to show if client side validation fails. Syntax from MUI */}
+            <Collapse in={openAlert}>
+                <Alert severity='error' action={
+                    <IconButton onClick={() => {
+                        setOpenAlert(false)
+                    }}>
+                        <ClearIcon></ClearIcon>
+                    </IconButton>
+                }>
+                    Validation failed. Ensure all fields are filled out correctly and a nationality is selected.
+                </Alert>
+            </Collapse>
             <h1>Add New Player</h1>
             <Box component="form"
                 action='http://localhost:8080/players' method='POST'
@@ -50,20 +81,31 @@ export default function NewPlayer() {
                 <TextField id="first"
                     label="First Name"
                     variant="outlined" name='first' value={firstName}
+                    error={firstNameError}
+                    helperText={firstNameError ? "Enter a valid name with at least 2 characters" : ""}
                     onChange={(e) => {
+                        // Validate first name input
+                        validateName(e.target.value) ? setFirstNameError(false) : setFirstNameError(true);
                         setFirstName(e.target.value);
                     }}
                     sx={{ width: '30%', marginBottom: '1rem' }} required />
                 <TextField id="last"
                     label="Last Name"
                     variant="outlined" name='last' value={lastName}
+                    error={lastNameError}
+                    helperText={lastNameError ? "Enter a valid name with at least 2 characters" : ""}
                     onChange={(e) => {
+                        // Validate last name input
+                        validateName(e.target.value) ? setLastNameError(false) : setLastNameError(true);
                         setLastName(e.target.value);
                     }}
                     sx={{ width: '30%', marginBottom: '1rem' }} required />
                 {/* Read ReactFlagsSelect docs if needed */}
                 <ReactFlagsSelect selected={nationality}
-                    onSelect={(code) => setNationality(code)} id="flags-select"
+                    onSelect={(code) => {
+                        setNationality(code);
+                        setNationalityError(false);
+                    }} id="flags-select"
                     countries={["US", "AR", "MX", "NI", "ES", "VE"]}
                     customLabels={{ "VE": "Venezuela" }} />
                 <Button variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
