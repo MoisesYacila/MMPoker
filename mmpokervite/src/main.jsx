@@ -16,6 +16,7 @@ import MainLayout from './layouts/MainLayout.jsx'
 import NewGame from './pages/newgame.jsx'
 import Game from './pages/game.jsx'
 import EditGame from './pages/editgame.jsx'
+import NotFound from './pages/notfound.jsx';
 
 const router = createBrowserRouter(createRoutesFromElements((
   <Route path='/' element={<RootLayout />}>
@@ -38,6 +39,7 @@ const router = createBrowserRouter(createRoutesFromElements((
       <Route path='/games/:id/edit' element={<EditGame />}></Route>
     </Route>
     <Route path='/signup' element={<SignUp />}></Route>
+    <Route path='*' element={<NotFound />}></Route>
   </Route>
 )))
 
