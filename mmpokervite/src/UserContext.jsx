@@ -12,8 +12,10 @@ const UserContext = createContext();
 // This component will wrap the entire application and provide the user context to all components (children)
 export const UserProvider = ({ children }) => {
     // This state will be accessible to all components that use the UserContext, in this case, the Navigation component
+    // Setting a loading state to true initially, so we can show a loading spinner while we check the user's login status
     const [loggedIn, setLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Every time the app loads, we want to check the user's login and admin status
     // This will be triggered by hard reloads or when we first load the app
@@ -23,6 +25,7 @@ export const UserProvider = ({ children }) => {
             .then((res) => {
                 // The server will return a boolean value, so we can use that to set the loggedIn state
                 setLoggedIn(res.data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error('Error checking login status:', error);
@@ -34,6 +37,7 @@ export const UserProvider = ({ children }) => {
             .then((res) => {
                 // The server will return a boolean value, so we can use that to set the isAdmin state
                 setIsAdmin(res.data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error('Error checking admin status:', error);
@@ -45,7 +49,7 @@ export const UserProvider = ({ children }) => {
     return (
         // Provide the loggedIn state and setLoggedIn function to all components that use this context
         // This is how useUser knows what to use
-        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin }}>
+        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading }}>
             {children}
         </UserContext.Provider>
     );
