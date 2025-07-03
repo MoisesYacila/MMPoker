@@ -451,10 +451,25 @@ app.get('/loggedin', (req, res) => {
 
 // Checks if the user is an admin or not
 app.get('/isAdmin', (req, res) => {
-    if (!req.user || !req.user.admin) {
-        return res.send(false);
+    if (!req.user?.admin) {
+        if (!req.user) {
+            return res.send({
+                isAdmin: false,
+                isLoggedIn: false
+            });
+        }
+        else {
+            return res.send({
+                isAdmin: false,
+                isLoggedIn: true
+            });
+        }
+
     }
-    res.send(true);
+    res.send({
+        isAdmin: true,
+        isLoggedIn: true
+    });
 })
 
 // Redirect to Google

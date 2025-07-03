@@ -21,22 +21,12 @@ export const UserProvider = ({ children }) => {
     // This will be triggered by hard reloads or when we first load the app
     // The navbar will use this information to show the correct button (Log In or Log Out)
     useEffect(() => {
-        axios.get('http://localhost:8080/loggedin', { withCredentials: true })
-            .then((res) => {
-                // The server will return a boolean value, so we can use that to set the loggedIn state
-                setLoggedIn(res.data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error checking login status:', error);
-                setLoggedIn(false);
-            });
-
-        // Check every time if the user is an admin, otherwise, on hard reloads, admin status will be lost
+        // Check every time if the user is an admin and logged in, otherwise, on hard reloads, admin and login status will be lost
         axios.get('http://localhost:8080/isAdmin', { withCredentials: true })
             .then((res) => {
-                // The server will return a boolean value, so we can use that to set the isAdmin state
-                setIsAdmin(res.data);
+                // The server will return a boolean value, so we can use that to set the isAdmin and loggedIn state
+                setIsAdmin(res.data.isAdmin);
+                setLoggedIn(res.data.isLoggedIn);
                 setLoading(false);
             })
             .catch((error) => {
