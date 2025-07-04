@@ -101,6 +101,10 @@ export default function EditGame() {
                 if (error.status === 401) {
                     navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
                 }
+                // If the game is not found, redirect to not found page
+                else if (error.status === 404) {
+                    navigate(`/notfound`);
+                }
             });
 
     }, [id]);

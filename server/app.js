@@ -500,8 +500,18 @@ app.get('/logout', (req, res, next) => {
 
 // Get one player
 app.get('/players/:id', async (req, res) => {
-    const player = await Player.findById(req.params.id);
-    res.send(player);
+    try {
+        const player = await Player.findById(req.params.id);
+        // Valid ObjectId, but no player found
+        if (!player) {
+            return res.status(404).send('Player not found');
+        }
+        res.send(player);
+    }
+    // Invalid ObjectId
+    catch (err) {
+        return res.status(404).send('Player not found');
+    }
 })
 
 //This gets a list of games for a player with a given id
@@ -517,8 +527,18 @@ app.get('/games/:id', async (req, res) => {
 //The id here is a game id
 //Gets one specific game for show
 app.get('/games/game/:id', async (req, res) => {
-    const game = await Game.findById(req.params.id);
-    res.send(game);
+    try {
+        const game = await Game.findById(req.params.id);
+        // Valid ObjectId, but no game found
+        if (!game) {
+            return res.status(404).send('Game not found');
+        }
+        res.send(game);
+    }
+    // Invalid ObjectId
+    catch (err) {
+        return res.status(404).send('Game not found');
+    }
 })
 
 //Delete one player

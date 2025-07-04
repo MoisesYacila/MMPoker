@@ -27,7 +27,9 @@ export default function Player() {
                 .then((res) => {
                     setPlayerData(res.data);
                 })
-                .catch((err) => { console.log(err) });
+                .catch(() => {
+                    navigate('/notfound');
+                });
         }
         //This gets the list of games from the DB and saves them in the gameList array
         //The server responds with the data we need, and we save it to an array in state for future use

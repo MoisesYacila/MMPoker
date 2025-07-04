@@ -51,6 +51,9 @@ export default function Game() {
                     setGameInfo(res.data);
                     setGameDate(new Date(res.data.date));
                 })
+                .catch(() => {
+                    navigate(`/notfound`);
+                });
         }
         getGameData();
         // runs on initial render and when id changes
