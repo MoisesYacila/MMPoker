@@ -49,7 +49,7 @@ export default function Navigation() {
                         <Typography><Link to='/players'>Players</Link></Typography>
                     </LinkButton>
                     <LinkButton>
-                        <Typography><Link to='/forum'>Forum</Link></Typography>
+                        <Typography><Link to='/updates'>Updates</Link></Typography>
                     </LinkButton>
                     <LinkButton>
                         <Typography><Link to='/stats'>Stats</Link></Typography>

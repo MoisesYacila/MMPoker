@@ -2,7 +2,7 @@ import App from './App.jsx'
 import './index.css'
 import LogIn from './pages/login.jsx'
 import Leaderboard from './pages/leaderboard.jsx';
-import Forum from './pages/forum.jsx'
+import Updates from './pages/updates.jsx'
 import Players from './pages/players.jsx'
 import Stats from './pages/stats.jsx'
 import NewPlayer from './pages/newplayer.jsx'
@@ -16,6 +16,7 @@ import EditGame from './pages/editgame.jsx'
 import NotFound from './pages/notfound.jsx';
 import Unauthorized from './pages/unauthorized.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import NewPost from './pages/newpost.jsx';
 import { Route, Routes } from 'react-router-dom';
 
 // This file contains all the routes of the application
@@ -45,7 +46,13 @@ export default function AppRoutes() {
                     }></Route>
                     <Route path='/players/:id' element={<Player />}></Route>
                 </Route>
-                <Route path='/forum' element={<Forum />}></Route>
+                <Route path='/updates' element={<Updates />}></Route>
+                <Route path='/updates/newpost' element={
+                    // Wrapping the NewPost component in a ProtectedRoute to ensure only admins can access it
+                    <ProtectedRoute requireAdmin={true} >
+                        <NewPost />
+                    </ProtectedRoute>
+                }></Route>
                 <Route path='/stats' element={<Stats />}></Route>
                 <Route path='/login' element={<LogIn />}></Route>
                 <Route path='/games/:id' element={<MainLayout />}>
