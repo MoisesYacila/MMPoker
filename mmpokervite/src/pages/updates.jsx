@@ -3,11 +3,13 @@ import { Box, Card, CardHeader, CardMedia, CardContent, Typography, CardActionAr
 import { Link } from 'react-router-dom';
 
 export default function Updates() {
+    // Check if the user is an admin to conditionally render the "New Post" link
     const { isAdmin } = useUser();
     return (
         <Box sx={{ textAlign: 'center' }}>
             <h1>Updates</h1>
             {isAdmin ? <Link to='/updates/newpost'>New Post</Link> : null}
+            {/* Placeholder post */}
             <Card sx={{ width: '80%', margin: 'auto', marginTop: 2 }}>
                 <CardActionArea>
                     <Box sx={{ display: 'flex' }}>
@@ -18,7 +20,6 @@ export default function Updates() {
                             sx={{ width: '20%', height: 'auto' }}>
 
                         </CardMedia>
-                        {/*  */}
                         <Box sx={{ display: 'flex', width: '80%', flexDirection: 'column' }}>
                             <CardHeader
                                 title="MMPoker soon to deploy"
@@ -31,8 +32,6 @@ export default function Updates() {
                             </CardContent>
                         </Box>
                     </Box>
-
-
                 </CardActionArea>
             </Card>
         </Box>

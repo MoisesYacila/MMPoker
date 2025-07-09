@@ -10,6 +10,7 @@ const app = express();
 const Account = require('./models/account');
 const Player = require('./models/player');
 const Game = require('./models/game');
+const Post = require('./models/post');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const passport = require('passport');
@@ -17,7 +18,12 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const session = require('express-session');
 const { isLoggedIn, isAdmin } = require('./middleware.js');
-
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const upload = multer({
+    limits: { fileSize: 3.5 * 1024 * 1024 }, // Limit file size to 3.5MB
+    dest: 'uploads/', // Directory to store uploaded files temporarily
+});
 
 //Connect to DB
 mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
@@ -38,6 +44,14 @@ const googleConfig = {
     scope: ['profile', 'email'],
     state: true
 };
+
+// Cloudinary configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET
+});
+
 
 //Check documentation if there are any questions with these
 app.use(cors({
@@ -700,6 +714,56 @@ app.post('/games', isAdmin, async (req, res) => {
     await newGame.save();
     res.send(req.body);
 })
+
+// Post request to add posts to the blog 
+// This endpoint allows admins to create new posts with an optional image upload
+// upload.single('picture') comes from multer, which handles file uploads and allows us to upload one picture
+// 'picture' is the name of the file input in the form
+app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
+    const { title, content } = req.body;
+
+    // Create a new Post object with the data from the request
+    const post = new Post({
+        // Get the user id from the request
+        author: req.user._id,
+        // Initially empty image, will be filled if a file is uploaded
+        image: '',
+        title: title,
+        content: content,
+        comments: [],
+        date: new Date()
+    });
+
+    // If a file is uploaded, upload it to Cloudinary
+    if (req.file) {
+        cloudinary.uploader.upload(req.file.path, {
+            folder: 'MMPoker/posts',          // organize in a subfolder for posts
+            resource_type: 'image',           // explicitly image
+            use_filename: true,               // keep original file name
+            unique_filename: true,            // avoid name conflicts by adding unique suffix
+            overwrite: false,                 // don't overwrite existing files
+            allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // whitelist of allowed image formats
+            transformation: [
+                { width: 800, height: 800, crop: 'limit' },   // limit max dimensions to 800x800
+                { fetch_format: 'auto', quality: 'auto' }     // auto format and quality for performance
+            ]
+        })
+            .then((result) => {
+                post.image = result.secure_url; // Store the secure URL of the uploaded image
+            })
+            .catch((error) => {
+                console.error('Error uploading image to Cloudinary:', error);
+                return res.status(500).send('Error uploading image');
+            });
+
+    }
+
+    // Save the post to the database
+    await post.save();
+    console.log('req.body: ', req.body);
+    console.log('req.file: ', req.file);
+    res.send(post);
+});
 
 // Patch request handles the new games, and it updates the stats for all the players involved
 app.patch('/players', isAdmin, async (req, res) => {
