@@ -24,7 +24,8 @@ const PostSchema = new Schema({
         ref: 'Account',
         required: true
     },
-    date: Date
+    date: Date,
+    likes: Number
 });
 
 const Post = mongoose.model('Post', PostSchema);

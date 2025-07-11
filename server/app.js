@@ -22,7 +22,7 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const upload = multer({
     limits: { fileSize: 3.5 * 1024 * 1024 }, // Limit file size to 3.5MB
-    dest: 'uploads/', // Directory to store uploaded files temporarily
+    dest: 'uploads/' // Directory to store uploaded files temporarily
 });
 
 //Connect to DB
@@ -555,6 +555,45 @@ app.get('/games/game/:id', async (req, res) => {
     }
 })
 
+// Get all posts
+app.get('/posts', async (req, res) => {
+    // .sort({ date: -1 })
+    const posts = await Post.find({});
+    res.send(posts);
+})
+
+// Get one post
+app.get('/posts/:id', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        // Valid ObjectId, but no post found
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+        res.send(post);
+    }
+    // Invalid ObjectId
+    catch (err) {
+        return res.status(404).send('Post not found');
+    }
+})
+
+// Get name of account owner to show in the post page
+app.get('/account/:id/name', async (req, res) => {
+    try {
+        const account = await Account.findById(req.params.id);
+        // Valid ObjectId, but no account found
+        if (!account) {
+            return res.status(404).send('Account not found');
+        }
+        res.send(account.fullName);
+    }
+    // Invalid ObjectId
+    catch (err) {
+        return res.status(404).send('Account not found');
+    }
+})
+
 //Delete one player
 app.delete('/players/:id', isAdmin, async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
@@ -721,6 +760,8 @@ app.post('/games', isAdmin, async (req, res) => {
 // 'picture' is the name of the file input in the form
 app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     const { title, content } = req.body;
+    console.log('req.body: ', req.body);
+    console.log('req.file: ', req.file);
 
     // Create a new Post object with the data from the request
     const post = new Post({
@@ -731,12 +772,13 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
         title: title,
         content: content,
         comments: [],
-        date: new Date()
+        date: new Date(),
+        likes: 0
     });
 
     // If a file is uploaded, upload it to Cloudinary
     if (req.file) {
-        cloudinary.uploader.upload(req.file.path, {
+        await cloudinary.uploader.upload(req.file.path, {
             folder: 'MMPoker/posts',          // organize in a subfolder for posts
             resource_type: 'image',           // explicitly image
             use_filename: true,               // keep original file name
@@ -750,6 +792,7 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
         })
             .then((result) => {
                 post.image = result.secure_url; // Store the secure URL of the uploaded image
+                console.log(`Image URL: ${post.image}`);
             })
             .catch((error) => {
                 console.error('Error uploading image to Cloudinary:', error);
@@ -759,9 +802,8 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     }
 
     // Save the post to the database
+    console.log('Saving post to DB');
     await post.save();
-    console.log('req.body: ', req.body);
-    console.log('req.file: ', req.file);
     res.send(post);
 });
 

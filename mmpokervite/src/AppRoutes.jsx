@@ -17,6 +17,7 @@ import NotFound from './pages/notfound.jsx';
 import Unauthorized from './pages/unauthorized.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import NewPost from './pages/newpost.jsx';
+import Post from './pages/post.jsx';
 import { Route, Routes } from 'react-router-dom';
 
 // This file contains all the routes of the application
@@ -53,6 +54,7 @@ export default function AppRoutes() {
                         <NewPost />
                     </ProtectedRoute>
                 }></Route>
+                <Route path='/updates/:id' element={<Post />}></Route>
                 <Route path='/stats' element={<Stats />}></Route>
                 <Route path='/login' element={<LogIn />}></Route>
                 <Route path='/games/:id' element={<MainLayout />}>
