@@ -475,14 +475,16 @@ app.get('/isAdmin', (req, res) => {
         else {
             return res.send({
                 isAdmin: false,
-                isLoggedIn: true
+                isLoggedIn: true,
+                id: req.user._id
             });
         }
 
     }
     res.send({
         isAdmin: true,
-        isLoggedIn: true
+        isLoggedIn: true,
+        id: req.user._id
     });
 })
 
@@ -773,7 +775,8 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
         content: content,
         comments: [],
         date: new Date(),
-        likes: 0
+        likes: 0,
+        likedBy: []
     });
 
     // If a file is uploaded, upload it to Cloudinary
@@ -970,6 +973,26 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
     await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length, prizePool });
 
     res.send('Received EDIT patch request');
+})
+
+app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
+    // Get the post by id from the request parameters
+    const { id } = req.params;
+    const post = await Post.findById(id);
+
+    // If player has already liked the post, remove their like
+    if (post.likedBy.includes(req.user._id)) {
+        post.likes -= 1;
+        post.likedBy = post.likedBy.filter(like => like.toString() !== req.user._id.toString());
+    }
+    // If player has not liked the post, add their like
+    else {
+        post.likes += 1;
+        post.likedBy.push(req.user._id);
+    }
+
+    await post.save();
+    res.send(post);
 })
 
 app.listen(8080, () => {

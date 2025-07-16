@@ -16,6 +16,7 @@ export const UserProvider = ({ children }) => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [id, setId] = useState(null);
 
     // Every time the app loads, we want to check the user's login and admin status
     // This will be triggered by hard reloads or when we first load the app
@@ -24,10 +25,12 @@ export const UserProvider = ({ children }) => {
         // Check every time if the user is an admin and logged in, otherwise, on hard reloads, admin and login status will be lost
         axios.get('http://localhost:8080/isAdmin', { withCredentials: true })
             .then((res) => {
-                // The server will return a boolean value, so we can use that to set the isAdmin and loggedIn state
+                // The server will return a boolean value, so we can use that to set the isAdmin, loggedIn state and id
                 setIsAdmin(res.data.isAdmin);
                 setLoggedIn(res.data.isLoggedIn);
                 setLoading(false);
+                setId(res.data.id);
+                console.log('res.data from UserContext: ', res.data)
             })
             .catch((error) => {
                 console.error('Error checking admin status:', error);
@@ -39,7 +42,7 @@ export const UserProvider = ({ children }) => {
     return (
         // Provide the loggedIn state and setLoggedIn function to all components that use this context
         // This is how useUser knows what to use
-        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading }}>
+        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading, id, setId }}>
             {children}
         </UserContext.Provider>
     );

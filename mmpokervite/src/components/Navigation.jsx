@@ -17,7 +17,7 @@ const LinkButton = styled(Button)({
 
 export default function Navigation() {
     // We are using the custom hooks we made to handle several states in the application
-    const { loggedIn, setLoggedIn, setIsAdmin } = useUser();
+    const { loggedIn, setLoggedIn, setIsAdmin, setId } = useUser();
     const { setAlertMessage } = useAlert();
 
     const navigate = useNavigate();
@@ -30,6 +30,7 @@ export default function Navigation() {
                 setLoggedIn(false);
                 setIsAdmin(false);
                 setAlertMessage('Logged out.');
+                setId(null);
                 navigate('/leaderboard', { state: { openAlertLink: true } });
                 console.log('User logged out');
             })
