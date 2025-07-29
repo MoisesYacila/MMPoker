@@ -995,6 +995,17 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     res.send(post);
 })
 
+app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const { author, content, authorName } = req.body;
+
+    // Find the post by id, add a new comment to the comments array, and save it
+    const post = await Post.findById(id);
+    post.comments.push({ author, authorName, content, date: new Date() });
+    await post.save();
+    res.send(post);
+})
+
 app.listen(8080, () => {
     console.log("Server listening on port 8080");
 })

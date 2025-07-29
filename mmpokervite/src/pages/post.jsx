@@ -13,6 +13,8 @@ export default function Post() {
     const { id: userId } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
+    const [comment, setComment] = useState('');
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Load post data on the first render
     // If postData is not set, fetch it from the server
@@ -50,6 +52,15 @@ export default function Post() {
             .catch(() => {
                 console.error('Error fetching author name');
             });
+        // Get the current user's name to save in case they comment
+        axios.get(`http://localhost:8080/account/${userId}/name`)
+            .then((res) => {
+                setCurrentUser(res.data);
+            })
+            .catch(() => {
+                console.error('Error fetching current user name');
+            });
+
     }, [postData]);
 
     // Render the post data
@@ -94,22 +105,51 @@ export default function Post() {
                             <AddCommentIcon />
                         </IconButton>
                     </Box>
-                    <TextareaAutosize name='comment' minRows={3} placeholder='Add your comment here...'
-                        style={{ width: '30%', marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4', display: textFieldActive ? 'block' : 'none' }}>
+                    {/* Text area component from MUI for adding a comment */}
+                    <TextareaAutosize name='comment' minRows={3} placeholder='Add your comment here...' value={comment}
+                        style={{
+                            width: '30%', marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4',
+                            display: textFieldActive ? 'block' : 'none'
+                        }}
+                        onChange={(e) => setComment(e.target.value)}>
                     </TextareaAutosize>
                     <Box>
+                        {/* Button group, should only be displayed when the text area is active */}
                         <Button sx={{ display: textFieldActive ? 'inline' : 'none' }}
                             onClick={() => {
-                                // Handle comment submission
-                                console.log('Comment submitted');
-                                setTextFieldActive(false);
+                                axios.patch(`http://localhost:8080/posts/${id}/comment`,
+                                    { author: userId, content: comment, authorName: currentUser }, { withCredentials: true })
+                                    .then((res) => {
+                                        // Update the post data with the new comment
+                                        // Reset the comment input field and hide the text area
+                                        setPostData(res.data);
+                                        setComment('');
+                                        setTextFieldActive(false);
+                                    })
+                                    .catch(() => {
+                                        console.error('Error adding comment');
+                                    });
+
                             }}
                         >Comment</Button>
                         <Button color='error' sx={{ display: textFieldActive ? 'inline' : 'none' }} onClick={() => {
                             setTextFieldActive(false);
                         }}>Cancel</Button>
                     </Box>
-
+                    {/* Display comments. If we don't have any comments, using display flex to show the p in the center is a good option, otherwise, no need for flexbox here */}
+                    <Box sx={{ width: '80%', marginTop: '2rem', display: postData.comments?.length > 0 ? '' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <h2>Comments</h2>
+                        {postData.comments && postData.comments.length > 0 ? (
+                            postData.comments.map((comment, index) => (
+                                <Box key={index} sx={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
+                                    <p><strong>{comment.authorName}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
+                                    <p>{comment.content}</p>
+                                </Box>
+                            ))
+                        ) : (
+                            <p>No comments yet. Be the first to add a comment.</p>
+                        )}
+                    </Box>
                 </>
             ) : (
                 <CircularProgress />

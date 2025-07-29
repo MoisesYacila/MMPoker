@@ -15,6 +15,7 @@ const PostSchema = new Schema({
     // Array of comments, each with an author, content, and date
     comments: [{
         author: String,
+        authorName: String, // Name of the author for display purposes
         content: String,
         date: Date
     }],
