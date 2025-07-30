@@ -53,7 +53,7 @@ export default function Players() {
             handleOpen();
     }, [playerData])
 
-    // When an user tries to delete a game, we want to check if the player is in any game
+    // When an user tries to delete a player, we want to check if the player is in any game
     // If they are, we will tell the user that they need to remove the player from all the games before deleting it
     // When gamesPlayed is 0, then they will be allowed to delete the player
     const handleOpen = async () => {

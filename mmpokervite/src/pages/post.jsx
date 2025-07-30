@@ -1,9 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Button, CircularProgress, IconButton, TextareaAutosize } from "@mui/material";
+import {
+    Box, Button, CircularProgress, Dialog, DialogActions,
+    DialogContent, DialogContentText, DialogTitle, IconButton, TextareaAutosize
+} from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import AddCommentIcon from '@mui/icons-material/AddComment';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { useUser } from "../UserContext";
 
 export default function Post() {
@@ -15,6 +19,8 @@ export default function Post() {
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
+    const [currentComment, setCurrentComment] = useState({});
+    const [openCommentDialog, setOpenCommentDialog] = useState(false);
 
     // Load post data on the first render
     // If postData is not set, fetch it from the server
@@ -53,15 +59,20 @@ export default function Post() {
                 console.error('Error fetching author name');
             });
         // Get the current user's name to save in case they comment
-        axios.get(`http://localhost:8080/account/${userId}/name`)
-            .then((res) => {
-                setCurrentUser(res.data);
-            })
-            .catch(() => {
-                console.error('Error fetching current user name');
-            });
-
+        if (userId) {
+            axios.get(`http://localhost:8080/account/${userId}/name`)
+                .then((res) => {
+                    setCurrentUser(res.data);
+                })
+                .catch(() => {
+                    console.error('Error fetching current user name');
+                });
+        }
     }, [postData]);
+
+    const handleCloseCommentDialog = () => {
+        setOpenCommentDialog(false);
+    };
 
     // Render the post data
     return (
@@ -97,9 +108,10 @@ export default function Post() {
                             <FavoriteIcon />
                         </IconButton>
                         {postData.likes || 0}
-                        <IconButton onClick={() => {
-                            // Toggle the text field for adding a comment
-                            setTextFieldActive(!textFieldActive);
+                        {/* Show the Add Comment button only if the user is logged in */}
+                        <IconButton sx={{ display: userId ? 'inline' : 'none' }} onClick={() => {
+                            // Display the text area for adding a comment
+                            setTextFieldActive(true);
                         }
                         }>
                             <AddCommentIcon />
@@ -117,6 +129,7 @@ export default function Post() {
                         {/* Button group, should only be displayed when the text area is active */}
                         <Button sx={{ display: textFieldActive ? 'inline' : 'none' }}
                             onClick={() => {
+                                // Patch request to add a comment to the post
                                 axios.patch(`http://localhost:8080/posts/${id}/comment`,
                                     { author: userId, content: comment, authorName: currentUser }, { withCredentials: true })
                                     .then((res) => {
@@ -139,17 +152,66 @@ export default function Post() {
                     {/* Display comments. If we don't have any comments, using display flex to show the p in the center is a good option, otherwise, no need for flexbox here */}
                     <Box sx={{ width: '80%', marginTop: '2rem', display: postData.comments?.length > 0 ? '' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <h2>Comments</h2>
+                        {/* If there are comments, map through them and display each one */}
                         {postData.comments && postData.comments.length > 0 ? (
                             postData.comments.map((comment, index) => (
-                                <Box key={index} sx={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
-                                    <p><strong>{comment.authorName}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
-                                    <p>{comment.content}</p>
+                                <Box key={index} sx={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc', display: 'flex', justifyContent: 'space-between' }}>
+                                    {/* div to separate the content from the delete button */}
+                                    <div>
+                                        <p><strong>{comment.authorName}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
+                                        <p>{comment.content}</p>
+                                    </div>
+                                    <IconButton sx={{
+                                        // Prevents the button shade from being an oval shape and only shows the delete button if the user is the author of the comment
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '50%',
+                                        alignSelf: 'center',
+                                        display: userId === comment.author ? 'inline' : 'none'
+                                    }} onClick={() => {
+                                        setCurrentComment({
+                                            id: comment._id,
+                                            author: comment.author
+                                        });
+                                        setOpenCommentDialog(true);
+                                    }}>
+                                        <DeleteOutlineOutlinedIcon></DeleteOutlineOutlinedIcon>
+                                    </IconButton>
                                 </Box>
                             ))
                         ) : (
                             <p>No comments yet. Be the first to add a comment.</p>
                         )}
                     </Box>
+                    {/* Dialog for deleting comments */}
+                    <Dialog open={openCommentDialog} onClose={handleCloseCommentDialog}>
+                        <DialogTitle>Delete Comment</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Are you sure you want to delete this comment? This action cannot be undone.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseCommentDialog}>Cancel</Button>
+                            <Button color='error' onClick={() => {
+                                // Delete request to delete the comment
+                                console.log('Deleting comment', currentComment.id);
+                                // On a delete request, we have to send the withCredentials in the same object as the data
+                                axios.delete(`http://localhost:8080/posts/${id}/comments/${currentComment.id}`, {
+                                    data: { author: currentComment.author }, // body for DELETE
+                                    withCredentials: true
+                                })
+                                    .then((res) => {
+                                        // Update the post data to show the post without the deleted comment
+                                        setPostData(res.data);
+                                    })
+                                    .catch(() => {
+                                        console.error('Error deleting comment');
+                                    });
+                                handleCloseCommentDialog();
+                            }}>Delete</Button>
+                        </DialogActions>
+                    </Dialog>
                 </>
             ) : (
                 <CircularProgress />

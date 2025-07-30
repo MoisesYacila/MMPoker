@@ -637,6 +637,34 @@ app.delete('/games/game/:id', isAdmin, async (req, res) => {
     res.send('Deleted game (TEST)');
 });
 
+// Delete a comment in a post
+app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) => {
+    const { postId, commentId } = req.params;
+    const { author } = req.body; // Get the author from the request body
+
+    try {
+        // Find the post and remove the comment
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Check if the author matches the user making the request
+        if (author.toString() !== req.user._id.toString()) {
+            return res.status(403).send('You are not authorized to delete this comment');
+        }
+        // Filter out the comment to be deleted
+        post.comments = post.comments.filter(comment => comment._id.toString() !== commentId);
+
+        // Save and send the updated post
+        await post.save();
+        res.send(post);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error deleting comment');
+    }
+})
+
 // Post request handling sign ups
 app.post('/signup', async (req, res, next) => {
     // Destructure data from req.body
