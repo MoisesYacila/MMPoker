@@ -1034,6 +1034,11 @@ app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
     res.send(post);
 })
 
+app.patch('/posts/:id/edit', isAdmin, async (req, res) => {
+    console.log('Editing post with id: ', req.params.id);
+    res.send('Received EDIT patch request');
+})
+
 app.listen(8080, () => {
     console.log("Server listening on port 8080");
 })

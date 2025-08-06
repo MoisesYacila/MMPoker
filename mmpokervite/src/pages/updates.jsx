@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useUser } from '../UserContext';
-import { Box, Card, CardHeader, CardMedia, CardContent, Typography, CardActionArea } from '@mui/material';
+import {
+    Box, Card, CardHeader, CardMedia, CardContent, IconButton,
+    Menu, MenuItem, Typography, CardActionArea
+} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 export default function Updates() {
     // Check if the user is an admin to conditionally render the "New Post" link
@@ -10,6 +14,8 @@ export default function Updates() {
     const [allPosts, setAllPosts] = useState([]);
     const [name, setName] = useState('');
     const navigate = useNavigate();
+    const [menuAnchor, setMenuAnchor] = useState(null);
+    const [selectedPostId, setSelectedPostId] = useState(null);
 
     useEffect(() => {
         // Fetch all posts from the server
@@ -21,6 +27,20 @@ export default function Updates() {
                 console.error('Error fetching posts:', error);
             });
     }, []);
+
+    // Menu open and close handlers
+    // We need to set and reset the anchor element for the menu and the selected post ID to handle actions like edit and delete
+    // This allows us to open the menu for the specific post that was clicked
+
+    const handleMenuOpen = (event, postId) => {
+        setMenuAnchor(event.currentTarget);
+        setSelectedPostId(postId);
+    }
+
+    const handleMenuClose = () => {
+        setMenuAnchor(null);
+        setSelectedPostId(null);
+    }
 
     return (
         <Box sx={{ textAlign: 'center' }}>
@@ -36,7 +56,7 @@ export default function Updates() {
                         console.error('Error fetching author name');
                     });
                 return (
-                    <Card key={post._id} sx={{ width: '80%', margin: 'auto', marginTop: 2 }}>
+                    <Card key={post._id} sx={{ width: '80%', margin: 'auto', marginTop: 2, marginBottom: 2, display: 'flex' }}>
                         <CardActionArea onClick={() => {
                             // Navigate to the post page with the post ID
                             navigate(`/updates/${post._id}`);
@@ -64,8 +84,37 @@ export default function Updates() {
                                         </Typography>
                                     </CardContent>
                                 </Box>
+
                             </Box>
                         </CardActionArea>
+                        <Box>
+                            {/* Only admins can edit or delete, so we'll only show the button for them */}
+                            {isAdmin ? <IconButton aria-label="more" onClick={(e) => {
+                                handleMenuOpen(e, post._id);
+                            }}>
+                                <MoreHorizIcon />
+                            </IconButton> : null}
+
+                            {/* Menu for edit and delete options */}
+                            {/* MUI syntax */}
+                            {/* For the open prop, we need to check if the menu anchor is set (if so, it will be truthy) 
+                            and if the selected post ID matches the current post's ID, otherwise, the actions we click on might affect other posts.
+                            This is because of the way that React re renders and handles elements in the .map call */}
+                            <Menu anchorEl={menuAnchor} onClose={handleMenuClose} open={Boolean(menuAnchor) && selectedPostId === post._id}>
+                                <MenuItem onClick={() => navigate(`/updates/${post._id}/edit`)}>Edit</MenuItem>
+                                <MenuItem onClick={() => {
+                                    // Handle delete post logic here
+                                    axios.delete(`http://localhost:8080/posts/${post._id}`, { withCredentials: true })
+                                        .then(() => {
+                                            // Remove the post from the state after deletion
+                                            setAllPosts(allPosts.filter(p => p._id !== post._id));
+                                        })
+                                        .catch((error) => {
+                                            console.error('Error deleting post:', error);
+                                        });
+                                }}>Delete</MenuItem>
+                            </Menu>
+                        </Box>
                     </Card>
                 );
             })}
