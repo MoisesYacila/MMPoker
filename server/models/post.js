@@ -8,6 +8,8 @@ const PostSchema = new Schema({
     },
     // URL to the image, if provided
     image: String,
+    // Public ID for Cloudinary, used for deleting the image later
+    imagePublicId: String,
     content: {
         type: String,
         required: true

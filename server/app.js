@@ -823,6 +823,7 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
         })
             .then((result) => {
                 post.image = result.secure_url; // Store the secure URL of the uploaded image
+                post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
                 console.log(`Image URL: ${post.image}`);
             })
             .catch((error) => {
@@ -1003,6 +1004,7 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
     res.send('Received EDIT patch request');
 })
 
+// Patch request to handle likes on posts
 app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     // Get the post by id from the request parameters
     const { id } = req.params;
@@ -1023,6 +1025,7 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     res.send(post);
 })
 
+// Patch request to add a comment to a post
 app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
     const { id } = req.params;
     const { author, content, authorName } = req.body;
@@ -1034,9 +1037,62 @@ app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
     res.send(post);
 })
 
-app.patch('/posts/:id/edit', isAdmin, async (req, res) => {
-    console.log('Editing post with id: ', req.params.id);
-    res.send('Received EDIT patch request');
+// Patch request to edit a post
+app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { title, content, deletedImage } = req.body;
+
+    // Find the post by id and update its title and content
+    try {
+        const post = await Post.findById(id);
+        post.title = title;
+        post.content = content;
+
+        // If a new image is uploaded, delete the old image from Cloudinary if it exists and upload the new one
+        if (req.file) {
+            if (deletedImage != '') {
+                // The parameter has to be the public ID of the image to be deleted
+                await cloudinary.uploader.destroy(deletedImage)
+                    .then(() => {
+                        console.log('Old image deleted successfully');
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting old image from Cloudinary:', error);
+                        return res.status(500).send('Error deleting old image');
+                    });
+            }
+
+
+            // If a new image is uploaded, upload it to Cloudinary and update the post's image
+            await cloudinary.uploader.upload(req.file.path, {
+                folder: 'MMPoker/posts',
+                resource_type: 'image',
+                use_filename: true,
+                unique_filename: true,
+                overwrite: false,
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [
+                    { width: 800, height: 800, crop: 'limit' },
+                    { fetch_format: 'auto', quality: 'auto' }
+                ]
+            })
+                .then((result) => {
+                    post.image = result.secure_url;
+                    post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
+                    console.log(`Image URL updated to: ${post.image}`);
+                })
+                .catch((error) => {
+                    console.error('Error uploading image to Cloudinary:', error);
+                    return res.status(500).send('Error uploading image');
+                });
+        }
+        await post.save();
+    }
+    catch (err) {
+        return res.status(404).send('Post not found');
+    }
+
+    res.send('Post updated successfully');
 })
 
 app.listen(8080, () => {

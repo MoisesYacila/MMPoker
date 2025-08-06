@@ -10,12 +10,13 @@ export default function EditPost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState({});
+    const [uploadedImage, setUploadedImage] = useState(false);
+    const [deletedImage, setDeletedImage] = useState('');
     const navigate = useNavigate();
 
     // Function to handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Submitting edit post with title:', title);
 
         // We use FormData to be able to send the whole form data including the image while being able to handle the submission on the client side
         const formData = new FormData();
@@ -23,12 +24,16 @@ export default function EditPost() {
         // The first parameter must match what the server expects
         formData.append('title', title);
         formData.append('content', content);
+        formData.append('deletedImage', deletedImage);
 
-        if (image)
+        if (image && uploadedImage)
             formData.append('picture', image);
+
+
 
         axios.patch(`http://localhost:8080/posts/${id}/edit`, formData, { withCredentials: true })
             .then(() => {
+                console.log('Submitting edit post with title:', title);
                 navigate(`/updates/${id}`);
             })
             .catch((error) => {
@@ -44,6 +49,7 @@ export default function EditPost() {
                 // If the post has an image, set it
                 if (res.data.image) {
                     setImage(res.data.image);
+                    setDeletedImage(res.data.imagePublicId); // Set the public ID for the image to be deleted if a new one is uploaded
                 }
             })
             .catch((error) => {
@@ -52,7 +58,7 @@ export default function EditPost() {
     }, [id]);
 
     return (
-        <Box component="form" action='http://localhost:8080/posts/:id/edit' method='POST' encType="multipart/form-data"
+        <Box component="form" action='http://localhost:8080/posts/:id/edit?_method=PATCH' method='POST' encType="multipart/form-data"
             onSubmit={handleSubmit}
             sx={{
                 display: 'flex',
@@ -89,6 +95,7 @@ export default function EditPost() {
                 <input hidden type="file" name="picture" onChange={(e) => {
                     // e.target.files[0] is where the uploaded file will be if the user selects one
                     setImage(e.target.files[0]);
+                    setUploadedImage(true);
                 }} />
             </Button>
             <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
