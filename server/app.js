@@ -464,7 +464,10 @@ app.get('/loggedin', (req, res) => {
 })
 
 // Checks if the user is an admin or not
-app.get('/isAdmin', (req, res) => {
+app.get('/isAdmin', async (req, res) => {
+    // Get the user for us to get their full name
+    const user = await Account.findById(req.user?._id);
+
     if (!req.user?.admin) {
         if (!req.user) {
             return res.send({
@@ -476,7 +479,8 @@ app.get('/isAdmin', (req, res) => {
             return res.send({
                 isAdmin: false,
                 isLoggedIn: true,
-                id: req.user._id
+                id: req.user._id,
+                userFullName: user?.fullName || ''
             });
         }
 
@@ -484,7 +488,8 @@ app.get('/isAdmin', (req, res) => {
     res.send({
         isAdmin: true,
         isLoggedIn: true,
-        id: req.user._id
+        id: req.user._id,
+        userFullName: user?.fullName || ''
     });
 })
 
@@ -637,6 +642,34 @@ app.delete('/games/game/:id', isAdmin, async (req, res) => {
     res.send('Deleted game (TEST)');
 });
 
+// Delete a post
+// Only admins can delete posts
+// As of right now, any admin can delete any post, regardless of who created it
+app.delete('/posts/:id', isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Find the post by ID and delete it
+        const post = await Post.findByIdAndDelete(id);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+        // If the post has an image, delete it from Cloudinary
+        if (post.imagePublicId !== '') {
+            await cloudinary.uploader.destroy(post.imagePublicId)
+                .then(() => {
+                    console.log('Image deleted from Cloudinary');
+                })
+                .catch((error) => {
+                    console.error('Error deleting image from Cloudinary:', error);
+                });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error deleting post');
+    }
+    res.send('Deleted post');
+})
+
 // Delete a comment in a post
 app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) => {
     const { postId, commentId } = req.params;
@@ -718,7 +751,7 @@ app.post('/login', async (req, res, next) => {
 
             // If login is successful, send a response to the client with the user info
             // Important to return and not just do res.json
-            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, isAdmin: user.admin } });
+            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, isAdmin: user.admin, fullName: user.fullName } });
         });
 
         // Call the middleware function with req and res
@@ -793,10 +826,15 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     console.log('req.body: ', req.body);
     console.log('req.file: ', req.file);
 
+    const user = await Account.findById(req.user?._id);
+
     // Create a new Post object with the data from the request
     const post = new Post({
         // Get the user id from the request
-        author: req.user._id,
+        author: {
+            id: user._id,
+            name: user.fullName
+        },
         // Initially empty image, will be filled if a file is uploaded
         image: '',
         title: title,

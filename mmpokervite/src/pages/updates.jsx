@@ -12,7 +12,6 @@ export default function Updates() {
     // Check if the user is an admin to conditionally render the "New Post" link
     const { isAdmin } = useUser();
     const [allPosts, setAllPosts] = useState([]);
-    const [name, setName] = useState('');
     const navigate = useNavigate();
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [selectedPostId, setSelectedPostId] = useState(null);
@@ -48,13 +47,6 @@ export default function Updates() {
             {isAdmin ? <Link to='/updates/newpost'>New Post</Link> : null}
             {/* Map through all posts and display them */}
             {allPosts.map((post) => {
-                axios.get(`http://localhost:8080/account/${post.author}/name`)
-                    .then((res) => {
-                        setName(res.data);
-                    })
-                    .catch(() => {
-                        console.error('Error fetching author name');
-                    });
                 return (
                     <Card key={post._id} sx={{ width: '80%', margin: 'auto', marginTop: 2, marginBottom: 2, display: 'flex' }}>
                         <CardActionArea onClick={() => {
@@ -75,7 +67,7 @@ export default function Updates() {
                                 <Box sx={{ display: 'flex', width: post.image ? '80%' : '100%', flexDirection: 'column' }}>
                                     <CardHeader
                                         title={post.title}
-                                        subheader={`Posted on ${new Date(post.date).toLocaleDateString()} by ${name}`}
+                                        subheader={`Posted on ${new Date(post.date).toLocaleDateString()} by ${post.author.name}`}
                                     />
                                     <CardContent>
                                         <Typography variant="body2" color="text.secondary">

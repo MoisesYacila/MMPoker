@@ -23,9 +23,12 @@ const PostSchema = new Schema({
     }],
     // Reference to the author of the post, which is an Account object
     author: {
-        type: Schema.Types.ObjectId,
-        ref: 'Account',
-        required: true
+        id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
+            required: true
+        },
+        name: String // Name of the author for display purposes
     },
     date: Date,
     likes: Number,

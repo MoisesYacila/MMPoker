@@ -17,6 +17,7 @@ export const UserProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [id, setId] = useState(null);
+    const [userFullName, setUserFullName] = useState('');
 
     // Every time the app loads, we want to check the user's login and admin status
     // This will be triggered by hard reloads or when we first load the app
@@ -30,6 +31,7 @@ export const UserProvider = ({ children }) => {
                 setLoggedIn(res.data.isLoggedIn);
                 setLoading(false);
                 setId(res.data.id);
+                setUserFullName(res.data.userFullName || ''); // Set the user's full name if available
                 console.log('res.data from UserContext: ', res.data)
             })
             .catch((error) => {
@@ -42,7 +44,7 @@ export const UserProvider = ({ children }) => {
     return (
         // Provide the loggedIn state and setLoggedIn function to all components that use this context
         // This is how useUser knows what to use
-        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading, id, setId }}>
+        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading, id, setId, userFullName, setUserFullName }}>
             {children}
         </UserContext.Provider>
     );

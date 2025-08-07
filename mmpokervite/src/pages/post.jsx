@@ -13,12 +13,10 @@ import { useUser } from "../UserContext";
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const [name, setName] = useState('');
-    const { id: userId } = useUser();
+    const { id: userId, userFullName } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
-    const [currentUser, setCurrentUser] = useState(null);
     const [currentComment, setCurrentComment] = useState({});
     const [openCommentDialog, setOpenCommentDialog] = useState(false);
 
@@ -45,31 +43,6 @@ export default function Post() {
         }
     }, [postData, userId]);
 
-    // Fetch the author's name based on the postData
-    useEffect(() => {
-        // If postData is not set exit early
-        if (!postData) return;
-
-        // Get the author's name from the server
-        axios.get(`http://localhost:8080/account/${postData.author}/name`)
-            .then((res) => {
-                setName(res.data);
-            })
-            .catch(() => {
-                console.error('Error fetching author name');
-            });
-        // Get the current user's name to save in case they comment
-        if (userId) {
-            axios.get(`http://localhost:8080/account/${userId}/name`)
-                .then((res) => {
-                    setCurrentUser(res.data);
-                })
-                .catch(() => {
-                    console.error('Error fetching current user name');
-                });
-        }
-    }, [postData]);
-
     const handleCloseCommentDialog = () => {
         setOpenCommentDialog(false);
     };
@@ -82,7 +55,7 @@ export default function Post() {
                     <Box sx={{ padding: '2rem', textAlign: 'center', width: '80%' }}>
                         {/* Display post title and content */}
                         <h1>{postData.title}</h1>
-                        <h4>Posted by {name} on {new Date(postData.date).toLocaleDateString()}</h4>
+                        <h4>Posted by {postData.author.name} on {new Date(postData.date).toLocaleDateString()}</h4>
                         {postData.image && (
                             <img src={postData.image} alt="Post" style={{ width: '15%' }} />
                         )}
@@ -131,7 +104,7 @@ export default function Post() {
                             onClick={() => {
                                 // Patch request to add a comment to the post
                                 axios.patch(`http://localhost:8080/posts/${id}/comment`,
-                                    { author: userId, content: comment, authorName: currentUser }, { withCredentials: true })
+                                    { author: userId, content: comment, authorName: userFullName }, { withCredentials: true })
                                     .then((res) => {
                                         // Update the post data with the new comment
                                         // Reset the comment input field and hide the text area
