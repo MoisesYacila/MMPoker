@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useUser } from '../UserContext';
 import {
-    Box, Card, CardHeader, CardMedia, CardContent, IconButton,
-    Menu, MenuItem, Typography, CardActionArea
+    Box, Button, Card, CardHeader, CardMedia, CardContent, Dialog, DialogActions, DialogTitle,
+    DialogContent, DialogContentText, IconButton, Menu, MenuItem, Typography, CardActionArea
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -15,6 +15,7 @@ export default function Updates() {
     const navigate = useNavigate();
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [selectedPostId, setSelectedPostId] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
 
     useEffect(() => {
         // Fetch all posts from the server
@@ -38,6 +39,11 @@ export default function Updates() {
 
     const handleMenuClose = () => {
         setMenuAnchor(null);
+        setSelectedPostId(null);
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
         setSelectedPostId(null);
     }
 
@@ -95,21 +101,37 @@ export default function Updates() {
                             <Menu anchorEl={menuAnchor} onClose={handleMenuClose} open={Boolean(menuAnchor) && selectedPostId === post._id}>
                                 <MenuItem onClick={() => navigate(`/updates/${post._id}/edit`)}>Edit</MenuItem>
                                 <MenuItem onClick={() => {
-                                    // Handle delete post logic here
-                                    axios.delete(`http://localhost:8080/posts/${post._id}`, { withCredentials: true })
-                                        .then(() => {
-                                            // Remove the post from the state after deletion
-                                            setAllPosts(allPosts.filter(p => p._id !== post._id));
-                                        })
-                                        .catch((error) => {
-                                            console.error('Error deleting post:', error);
-                                        });
+                                    setOpenDialog(true);
                                 }}>Delete</MenuItem>
                             </Menu>
                         </Box>
                     </Card>
                 );
             })}
+            {/* Dialog for confirming post deletion */}
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>Delete Post</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete this post? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button color='error' onClick={() => {
+                        // Handle delete post logic here
+                        axios.delete(`http://localhost:8080/posts/${selectedPostId}`, { withCredentials: true })
+                            .then(() => {
+                                // Remove the post from the state after deletion
+                                setAllPosts(allPosts.filter(post => post._id !== selectedPostId));
+                                handleCloseDialog();
+                            })
+                            .catch((error) => {
+                                console.error('Error deleting post:', error);
+                            });
+                    }}>Delete</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
 
     )
