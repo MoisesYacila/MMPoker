@@ -1,24 +1,28 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Button, CircularProgress, Dialog, DialogActions,
-    DialogContent, DialogContentText, DialogTitle, IconButton, TextareaAutosize
+    DialogContent, DialogContentText, DialogTitle, IconButton, Menu, MenuItem, TextareaAutosize
 } from "@mui/material";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import AddCommentIcon from '@mui/icons-material/AddComment';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { useUser } from "../UserContext";
 
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const { id: userId, userFullName } = useUser();
+    const { id: userId, userFullName, isAdmin } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
     const [currentComment, setCurrentComment] = useState({});
     const [openCommentDialog, setOpenCommentDialog] = useState(false);
+    const [openMenuDialog, setOpenMenuDialog] = useState(false);
+    const [menuAnchor, setMenuAnchor] = useState(null);
+    const navigate = useNavigate();
 
     // Load post data on the first render
     // If postData is not set, fetch it from the server
@@ -43,8 +47,21 @@ export default function Post() {
         }
     }, [postData, userId]);
 
+    // Dialog and menu handlers
     const handleCloseCommentDialog = () => {
         setOpenCommentDialog(false);
+    };
+
+    const handleCloseMenuDialog = () => {
+        setOpenMenuDialog(false);
+    }
+
+    const handleMenuOpen = (event) => {
+        setMenuAnchor(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setMenuAnchor(null);
     };
 
     // Render the post data
@@ -59,11 +76,7 @@ export default function Post() {
                         {postData.image && (
                             <img src={postData.image} alt="Post" style={{ width: '15%' }} />
                         )}
-                        <p>{postData.content} Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ad pariatur, adipisci similique totam quidem maiores iusto animi? Quasi tenetur, quibusdam illo vitae dolor voluptas! Quidem asperiores nobis adipisci eius tempora.
-                            Doloremque amet ullam ea molestiae, nisi id magnam inventore, eius consequuntur ipsum modi. Facere asperiores culpa ut fugit? Minima, eveniet nemo. Suscipit, nemo laborum aspernatur voluptas in voluptatum. Ducimus, dolor.
-                            Aliquid molestiae officiis unde labore odio velit, corrupti nam dicta excepturi minima, consequatur laboriosam necessitatibus exercitationem tempora optio, expedita fugiat voluptate in? Quas numquam dolor enim maxime facere vero aperiam.
-                            Iure, provident repudiandae ipsa delectus sunt cupiditate deserunt consequatur quibusdam harum asperiores repellat, accusantium quod fugiat totam. Porro tenetur magnam doloribus exercitationem, officiis in voluptatibus fuga? A nihil iste modi?
-                            Eos dolor excepturi maiores odit ad. Nulla numquam voluptatibus omnis. Aliquam qui cupiditate magnam, dicta odio iusto voluptatibus modi, eveniet obcaecati provident sed, praesentium quos. Tempore, saepe enim! Officiis, natus.</p>
+                        <p>{postData.content}</p>
                         {/* Show the button red if the user has already liked it and gray otherwise. Disable the button if the user is not logged in */}
                         <IconButton color={isLiked ? 'error' : 'default'} disabled={userId ? false : true} onClick={() => {
                             // Handle like action
@@ -89,6 +102,21 @@ export default function Post() {
                         }>
                             <AddCommentIcon />
                         </IconButton>
+                        {/* Only admins can edit or delete, so we'll only show the button for them */}
+                        {isAdmin ? <IconButton aria-label="more" onClick={(e) => {
+                            handleMenuOpen(e);
+                        }}>
+                            <MoreHorizIcon />
+                        </IconButton> : null}
+                        {/* Menu for edit and delete options */}
+                        {/* MUI syntax */}
+                        {/* For the open prop, we need to check if the menu anchor is set (if so, it will be truthy)  */}
+                        <Menu anchorEl={menuAnchor} onClose={handleMenuClose} open={Boolean(menuAnchor)}>
+                            <MenuItem onClick={() => navigate(`/updates/${id}/edit`)}>Edit</MenuItem>
+                            <MenuItem onClick={() => {
+                                setOpenMenuDialog(true);
+                            }}>Delete</MenuItem>
+                        </Menu>
                     </Box>
                     {/* Text area component from MUI for adding a comment */}
                     <TextareaAutosize name='comment' minRows={3} placeholder='Add your comment here...' value={comment}
@@ -182,6 +210,31 @@ export default function Post() {
                                         console.error('Error deleting comment');
                                     });
                                 handleCloseCommentDialog();
+                            }}>Delete</Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    {/* Dialog for confirming post deletion */}
+                    <Dialog open={openMenuDialog} onClose={handleCloseMenuDialog}>
+                        <DialogTitle>Delete Post</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Are you sure you want to delete this post? This action cannot be undone.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseMenuDialog}>Cancel</Button>
+                            <Button color='error' onClick={() => {
+                                // Handle delete post logic here
+                                axios.delete(`http://localhost:8080/posts/${id}`, { withCredentials: true })
+                                    .then(() => {
+                                        // Navigate back to the updates page after deletion
+                                        handleCloseMenuDialog();
+                                        navigate('/updates');
+                                    })
+                                    .catch((error) => {
+                                        console.error('Error deleting post:', error);
+                                    });
                             }}>Delete</Button>
                         </DialogActions>
                     </Dialog>
