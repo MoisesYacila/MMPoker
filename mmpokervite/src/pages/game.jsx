@@ -24,6 +24,8 @@ export default function Game() {
     const location = useLocation();
     const [gameInfo, setGameInfo] = useState(location.state?.gameData || null); //using the ? syntax to avoid errors if data is not set
     const [gameDate, setGameDate] = useState(new Date(gameInfo?.date) || null);
+    const [submitted, setSubmitted] = useState(false);
+    const [disabled, setDisabled] = useState(false);
 
     //Activate navigate
     const navigate = useNavigate();
@@ -141,7 +143,10 @@ export default function Game() {
                                                 <TableCell>{i + 1}</TableCell>
                                                 <TableCell>
                                                     {/* player is an object, so we need to access the player.player to get the id, then send data to navigate function */}
-                                                    <Button sx={{ textTransform: 'none' }} onClick={async () => {
+                                                    <Button disabled={disabled} sx={{ textTransform: 'none' }} onClick={async () => {
+                                                        // Disable the button to prevent multiple clicks
+                                                        setDisabled(true);
+
                                                         const link = `/players/${player.player}`;
                                                         await axios.get(`http://localhost:8080/players/${player.player}`)
                                                             .then((res) => {
@@ -189,9 +194,11 @@ export default function Game() {
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button disabled={submitted} onClick={handleClose}>Cancel</Button>
                         {/* Call delete function, and redirect to leaderboard when deletion is confirmed */}
-                        <Button onClick={async () => {
+                        <Button loading={submitted} loadingPosition='start' onClick={async () => {
+                            // Set submitted to true to prevent multiple submissions
+                            setSubmitted(true);
                             await axios.delete(`http://localhost:8080/games/game/${gameInfo._id}`, {
                                 withCredentials: true // Protected route, so we need to make sure the user is logged in
                             })

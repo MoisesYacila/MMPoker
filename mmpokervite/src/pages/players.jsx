@@ -26,6 +26,9 @@ export default function Players() {
     const [open, setOpen] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
     const { loggedIn, isAdmin } = useUser();
+    const [submitted, setSubmitted] = useState(false);
+    const [disabled, setDisabled] = useState(false);
+    const [selectedPlayerId, setSelectedPlayerId] = useState('');
     // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
         id: '',
@@ -96,7 +99,8 @@ export default function Players() {
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
                                 {/* async callback that gets the clicked player, and links to their personal page */}
-                                <ListItemButton onClick={async () => {
+                                <ListItemButton disabled={disabled} onClick={async () => {
+                                    setDisabled(true);
                                     const link = `/players/${player._id}`;
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
                                         .then((res) => {
@@ -117,7 +121,10 @@ export default function Players() {
                                 </ListItemButton>
                                 {/* async callback that gets the player that we are trying to delete, and opens
                                 a confirmation dialog */}
-                                {isAdmin ? <IconButton onClick={async () => {
+                                {isAdmin ? <IconButton loading={submitted && selectedPlayerId == player._id} onClick={async () => {
+                                    setSubmitted(true);
+                                    setSelectedPlayerId(player._id);
+
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
                                         .then((res) => {
                                             // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data
@@ -126,6 +133,9 @@ export default function Players() {
                                                 name: res.data.name,
                                                 gamesPlayed: res.data.gamesPlayed
                                             });
+
+                                            setSubmitted(false);
+                                            setSelectedPlayerId('');
                                         });
                                 }}>
                                     <ClearIcon></ClearIcon>
@@ -143,9 +153,11 @@ export default function Players() {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button disabled={submitted} onClick={handleClose}>Cancel</Button>
                     {/* Delete function once confirmation is received, update the players array using setPlayers for re-render */}
-                    <Button onClick={async () => {
+                    <Button loading={submitted} loadingPosition='start' onClick={async () => {
+                        setSubmitted(true);
+
                         await axios.delete(`http://localhost:8080/players/${playerData.id}`, {
                             withCredentials: true // Protected route, so we need to make sure the user is logged in
                         })
@@ -157,6 +169,7 @@ export default function Players() {
                                 // the one we are deleting
                                 newArr = players.filter((player) => player._id != playerData.id);
                                 setPlayers(newArr);
+                                setSubmitted(false);
                             }).catch((err) => {
                                 console.log(err);
                                 navigate(`/login`, { state: { message: 'Must be signed in to delete players.', openAlertLink: true } });

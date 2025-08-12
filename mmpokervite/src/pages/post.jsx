@@ -23,6 +23,7 @@ export default function Post() {
     const [openMenuDialog, setOpenMenuDialog] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState(null);
     const navigate = useNavigate();
+    const [disabled, setDisabled] = useState(false);
 
     // Load post data on the first render
     // If postData is not set, fetch it from the server
@@ -128,17 +129,22 @@ export default function Post() {
                     </TextareaAutosize>
                     <Box>
                         {/* Button group, should only be displayed when the text area is active */}
-                        <Button sx={{ display: textFieldActive ? 'inline' : 'none' }}
+                        <Button disabled={disabled} loadingPosition="start" sx={{ display: textFieldActive ? 'inline' : 'none' }}
                             onClick={() => {
+                                // Disable the button to prevent multiple clicks
+                                setDisabled(true);
+
                                 // Patch request to add a comment to the post
                                 axios.patch(`http://localhost:8080/posts/${id}/comment`,
                                     { author: userId, content: comment, authorName: userFullName }, { withCredentials: true })
                                     .then((res) => {
                                         // Update the post data with the new comment
                                         // Reset the comment input field and hide the text area
+                                        // Re-enable the button after the request
                                         setPostData(res.data);
                                         setComment('');
                                         setTextFieldActive(false);
+                                        setDisabled(false);
                                     })
                                     .catch(() => {
                                         console.error('Error adding comment');
@@ -146,11 +152,11 @@ export default function Post() {
 
                             }}
                         >Comment</Button>
-                        <Button color='error' sx={{ display: textFieldActive ? 'inline' : 'none' }} onClick={() => {
+                        <Button disabled={disabled} color='error' sx={{ display: textFieldActive ? 'inline' : 'none' }} onClick={() => {
                             setTextFieldActive(false);
                         }}>Cancel</Button>
                     </Box>
-                    {/* Display comments. If we don't have any comments, using display flex to show the p in the center is a good option, otherwise, no need for flexbox here */}
+                    {/* Display comments. If we don't have any comments, using display flex to show the <p> in the center is a good option, otherwise, no need for flexbox here */}
                     <Box sx={{ width: '80%', marginTop: '2rem', display: postData.comments?.length > 0 ? '' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <h2>Comments</h2>
                         {/* If there are comments, map through them and display each one */}
@@ -193,8 +199,11 @@ export default function Post() {
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={handleCloseCommentDialog}>Cancel</Button>
-                            <Button color='error' onClick={() => {
+                            <Button disabled={disabled} onClick={handleCloseCommentDialog}>Cancel</Button>
+                            <Button disabled={disabled} color='error' onClick={() => {
+                                // Disable the button to prevent multiple clicks
+                                setDisabled(true);
+
                                 // Delete request to delete the comment
                                 console.log('Deleting comment', currentComment.id);
                                 // On a delete request, we have to send the withCredentials in the same object as the data
@@ -203,8 +212,9 @@ export default function Post() {
                                     withCredentials: true
                                 })
                                     .then((res) => {
-                                        // Update the post data to show the post without the deleted comment
+                                        // Update the post data to show the post without the deleted comment and re-enable the button
                                         setPostData(res.data);
+                                        setDisabled(false);
                                     })
                                     .catch(() => {
                                         console.error('Error deleting comment');
@@ -223,8 +233,11 @@ export default function Post() {
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={handleCloseMenuDialog}>Cancel</Button>
-                            <Button color='error' onClick={() => {
+                            <Button disabled={disabled} onClick={handleCloseMenuDialog}>Cancel</Button>
+                            <Button loading={disabled} loadingPosition="start" color='error' onClick={() => {
+                                // Disable the button to prevent multiple clicks
+                                setDisabled(true);
+
                                 // Handle delete post logic here
                                 axios.delete(`http://localhost:8080/posts/${id}`, { withCredentials: true })
                                     .then(() => {

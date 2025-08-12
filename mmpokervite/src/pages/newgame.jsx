@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
     Box, Collapse, Alert, IconButton, MenuItem, FormControl,
@@ -39,12 +39,6 @@ export default function NewGame() {
             })
     }, []);
 
-    //WILL DO THIS AT A LATER TIME
-    // const handlePlayerSelectChange = (event, child) => {
-    // console.log(event);
-    //When we select a player, we want the player to own the current row, and disappear from the other selects
-    // }
-
     //Sends a patch request to update the players stats after the new game
     const updatePlayers = async (e) => {
         //Create array where we will save the data
@@ -78,7 +72,6 @@ export default function NewGame() {
         // Redirect with the correct error message if the operation fails
         await axios.patch("http://localhost:8080/players", { data: gameData }, { withCredentials: true })
             .then((response) => {
-                setSubmitted(true); //to know when to redirect
                 console.log(response);
             }).catch((error) => {
                 console.log(error);
@@ -101,6 +94,7 @@ export default function NewGame() {
         }, { withCredentials: true })
             .then((response) => {
                 console.log(response)
+                navigate('/leaderboard');
             }).catch((error) => {
                 console.log(error);
                 if (error.status === 401) {
@@ -119,6 +113,10 @@ export default function NewGame() {
         //Prevents res.send response on server side
         e.preventDefault();
 
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
+
         // Check if any of the fields are empty or invalid
         // If so, prevent submission and show an alert
         const inGamePlayers = new Set();
@@ -126,6 +124,7 @@ export default function NewGame() {
             if (valErrors[i].earnings || valErrors[i].bounties || valErrors[i].rebuys ||
                 valErrors[i].addOns || valErrors[i].player || inGamePlayers.has(e.target[i * 14].value)) {
                 setOpenAlert(true);
+                setSubmitted(false);
                 return;
             }
 
@@ -336,13 +335,11 @@ export default function NewGame() {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Button variant="contained" type="submit"
+                <Button loading={submitted} loadingPosition="start" variant="contained" type="submit"
                     sx={{ width: '8%', marginBottom: '1rem' }}>
                     Add Game
                 </Button>
             </Box>
-            {/* When submitted, redirect back to the leaderboard page */}
-            {submitted ? <Navigate to='/leaderboard' replace={true} /> : null}
         </Box>
     )
 }

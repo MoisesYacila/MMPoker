@@ -8,11 +8,17 @@ export default function NewPost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState({});
+    const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
 
     // Function to handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
+
 
         // We use FormData to be able to send the whole form data including the image while being able to handle the submission on the client side
         const formData = new FormData();
@@ -76,7 +82,7 @@ export default function NewPost() {
                     setImage(e.target.files[0]);
                 }} />
             </Button>
-            <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
+            <Button loading={submitted} loadingPosition="start" type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                 Create Post
             </Button>
         </Box>

@@ -17,13 +17,17 @@ export default function LogIn() {
     let { message, openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
+    const [submitted, setSubmitted] = useState(false);
     const { setLoggedIn, setIsAdmin, setId, setUserFullName } = useUser();
     const { setAlertMessage, setSeverity } = useAlert();
 
     const handleSubmit = (e) => {
-        console.log("Form submitted");
         // Prevent the default form submission behavior
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
 
         // Post request to the server with form data
         axios.post('http://localhost:8080/login', {
@@ -45,6 +49,8 @@ export default function LogIn() {
             console.error('Login failed:', err.response?.data || err.message);
             // Show alert if login fails
             setOpenAlert(true);
+            // Reset submitted state on error
+            setSubmitted(false);
         });
 
     }
@@ -52,6 +58,10 @@ export default function LogIn() {
     // Call to the backend to initiate Google login
     // This will redirect the user to the Google login page
     const handleGoogleLogin = () => {
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
+
         // We cannot use axios here because Google login requires a pure redirect
         window.location.href = "http://localhost:8080/auth/google";
     }
@@ -93,8 +103,8 @@ export default function LogIn() {
                             label='Username' variant="outlined" name="username"></TextField>
                         <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
-                        <Button type="sumbit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Log In</Button>
-                        <Button variant='outlined' onClick={handleGoogleLogin}
+                        <Button loading={submitted} loadingPosition='start' type="sumbit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Log In</Button>
+                        <Button loading={submitted} loadingPosition='start' variant='outlined' onClick={handleGoogleLogin}
                             sx={{ display: 'flex', marginBottom: '1rem', width: '80%' }}>
                             <GoogleIcon sx={{ marginRight: '1rem' }}></GoogleIcon>Log In with Google
                         </Button>

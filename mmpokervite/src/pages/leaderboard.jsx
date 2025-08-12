@@ -20,6 +20,7 @@ export default function Leaderboard() {
 
     let { openAlertLink } = location.state || {};
     const [openAlert, setOpenAlert] = useState(openAlertLink);
+    const [disabled, setDisabled] = useState(false);
     const { alertMessage, severity } = useAlert();
 
     //This gets all the players from the DB and saves their data in the players array
@@ -232,7 +233,10 @@ export default function Leaderboard() {
                                     <TableCell >
                                         {/* When we click on a player's button, we want to request their info from the DB
                                         and pass it in the navigate state object for retrieval at the player's page */}
-                                        <Button sx={{ textTransform: 'none' }} onClick={async () => {
+                                        <Button disabled={disabled} sx={{ textTransform: 'none' }} onClick={async () => {
+                                            // Disable the button to prevent multiple clicks
+                                            setDisabled(true);
+
                                             const link = `/players/${player._id}`;
                                             await axios.get(`http://localhost:8080/players/${player._id}`)
                                                 .then((res) => {

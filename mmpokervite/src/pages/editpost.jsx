@@ -12,11 +12,16 @@ export default function EditPost() {
     const [image, setImage] = useState({});
     const [uploadedImage, setUploadedImage] = useState(false);
     const [deletedImage, setDeletedImage] = useState('');
+    const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
 
     // Function to handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
 
         // We use FormData to be able to send the whole form data including the image while being able to handle the submission on the client side
         const formData = new FormData();
@@ -38,6 +43,7 @@ export default function EditPost() {
             })
             .catch((error) => {
                 console.error('Error editing post:', error);
+                setSubmitted(false); // Reset submitted state on error
             });
     }
 
@@ -98,7 +104,7 @@ export default function EditPost() {
                     setUploadedImage(true);
                 }} />
             </Button>
-            <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
+            <Button loading={submitted} loadingPosition="start" type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                 Save Changes
             </Button>
         </Box>

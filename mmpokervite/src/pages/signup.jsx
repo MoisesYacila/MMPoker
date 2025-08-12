@@ -12,10 +12,15 @@ export default function SignUp() {
     const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
     const { setLoggedIn } = useUser();
+    const [disabled, setDisabled] = useState(false);
 
     const handleSubmit = (e) => {
         // Prevent the default form submission behavior
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (disabled) return;
+        setDisabled(true);
 
         // Post request to the server with form data
         axios.post('http://localhost:8080/signup', {
@@ -71,7 +76,7 @@ export default function SignUp() {
                             label='Last Name' variant="outlined" name="last"></TextField>
                         <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
-                        <Button type="submit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Create account</Button>
+                        <Button loading={disabled} loadingPosition='start' type="submit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Create account</Button>
                         <Typography sx={{ marginBottom: '1rem' }}>Already have an account? <Link to='/login'>Log in</Link> </Typography>
                     </CardContent>
                 </Card>

@@ -25,6 +25,7 @@ export default function EditGame() {
     const [numPlayers, setNumPlayers] = useState(0);
     const [rows, setRows] = useState([]);
     const [openAlert, setOpenAlert] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     // The valErrors array will be used to store the error status for each field in the form
     // Initially, all fields are set to false because there are no errors initially
@@ -190,6 +191,10 @@ export default function EditGame() {
         //Preventing default form behavior, so we can work with the data
         e.preventDefault();
 
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
+
         // Check if any of the fields are empty or invalid
         // If so, prevent submission and show an alert
         const inGamePlayers = new Set();
@@ -197,6 +202,7 @@ export default function EditGame() {
             if (valErrors[i].earnings || valErrors[i].bounties || valErrors[i].rebuys ||
                 valErrors[i].addOns || valErrors[i].player || inGamePlayers.has(e.target[i * 14].value)) {
                 setOpenAlert(true);
+                setSubmitted(false);
                 return;
             }
 
@@ -424,8 +430,8 @@ export default function EditGame() {
                     </Table>
                 </TableContainer>
                 <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
-                    <Button type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
-                    <Button variant="contained" color='error' onClick={() => {
+                    <Button loading={submitted} loadingPosition="start" type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
+                    <Button disabled={submitted} variant="contained" color='error' onClick={() => {
                         navigate(link, { state: { gameData } }); //short hand notation equivalent to gameData: gameData
                     }} endIcon={<CancelIcon />}>Cancel</Button>
                 </Stack>

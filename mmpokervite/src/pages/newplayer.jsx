@@ -5,7 +5,7 @@ import { Collapse, Alert, IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import axios from 'axios';
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ReactFlagsSelect from "react-flags-select";
 import '../App.css';
 
@@ -20,28 +20,32 @@ export default function NewPlayer() {
     const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
 
-    //Submit handler
+    // Submit handler
     const postPlayer = (e) => {
-        //Prevent redirect to server side response: res.send(req.body)
+        // Prevent redirect to server side response: res.send(req.body)
         e.preventDefault();
+
+        // Prevent multiple submissions
+        if (submitted) return;
+        setSubmitted(true);
 
         if (firstNameError || lastNameError || nationalityError) {
             // If there are errors, do not submit the form and show an alert
             setOpenAlert(true);
+            setSubmitted(false);
             return;
         }
 
-        //Save full name in a variable, if we use useState for the name, it won't get the last character
+        // Save full name in a variable, if we use useState for the name, it won't get the last character
         const finalName = `${firstName} ${lastName}`
-        //Send post request for express to handle and clear the inputs of the form
+        // Send post request for express to handle and clear the inputs of the form
         axios.post('http://localhost:8080/players', {
             name: finalName,
             country: nationality
         }, { withCredentials: true }).then(() => {
-            //Set submitted to true to let react know to redirect
-            setSubmitted(true);
             setFirstName('');
             setLastName('');
+            navigate('/players');
         }).catch((error) => {
             navigate(`/login`, { state: { message: 'Must be signed in to add players.', openAlertLink: true } });
             console.log(error);
@@ -108,10 +112,10 @@ export default function NewPlayer() {
                     }} id="flags-select"
                     countries={["US", "AR", "MX", "NI", "ES", "VE"]}
                     customLabels={{ "VE": "Venezuela" }} />
-                <Button variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
+                <Button loading={submitted} loadingPosition='start' variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
             </Box>
             {/* When submitted is true, react will redirect back to the players page */}
-            {submitted ? <Navigate to='/players' replace={true} /> : null}
+            {/* {submitted ? <Navigate to='/players' replace={true} /> : null} */}
         </Box>
     )
 }

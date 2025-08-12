@@ -16,6 +16,7 @@ export default function Updates() {
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [selectedPostId, setSelectedPostId] = useState(null);
     const [openDialog, setOpenDialog] = useState(false);
+    const [disabled, setDisabled] = useState(false);
 
     useEffect(() => {
         // Fetch all posts from the server
@@ -117,11 +118,17 @@ export default function Updates() {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
-                    <Button color='error' onClick={() => {
+                    <Button disabled={disabled} onClick={handleCloseDialog}>Cancel</Button>
+                    <Button loading={disabled} loadingPosition='start' color='error' onClick={() => {
+                        // Disable the button to prevent multiple clicks
+                        setDisabled(true);
+
                         // Handle delete post logic here
                         axios.delete(`http://localhost:8080/posts/${selectedPostId}`, { withCredentials: true })
                             .then(() => {
+                                // Re-enable the button after deletion
+                                setDisabled(false);
+
                                 // Remove the post from the state after deletion
                                 setAllPosts(allPosts.filter(post => post._id !== selectedPostId));
                                 handleCloseDialog();

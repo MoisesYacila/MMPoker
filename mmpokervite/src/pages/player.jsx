@@ -16,6 +16,7 @@ export default function Player() {
     const location = useLocation();
     const [playerData, setPlayerData] = useState(location.state?.playerData || null); //using the ? syntax to avoid errors if playerData is not set
     const [gameList, setGameList] = useState([]);
+    const [disabled, setDisabled] = useState(false);
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
     const navigate = useNavigate();
@@ -66,8 +67,11 @@ export default function Player() {
                         const gameDay = new Date(game.date)
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
-                                <ListItemButton onClick={async () => {
-                                    //Link matches router stucture set in main.jsx
+                                <ListItemButton disabled={disabled} onClick={async () => {
+                                    // Disable the button to prevent multiple clicks
+                                    setDisabled(true);
+
+                                    //Link matches router stucture set in AppRoutes.jsx
                                     //axios link matches express route endpoint
                                     const link = `/games/${game._id}`;
                                     await axios.get(`http://localhost:8080/games/game/${game._id}`)
