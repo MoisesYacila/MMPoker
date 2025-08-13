@@ -1,10 +1,13 @@
 import axios from 'axios';
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import { IconButton, Menu, MenuItem } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link, useNavigate } from 'react-router-dom';
 import './navigation.css';
 import { useUser } from '../UserContext';
@@ -21,6 +24,12 @@ export default function Navigation() {
     const { setAlertMessage } = useAlert();
 
     const navigate = useNavigate();
+
+    const [menuAnchor, setMenuAnchor] = useState(null);
+
+    const handleMenuOpen = (e) => {
+        setMenuAnchor(e.currentTarget);
+    }
 
     // Log out handler function
     const handleLogout = () => {
@@ -41,7 +50,7 @@ export default function Navigation() {
             <AppBar position='sticky' sx={{ display: 'flex', justifyContent: 'space-around' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, justifyContent: 'space-around' }}>
-                        <Link to='/'>M&M Poker Nights</Link>
+                        <Link to='/'>MMPoker League Manager</Link>
                     </Typography>
                     <LinkButton>
                         <Typography><Link to='/leaderboard'>Leaderboard</Link></Typography>
@@ -57,11 +66,11 @@ export default function Navigation() {
                     </LinkButton>
                     {
                         loggedIn ? (
-                            <Button variant='text' sx={{ textTransform: 'none', color: 'white' }}
-                                onClick={handleLogout}
-                            >
-                                <Typography>Log out</Typography>
-                            </Button>) :
+                            <IconButton sx={{ color: 'white' }} onClick={(e) => handleMenuOpen(e)}>
+                                <AccountCircleIcon>
+                                </AccountCircleIcon>
+                            </IconButton>
+                        ) :
                             (
                                 <LinkButton>
                                     <Typography><Link to='/login'>Log in</Link></Typography>
@@ -69,6 +78,18 @@ export default function Navigation() {
                     }
                 </Toolbar>
             </AppBar>
+            {/* Menu for logged in users to show their profile and logout */}
+            {/* MUI Syntax */}
+            <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
+                <MenuItem onClick={() => {
+                    setMenuAnchor(null);
+                    navigate('/account');
+                }}>Account</MenuItem>
+                <MenuItem onClick={() => {
+                    setMenuAnchor(null);
+                    handleLogout();
+                }}>Log out</MenuItem>
+            </Menu>
         </Box>
     );
 }

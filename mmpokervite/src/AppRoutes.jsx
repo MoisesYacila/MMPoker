@@ -19,6 +19,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import NewPost from './pages/newpost.jsx';
 import Post from './pages/post.jsx';
 import EditPost from './pages/editpost.jsx';
+import Account from './pages/account.jsx';
 import { Route, Routes } from 'react-router-dom';
 
 // This file contains all the routes of the application
@@ -57,7 +58,7 @@ export default function AppRoutes() {
                 }></Route>
                 <Route path='/updates/:id' element={<Post />}></Route>
                 <Route path='/updates/:id/edit' element={
-                    // Wrapping the Player component in a ProtectedRoute to ensure only logged in users can access it
+                    // Wrapping the Edit Post component in a ProtectedRoute to ensure only logged in users can access it
                     <ProtectedRoute requireAdmin={true} >
                         <EditPost />
                     </ProtectedRoute>
@@ -73,6 +74,12 @@ export default function AppRoutes() {
                         </ProtectedRoute>
                     }></Route>
                 </Route>
+                <Route path='/account' element={
+                    // Wrapping the Account component in a ProtectedRoute to ensure only logged in users can access it
+                    <ProtectedRoute requireAdmin={false} >
+                        <Account />
+                    </ProtectedRoute>
+                }></Route>
                 <Route path='/signup' element={<SignUp />}></Route>
                 <Route path='*' element={<NotFound />}></Route>
             </Route>

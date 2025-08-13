@@ -100,7 +100,7 @@ passport.use(new GoogleStrategy(googleConfig,
                 account = new Account({
                     googleId: profile.id,
                     fullName: profile.displayName,
-                    username: profile.id,
+                    username: `GoogleUser${profile.id}`,
                     // Optional chaining
                     // We are saying: If profile.emails and profile.emails[0] are not undefined,
                     // then get the value, which is the email address
@@ -585,21 +585,38 @@ app.get('/posts/:id', async (req, res) => {
     }
 })
 
-// Get name of account owner to show in the post page
-app.get('/account/:id/name', async (req, res) => {
+// Get account information for the logged in user
+app.get('/accounts/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
     try {
-        const account = await Account.findById(req.params.id);
+        const account = await Account.findById(id);
         // Valid ObjectId, but no account found
         if (!account) {
             return res.status(404).send('Account not found');
         }
-        res.send(account.fullName);
+        res.send(account);
     }
     // Invalid ObjectId
     catch (err) {
         return res.status(404).send('Account not found');
     }
 })
+
+// Get name of account owner to show in the post page
+// app.get('/account/:id/name', async (req, res) => {
+//     try {
+//         const account = await Account.findById(req.params.id);
+//         // Valid ObjectId, but no account found
+//         if (!account) {
+//             return res.status(404).send('Account not found');
+//         }
+//         res.send(account.fullName);
+//     }
+//     // Invalid ObjectId
+//     catch (err) {
+//         return res.status(404).send('Account not found');
+//     }
+// })
 
 //Delete one player
 app.delete('/players/:id', isAdmin, async (req, res) => {
