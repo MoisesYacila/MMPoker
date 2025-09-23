@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {
     Accordion, AccordionDetails, AccordionSummary, Box, Button,
-    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+    Dialog, DialogTitle, DialogContent, DialogActions,
     TextField
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -12,6 +12,11 @@ export default function Account() {
     const { id } = useUser();
     const [open, setOpen] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [form, setForm] = useState({
+        username: '',
+        email: '',
+        fullName: ''
+    });
     const [accountData, setAccountData] = useState({});
     const [tempAccountData, setTempAccountData] = useState({});
     const [validationErrors, setValidationErrors] = useState({
@@ -53,6 +58,12 @@ export default function Account() {
         } else {
             return '';
         }
+    }
+
+    const disableButton = () => {
+        // Disable if there are any validation errors or if all fields are empty
+        let allEmpty = form.username.trim() === '' && form.email.trim() === '' && form.fullName.trim() === '';
+        return (validationErrors.username || validationErrors.fullName || validationErrors.email.isTaken || allEmpty);
     }
 
     const validateName = (name) => {
@@ -108,12 +119,11 @@ export default function Account() {
                             label="New Username"
                             variant="outlined"
                             name="username"
+                            value={form.username}
                             // Using onBlur to validate when the user leaves the input field
                             // Makes less API calls than onChange
                             onBlur={async (e) => {
                                 if (e.target.value.trim() !== '') {
-                                    console.log('Username changed to:', e.target.value);
-
                                     // If any field has been changed, use tempAccountData to keep track of changes
                                     // Otherwise, use accountData
                                     if (tempAccountData?.usernameChanged || tempAccountData?.emailChanged || tempAccountData?.fullNameChanged)
@@ -123,6 +133,8 @@ export default function Account() {
 
                                     // Validate username uniqueness
                                     // In a GET request, we must send data as params
+                                    // We send the entire account data along with the new username to exclude the current user's username from the check 
+                                    // and when we get the response back, we only update the username error state
                                     await axios.get(`http://localhost:8080/accounts/validateData/`, { params: { ...accountData, username: e.target.value }, withCredentials: true })
                                         .then((res) => {
                                             console.log('Username validation response:', res.data);
@@ -137,9 +149,10 @@ export default function Account() {
                                     setTempAccountData({ ...tempAccountData, username: '', usernameChanged: false });
                                 }
                             }}
-                            onChange={() => {
-                                // Clear username error when user starts typing
+                            onChange={(e) => {
+                                // Clear username error when user starts typing and update form state
                                 setValidationErrors({ ...validationErrors, username: false });
+                                setForm({ ...form, username: e.target.value });
                             }}
                             error={validationErrors.username}
                             helperText={validationErrors.username ? 'Username is already taken.' : ''}
@@ -150,13 +163,12 @@ export default function Account() {
                             variant="outlined"
                             name="email"
                             type='email'
+                            value={form.email}
                             disabled={validationErrors.email.isGoogle} // Disable if it's a Google account
 
                             // Same logic as username field
                             onBlur={async (e) => {
                                 if (e.target.value.trim() !== '') {
-                                    console.log('Email changed to:', e.target.value);
-
                                     if (tempAccountData?.usernameChanged || tempAccountData?.emailChanged || tempAccountData?.fullNameChanged)
                                         setTempAccountData({ ...tempAccountData, email: e.target.value, emailChanged: true })
                                     else
@@ -175,7 +187,10 @@ export default function Account() {
                                     setTempAccountData({ ...tempAccountData, email: '', emailChanged: false });
                                 }
                             }}
-                            onChange={() => { setValidationErrors({ ...validationErrors, email: false }); }}
+                            onChange={(e) => {
+                                setValidationErrors({ ...validationErrors, email: false });
+                                setForm({ ...form, email: e.target.value });
+                            }}
                             error={validationErrors.email.isTaken}
                             helperText={getEmailHelperText()}
                             sx={{ width: '40%', marginBottom: '1rem' }}
@@ -184,13 +199,11 @@ export default function Account() {
                             label="New Full Name"
                             variant="outlined"
                             name="fullName"
-
                             // Same logic as username and email fields except we don't need to check uniqueness
                             onBlur={(e) => {
                                 if (e.target.value.trim() !== '') {
                                     if (validateName(e.target.value)) {
                                         setValidationErrors({ ...validationErrors, fullName: false });
-                                        console.log('Full Name changed to:', e.target.value);
 
                                         if (tempAccountData?.usernameChanged || tempAccountData?.emailChanged || tempAccountData?.fullNameChanged)
                                             setTempAccountData({ ...tempAccountData, fullName: e.target.value, fullNameChanged: true })
@@ -205,14 +218,17 @@ export default function Account() {
                                     setTempAccountData({ ...tempAccountData, fullName: '', fullNameChanged: false });
                                 }
                             }}
-                            onChange={() => { setValidationErrors({ ...validationErrors, fullName: false }); }}
+                            onChange={(e) => {
+                                setValidationErrors({ ...validationErrors, fullName: false });
+                                setForm({ ...form, fullName: e.target.value });
+                            }}
                             error={validationErrors.fullName}
                             helperText={validationErrors.fullName ? 'Enter a valid name with at least 5 characters.' : ''}
                             sx={{ width: '40%', marginBottom: '1rem' }}
                         />
                         <div>
                             {/* Disable the button if there are any errors in the validation */}
-                            <Button variant="contained" sx={{ marginRight: '1rem' }} disabled={validationErrors.username || validationErrors.fullName || validationErrors.email.isTaken}
+                            <Button variant="contained" sx={{ marginRight: '1rem' }} disabled={disableButton()}
                                 onClick={() => {
                                     // Open the dialog to confirm changes
                                     setOpen(true);
@@ -234,17 +250,17 @@ export default function Account() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>Verify account changes</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to apply these changes to your account?
-                        <ul>
-                            {tempAccountData.usernameChanged ? <li>New Username: {tempAccountData.username}</li> : ''}
-                            {tempAccountData.emailChanged ? <li>New Email: {tempAccountData.email}</li> : ''}
-                            {tempAccountData.fullNameChanged ? <li>New Full Name: {tempAccountData.fullName}</li> : ''}
-                        </ul>
-                    </DialogContentText>
+                    <h4>Are you sure you want to apply these changes to your account?</h4>
+                    <ul>
+                        {tempAccountData.usernameChanged ? <li>New Username: {tempAccountData.username}</li> : ''}
+                        {tempAccountData.emailChanged ? <li>New Email: {tempAccountData.email}</li> : ''}
+                        {tempAccountData.fullNameChanged ? <li>New Full Name: {tempAccountData.fullName}</li> : ''}
+                    </ul>
                 </DialogContent>
                 <DialogActions>
-                    <Button loading={submitted} onClick={async () => { }}>Confirm</Button>
+                    <Button loading={submitted} onClick={async () => {
+                        setSubmitted(true);
+                    }}>Confirm</Button>
                     <Button disabled={submitted} onClick={() => setOpen(false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>

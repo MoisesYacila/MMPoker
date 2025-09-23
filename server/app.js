@@ -602,12 +602,12 @@ app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
 
         // Check if the username already exists in the database
         if (accountData.username != '') {
-            isUsernameTaken = allAccounts.some(account => account.username === accountData.username);
+            isUsernameTaken = allAccounts.some(account => account.username.toLowerCase() === accountData.username.toLowerCase());
         }
 
         // Check if the email already exists in the database
         if (accountData.email != '') {
-            isEmailTaken = allAccounts.some(account => account.email === accountData.email);
+            isEmailTaken = allAccounts.some(account => account.email.toLowerCase() === accountData.email.toLowerCase());
         }
 
         res.send({
