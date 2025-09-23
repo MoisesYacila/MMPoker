@@ -585,6 +585,42 @@ app.get('/posts/:id', async (req, res) => {
     }
 })
 
+// Validate account data (username and email) for uniqueness
+app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
+    // Get the account data from the request body
+    const accountData = req.query;
+    let isUsernameTaken = false;
+    let isEmailTaken = false;
+
+    console.log('Validating account data:', accountData);
+    try {
+        const allAccounts = await Account.find({});
+        // If no accounts found, return an empty array
+        if (!allAccounts || allAccounts.length === 0) {
+            return res.status(404).send('No accounts found');
+        }
+
+        // Check if the username already exists in the database
+        if (accountData.username != '') {
+            isUsernameTaken = allAccounts.some(account => account.username === accountData.username);
+        }
+
+        // Check if the email already exists in the database
+        if (accountData.email != '') {
+            isEmailTaken = allAccounts.some(account => account.email === accountData.email);
+        }
+
+        res.send({
+            isUsernameTaken,
+            isEmailTaken
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('Error retrieving accounts');
+    }
+})
+
+
 // Get account information for the logged in user
 app.get('/accounts/:id', isLoggedIn, async (req, res) => {
     const { id } = req.params;
@@ -1148,6 +1184,11 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
     }
 
     res.send('Post updated successfully');
+})
+
+app.patch('/accounts/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const { username, email, fullName } = req.body;
 })
 
 app.listen(8080, () => {

@@ -55,7 +55,7 @@ export default function NewPlayer() {
     const validateName = (name) => {
         // RegEx to check if the input is a valid name, it checks for letters, accents, apostrophes, and hyphens
         let trimmedName = name.trim();
-        return /^[A-Za-zÀ-ÿ' -]+$/.test(trimmedName) && trimmedName.length >= 2 && trimmedName.length <= 20;
+        return /^[A-Za-zÀ-ÿ' -]+$/.test(trimmedName) && trimmedName.length >= 2 && trimmedName.length <= 40;
     }
 
     return (
