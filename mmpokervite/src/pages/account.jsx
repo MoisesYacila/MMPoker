@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button,
     Collapse, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
@@ -8,9 +9,13 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useUser } from '../UserContext';
+import { useAlert } from '../AlertContext';
 
 export default function Account() {
-    const { id } = useUser();
+    const { id, setLoggedIn, setIsAdmin, setId } = useUser();
+    const { setAlertMessage } = useAlert();
+    const navigate = useNavigate();
+
     const [openDialog, setOpenDialog] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -51,6 +56,20 @@ export default function Account() {
                 console.error('Error fetching account data:', error);
             });
     }, [id]);
+
+    // Log out handler function
+    const handleLogout = async () => {
+        // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
+        await axios.get('http://localhost:8080/logout', { withCredentials: true })
+            .then(() => {
+                setLoggedIn(false);
+                setIsAdmin(false);
+                setAlertMessage('Logged out.');
+                setId(null);
+                navigate('/leaderboard', { state: { openAlertLink: true } });
+                console.log('User logged out');
+            })
+    }
 
     // Get the appropriate helper text for the email field
     const getEmailHelperText = () => {
@@ -270,7 +289,7 @@ export default function Account() {
                         </Box>
                     </AccordionDetails>
                 </Accordion>
-                <Button variant='contained' sx={{ marginTop: '1rem' }}>
+                <Button variant='contained' sx={{ marginTop: '1rem' }} onClick={handleLogout}>
                     Log Out
                 </Button>
                 <Button variant='contained' sx={{ marginTop: '1rem', marginBottom: '1.5rem' }} color='error'>
