@@ -12,11 +12,12 @@ const UserContext = createContext();
 // This component will wrap the entire application and provide the user context to all components (children)
 export const UserProvider = ({ children }) => {
     // This state will be accessible to all components that use the UserContext, in this case, the Navigation component
-    // Setting a loading state to true initially, so we can show a loading spinner while we check the user's login status
     const [loggedIn, setLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    // Setting a loading state to true initially, so we can show a loading spinner while we check the user's login status
     const [loading, setLoading] = useState(true);
     const [id, setId] = useState(null);
+    const [username, setUsername] = useState('');
     const [userFullName, setUserFullName] = useState('');
 
     // Every time the app loads, we want to check the user's login and admin status
@@ -44,7 +45,7 @@ export const UserProvider = ({ children }) => {
     return (
         // Provide the loggedIn state and setLoggedIn function to all components that use this context
         // This is how useUser knows what to use
-        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading, id, setId, userFullName, setUserFullName }}>
+        <UserContext.Provider value={{ loggedIn, setLoggedIn, isAdmin, setIsAdmin, loading, id, setId, userFullName, setUserFullName, username, setUsername }}>
             {children}
         </UserContext.Provider>
     );

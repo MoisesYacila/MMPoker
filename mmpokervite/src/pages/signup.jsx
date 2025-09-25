@@ -11,7 +11,7 @@ import { useUser } from '../UserContext';
 export default function SignUp() {
     const [openAlert, setOpenAlert] = useState(false);
     const navigate = useNavigate();
-    const { setLoggedIn } = useUser();
+    const { setLoggedIn, setIsAdmin, setId, setUserFullName } = useUser();
     const [disabled, setDisabled] = useState(false);
 
     const handleSubmit = (e) => {
@@ -29,9 +29,15 @@ export default function SignUp() {
             firstName: e.target.first.value,
             lastName: e.target.last.value,
             password: e.target.password.value
-        }, { withCredentials: true }).then((res) => {
+        }, {
+            withCredentials: true
+
+        }).then((res) => {
             console.log(res.data);
             setLoggedIn(true);
+            setIsAdmin(res.data.admin);
+            setId(res.data._id);
+            setUserFullName(res.data.fullName || ''); // Set the user's full name if available
             navigate('/leaderboard');
         }).catch(err => {
             console.error('Sign up failed:', err.response?.data || err.message);

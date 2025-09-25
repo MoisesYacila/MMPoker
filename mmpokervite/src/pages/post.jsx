@@ -14,7 +14,7 @@ import { useUser } from "../UserContext";
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const { id: userId, userFullName, isAdmin } = useUser();
+    const { id: userId, userFullName, isAdmin, username } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
@@ -33,6 +33,7 @@ export default function Post() {
             axios.get(`http://localhost:8080/posts/${id}`)
                 .then((res) => {
                     setPostData(res.data);
+                    console.log('Post data:', res.data);
                 })
                 .catch(() => {
                     console.error('Error fetching post data');

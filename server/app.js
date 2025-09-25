@@ -480,7 +480,8 @@ app.get('/isAdmin', async (req, res) => {
                 isAdmin: false,
                 isLoggedIn: true,
                 id: req.user._id,
-                userFullName: user?.fullName || ''
+                userFullName: user?.fullName || '',
+                username: user?.username || ''
             });
         }
 
@@ -489,7 +490,8 @@ app.get('/isAdmin', async (req, res) => {
         isAdmin: true,
         isLoggedIn: true,
         id: req.user._id,
-        userFullName: user?.fullName || ''
+        userFullName: user?.fullName || '',
+        username: user?.username || ''
     });
 })
 
@@ -1186,9 +1188,49 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
     res.send('Post updated successfully');
 })
 
-app.patch('/accounts/:id', isLoggedIn, async (req, res) => {
+// Patch request to update account information
+app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
     const { id } = req.params;
     const { username, email, fullName } = req.body;
+    let changedUsername = false;
+
+    try {
+        // Find the account by id and update its information
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).send('Account not found by Mongoose');
+        }
+
+        if (username != '') {
+            account.username = username;
+            changedUsername = true;
+        }
+
+        if (email != '')
+            account.email = email;
+        if (fullName != '')
+            account.fullName = fullName;
+
+        await account.save();
+
+        if (changedUsername) {
+            // Re log in the user with the updated info in the account object. Function provided by passport
+            req.logIn(account, (err) => {
+                if (err) {
+                    return next(err);
+                }
+
+                // Ensures the session is saved before sending the response
+                res.send(account);
+            });
+        }
+        else {
+            res.send(account);
+        }
+    }
+    catch (err) {
+        return res.status(404).send('Account not found via catch');
+    }
 })
 
 app.listen(8080, () => {
