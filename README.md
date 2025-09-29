@@ -5,7 +5,7 @@
  [Español](README.es.md) (🇪🇸)
 
 
-# M&M Poker ♦️♠️♥️♣️
+# MMPoker ♦️♠️♥️♣️
 ## Poker League Tracker
 
 A full-stack web app to track poker games, player stats, and rankings for casual poker nights or local leagues. Built with the MERN stack (MongoDB, Express, React, Node.js), this app automatically calculates individual and global stats after each game.
@@ -26,11 +26,8 @@ A full-stack web app to track poker games, player stats, and rankings for casual
    - Delete players (if they are not part of any games).
 
 2. **Game Management**
-   - Add new poker games, specifying:
-     - Players involved
-     - Player performance (earnings, rebuys, add-ons, etc.)
-   - Edit existing games to update player stats or game details.
-   - Delete games, which automatically updates associated player statistics.
+   - Add new poker games, specifying players and their performance (earnings, rebuys, add-ons, etc.)
+   - Edit and delete games, with automatic updates to player statistics.
 
 3. **Leaderboard**
    - View a sortable leaderboard showing player rankings based on:
@@ -44,20 +41,26 @@ A full-stack web app to track poker games, player stats, and rankings for casual
    - Toggle between **Total Stats** and **Average Stats**:
      - Total Stats: Most games played, most wins, most earnings, etc.
      - Average Stats: Best average profit, ITM percentage, OTB (On The Bubble) percentage, etc.
-   - Visualize stats using cards and lists for easy readability.
+   - Visualize stats using cards and lists.
 
-5. **Authentication**
-   - Users can **sign up** and **log in** securely with a local strategy.
-   - Google OAuth 2.0 integration for fast and secure third-party login.
-   - Logged-in users can access protected routes and perform restricted actions.
+5. **Updates**
+   - Admins can post updates, results, and more.
+   - Users can comment and like posts.
+   - Image upload supported for posts.
 
-6. **Navigation**
-   - Intuitive navigation bar with links to key pages:
-     - Leaderboard
-     - Players
-     - Forum (placeholder)
-     - Stats
-     - Sign-Up (placeholder)
+6. **Authentication & Account Management**
+   - Users can sign up and log in (local and Google OAuth 2.0).
+   - Edit profile (username, email, full name).
+   - View account info and settings.
+
+7. **Error Handling**
+   - Custom error pages for 404 (Not Found) and 403 (Unauthorized).
+
+8. **Navigation**
+   - Intuitive navigation bar with links to all key pages.
+
+9. **Responsive UI**
+   - Mostly responsive design; mobile support is being polished.
 
 ---
 
@@ -76,6 +79,7 @@ A full-stack web app to track poker games, player stats, and rankings for casual
 - **Mongoose**: ODM for MongoDB to manage schemas and queries.
 - **Passport.js**: Authentication (Local + Google OAuth 2.0)
 
+- **Image Uploads:** Cloudinary
 
 ---
 
@@ -127,20 +131,14 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
 
 ### Upcoming Features
 
-- **Authorization**  
-  Restrict certain actions to admin users.
-
-- **Error Handling**  
-  Make different error pages, and restrict certain actions.
-
-- **Forum (Updates)**  
-  Page where admin can post updates, results, and more on the games.
-
 - **Mobile Responsiveness**  
-  Enhance user experience on mobile devices.
+  Further polish for mobile and tablet devices.
 
-- **Admin Panel**  
-  Provide an admin interface for managing players, games, and posts.
+- **Testing**  
+  Add unit and integration tests.
+
+- **Production Deployment**  
+  Prepare for deployment (environment variables, security, etc.).
 
 ---
 
@@ -152,4 +150,4 @@ Inspired by poker nights with friends. Built as a project to level up my MERN st
 
 ## 🎉 Final Note
 
-Enjoy managing your poker games with **M&M Poker**!
+Enjoy managing your poker games with **MMPoker**!

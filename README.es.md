@@ -2,7 +2,7 @@
 ## 🌍 Language / Idioma
 [English](README.md) (🇬🇧 🇪🇺)
 
-# M&M Poker ♦️♠️♥️♣️
+# MMPoker ♦️♠️♥️♣️
 ## Seguimiento de Liga de Poker
 
 Una aplicación web full-stack para registrar partidas de poker, estadísticas de jugadores y clasificaciones para noches de poker entre amigos o ligas locales. Construida con el stack MERN (MongoDB, Express, React, Node.js), esta app calcula automáticamente estadísticas individuales y globales después de cada partida.
@@ -27,8 +27,7 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
    - Añadir nuevas partidas de poker especificando:
      - Jugadores que participaron
      - Desempeño de cada jugador (ganancias, recompras, add-ons, etc.)
-   - Editar partidas para actualizar estadísticas o detalles.
-   - Eliminar partidas actualiza automáticamente las estadísticas relacionadas.
+   - Editar y eliminar partidas, actualizando automáticamente las estadísticas.
 
 3. **Clasificación**
    - Ver un ranking ordenable de jugadores basado en:
@@ -43,19 +42,25 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
      - Totales: más partidas jugadas, más victorias, más ganancias, etc.
      - Promedios: mejor ganancia promedio, % de finalizar en premios, % de finalizar en la burbuja (OTB - On The Bubble), etc.
    - Visualización clara usando tarjetas y listas.
-  
-5. **Autenticación**
-   - Registro e inicio de sesión con email y contraseña.
-   - Inicio de sesión con Google (OAuth 2.0).
-   - Gestión de sesión entre frontend y backend usando cookies.
 
-6. **Navegación**
-   - Barra de navegación intuitiva con enlaces a las secciones clave:
-     - Clasificación
-     - Jugadores
-     - Foro (en construcción)
-     - Estadísticas
-     - Registro (placeholder)
+5. **Noticias**
+   - Los administradores pueden publicar actualizaciones, resultados y más.
+   - Los usuarios pueden comentar y dar "me gusta" a las publicaciones.
+   - Soporte para subir imágenes en las publicaciones.
+  
+6. **Autenticación y Gestión de Cuenta**
+   - Registro e inicio de sesión (local y Google OAuth 2.0).
+   - Editar perfil (usuario, email, nombre completo).
+   - Ver información y configuración de la cuenta.
+
+7. **Manejo de errores**
+   - Páginas personalizadas para errores 404 (No encontrado) y 403 (No autorizado).
+
+8. **Navegación**
+   - Barra de navegación intuitiva con enlaces a todas las secciones.
+
+9. **UI Responsiva**
+   - Diseño mayormente responsivo; se sigue puliendo para móviles.
 
 ---
 
@@ -73,6 +78,8 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
 - **MongoDB**: Base de datos NoSQL para jugadores y partidas.
 - **Mongoose**: ODM para gestionar esquemas y consultas.
 - **Passport.js**: Autenticación local y con Google.
+
+- **Subida de imágenes:** Cloudinary
 
 ---
 
@@ -125,20 +132,14 @@ Pronto agregaré imágenes del ranking, formularios de partida y vistas de estad
 
 ### Características próximas
 
-- **Autorización**  
-  Restringir el acceso a ciertas funciones según el tipo de usuario (por ejemplo, solo administradores pueden editar o eliminar partidas.
-
-- **Manejo de errores**  
-  Implementar páginas de error personalizadas y mostrar mensajes claros cuando ocurran errores.
-
-- **Foro (Actualizaciones)**  
-  Página donde el administrador puede publicar actualizaciones, resultados y más sobre las partidas.
-
 - **Responsividad móvil**  
-  Mejorar la experiencia de usuario en dispositivos móviles y tablets.
+  Mejoras adicionales para móviles y tablets.
 
-- **Panel de administración**  
-  Interfaz exclusiva para el administrador para gestionar jugadores, partidas y publicaciones de forma más eficiente.
+- **Testing**  
+  Pruebas unitarias e integrales.
+
+- **Despliegue en producción**  
+  Preparar para producción (variables de entorno, seguridad, etc.).
 
 ---
 
@@ -150,5 +151,5 @@ Inspirado por las noches de poker con amigos. Construido como un proyecto para m
 
 ## 🎉 Nota final
 
-¡Disfruta gestionando tus noches de poker con **M&M Poker**!
+¡Disfruta gestionando tus noches de poker con **MMPoker**!
 
