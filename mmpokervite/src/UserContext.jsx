@@ -33,7 +33,7 @@ export const UserProvider = ({ children }) => {
                 setLoading(false);
                 setId(res.data.id);
                 setUserFullName(res.data.userFullName || ''); // Set the user's full name if available
-                console.log('res.data from UserContext: ', res.data)
+                setUsername(res.data.username || ''); // Set the user's username if available
             })
             .catch((error) => {
                 console.error('Error checking admin status:', error);

@@ -17,7 +17,7 @@ const PostSchema = new Schema({
     // Array of comments, each with an author, content, and date
     comments: [{
         author: String,
-        authorName: String, // Name of the author for display purposes
+        username: String,
         content: String,
         date: Date
     }],
@@ -28,7 +28,7 @@ const PostSchema = new Schema({
             ref: 'Account',
             required: true
         },
-        name: String // Name of the author for display purposes
+        username: String
     },
     date: Date,
     likes: Number,

@@ -806,7 +806,7 @@ app.post('/login', async (req, res, next) => {
 
             // If login is successful, send a response to the client with the user info
             // Important to return and not just do res.json
-            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, isAdmin: user.admin, fullName: user.fullName } });
+            return res.json({ message: 'Logged in successfully', user: { id: user._id, email: user.email, isAdmin: user.admin, fullName: user.fullName, username: user.username } });
         });
 
         // Call the middleware function with req and res
@@ -888,7 +888,7 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
         // Get the user id from the request
         author: {
             id: user._id,
-            name: user.fullName
+            username: user.username
         },
         // Initially empty image, will be filled if a file is uploaded
         image: '',
@@ -1121,11 +1121,11 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
 // Patch request to add a comment to a post
 app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
     const { id } = req.params;
-    const { author, content, authorName } = req.body;
+    const { author, content, username } = req.body;
 
     // Find the post by id, add a new comment to the comments array, and save it
     const post = await Post.findById(id);
-    post.comments.push({ author, authorName, content, date: new Date() });
+    post.comments.push({ author, username, content, date: new Date() });
     await post.save();
     res.send(post);
 })

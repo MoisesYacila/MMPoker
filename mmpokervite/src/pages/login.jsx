@@ -18,7 +18,7 @@ export default function LogIn() {
     const [openAlert, setOpenAlert] = useState(false);
     const [openAlert2, setOpenAlert2] = useState(openAlertLink);
     const [submitted, setSubmitted] = useState(false);
-    const { setLoggedIn, setIsAdmin, setId, setUserFullName } = useUser();
+    const { setLoggedIn, setIsAdmin, setId, setUserFullName, setUsername } = useUser();
     const { setAlertMessage, setSeverity } = useAlert();
 
     const handleSubmit = (e) => {
@@ -40,6 +40,7 @@ export default function LogIn() {
             setLoggedIn(true);
             setIsAdmin(res.data.user.isAdmin);
             setId(res.data.user.id);
+            setUsername(res.data.user.username);
             setUserFullName(res.data.user.fullName || ''); // Set the user's full name if available
             // Redirect to the leaderboard page after successful login
             setAlertMessage('Welcome');

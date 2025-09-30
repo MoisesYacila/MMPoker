@@ -74,7 +74,7 @@ export default function Updates() {
                                 <Box sx={{ display: 'flex', width: post.image ? '80%' : '100%', flexDirection: 'column' }}>
                                     <CardHeader
                                         title={post.title}
-                                        subheader={`Posted on ${new Date(post.date).toLocaleDateString()} by ${post.author.name}`}
+                                        subheader={`Posted on ${new Date(post.date).toLocaleDateString()} by ${post.author.username}`}
                                     />
                                     <CardContent>
                                         <Typography variant="body2" color="text.secondary">

@@ -74,7 +74,7 @@ export default function Post() {
                     <Box sx={{ padding: '2rem', textAlign: 'center', width: '80%' }}>
                         {/* Display post title and content */}
                         <h1>{postData.title}</h1>
-                        <h4>Posted by {postData.author.name} on {new Date(postData.date).toLocaleDateString()}</h4>
+                        <h4>Posted by {postData.author.username} on {new Date(postData.date).toLocaleDateString()}</h4>
                         {postData.image && (
                             <img src={postData.image} alt="Post" style={{ width: '15%' }} />
                         )}
@@ -137,7 +137,7 @@ export default function Post() {
 
                                 // Patch request to add a comment to the post
                                 axios.patch(`http://localhost:8080/posts/${id}/comment`,
-                                    { author: userId, content: comment, authorName: userFullName }, { withCredentials: true })
+                                    { author: userId, content: comment, username }, { withCredentials: true })
                                     .then((res) => {
                                         // Update the post data with the new comment
                                         // Reset the comment input field and hide the text area
@@ -166,7 +166,7 @@ export default function Post() {
                                 <Box key={index} sx={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc', display: 'flex', justifyContent: 'space-between' }}>
                                     {/* div to separate the content from the delete button */}
                                     <div>
-                                        <p><strong>{comment.authorName}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
+                                        <p><strong>{comment.username}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
                                         <p>{comment.content}</p>
                                     </div>
                                     <IconButton sx={{
