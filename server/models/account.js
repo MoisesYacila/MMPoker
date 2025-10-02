@@ -15,7 +15,12 @@ const AccountSchema = new Schema({
         type: String,
         required: true
     },
-    admin: Boolean
+    admin: Boolean,
+    // Soft delete flag
+    deleted: {
+        type: Boolean,
+        default: false
+    }
 });
 
 // Set up passport-local-mongoose

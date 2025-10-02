@@ -14,7 +14,7 @@ import { useUser } from "../UserContext";
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const { id: userId, userFullName, isAdmin, username } = useUser();
+    const { id: userId, isAdmin, username } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');

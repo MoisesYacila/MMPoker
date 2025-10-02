@@ -16,7 +16,8 @@ export default function Account() {
     const { setAlertMessage } = useAlert();
     const navigate = useNavigate();
 
-    const [openDialog, setOpenDialog] = useState(false);
+    const [openEditDialog, setOpenEditDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [form, setForm] = useState({
@@ -280,7 +281,7 @@ export default function Account() {
                                 <Button variant="contained" sx={{ marginRight: '1rem' }} disabled={disableButton()}
                                     onClick={() => {
                                         // Open the dialog to confirm changes
-                                        setOpenDialog(true);
+                                        setOpenEditDialog(true);
                                         console.log('Temp Account Data:', tempAccountData);
                                     }}>
                                     Save Changes
@@ -292,12 +293,13 @@ export default function Account() {
                 <Button variant='contained' sx={{ marginTop: '1rem' }} onClick={handleLogout}>
                     Log Out
                 </Button>
-                <Button variant='contained' sx={{ marginTop: '1rem', marginBottom: '1.5rem' }} color='error'>
+                <Button variant='contained' sx={{ marginTop: '1rem', marginBottom: '1.5rem' }} color='error'
+                    onClick={() => setOpenDeleteDialog(true)}>
                     Delete Account
                 </Button>
 
                 {/* Dialog to confirm account changes */}
-                <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
                     <DialogTitle>Verify account changes</DialogTitle>
                     <DialogContent>
                         <p>Are you sure you want to apply these changes to your account?</p>
@@ -325,9 +327,38 @@ export default function Account() {
                                     console.error('Error updating account:', err);
                                     setSubmitted(false);
                                 });
-                            setOpenDialog(false);
+                            setOpenEditDialog(false);
                         }}>Confirm</Button>
-                        <Button disabled={submitted} onClick={() => setOpenDialog(false)}>Cancel</Button>
+                        <Button disabled={submitted} onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+                {/* Dialog to confirm account deletion */}
+                <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+                    <DialogTitle>Deleting account</DialogTitle>
+                    <DialogContent>
+                        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button loading={submitted} color='error' onClick={async () => {
+                            // Call the delete account route
+                            setSubmitted(true);
+                            await axios.delete(`http://localhost:8080/accounts/${id}`, { withCredentials: true })
+                                .then(() => {
+                                    // On success, log the user out and redirect to login page
+                                    console.log('Account deleted successfully');
+                                    setSubmitted(false);
+                                    setOpenDeleteDialog(false);
+                                    setAlertMessage('Account deleted successfully.');
+                                    setLoggedIn(false);
+                                    setIsAdmin(false);
+                                    setId(null);
+                                    navigate('/login', { state: { message: 'Your account has been deleted.', openAlertLink: true } });
+                                })
+                                .catch((err) => {
+                                    console.error('Error deleting account:', err);
+                                });
+                        }}>Delete</Button>
+                        <Button disabled={submitted} onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
                     </DialogActions>
                 </Dialog>
             </Box>

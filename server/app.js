@@ -753,6 +753,50 @@ app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) =>
     }
 })
 
+// Delete an account
+app.delete('/accounts/:id', isLoggedIn, async (req, res) => {
+    const { id } = req.params;
+
+    // Only the account owner can delete the account
+    if (req.user._id.toString() !== id) {
+        return res.status(403).send('You are not authorized to delete this account');
+    }
+
+    try {
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).send('Account not found');
+        }
+
+        // We are doing a soft delete, so we are not actually deleting the account from the database
+        // Instead, we are just clearing out the sensitive information
+
+        // If the account was created with Google, we clear out the Google ID
+        if (account.googleId) {
+            account.googleId = null;
+        }
+
+        // We're setting the username and email to something that indicates the account was deleted
+        // Needs to be unique to avoid issues with the DB, so we add the account ID to it
+        account.username = `[deleted]${account._id}`;
+        account.email = `deleted-${account._id}@example.com`;
+        account.deleted = true;
+
+        await account.save();
+
+        // Log out the user after deleting the account
+        req.logout((err) => {
+            if (err) {
+                return next(err);
+            }
+            res.send('Account deleted and logged out successfully');
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error deleting account');
+    }
+});
+
 // Post request handling sign ups
 app.post('/signup', async (req, res, next) => {
     // Destructure data from req.body
@@ -796,6 +840,10 @@ app.post('/login', async (req, res, next) => {
         // Checks if the credentials are valid
         if (!user) {
             return res.status(401).json('Invalid username or password');
+        }
+
+        if (user?.deleted) {
+            return res.status(403).json('This account has been deleted');
         }
 
         // Function provided by passport, sets up the session
