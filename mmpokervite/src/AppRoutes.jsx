@@ -20,6 +20,7 @@ import NewPost from './pages/newpost.jsx';
 import Post from './pages/post.jsx';
 import EditPost from './pages/editpost.jsx';
 import Account from './pages/account.jsx';
+import EditPlayer from './pages/editplayer.jsx';
 import { Route, Routes } from 'react-router-dom';
 
 // This file contains all the routes of the application
@@ -49,6 +50,12 @@ export default function AppRoutes() {
                     }></Route>
                     <Route path='/players/:id' element={<Player />}></Route>
                 </Route>
+                <Route path='/player/:id/edit' element={
+                    // Wrapping the NewPost component in a ProtectedRoute to ensure only admins can access it
+                    <ProtectedRoute requireAdmin={true} >
+                        <EditPlayer />
+                    </ProtectedRoute>
+                }></Route>
                 <Route path='/updates' element={<Updates />}></Route>
                 <Route path='/updates/newpost' element={
                     // Wrapping the NewPost component in a ProtectedRoute to ensure only admins can access it

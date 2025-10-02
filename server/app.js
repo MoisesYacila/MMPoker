@@ -640,22 +640,6 @@ app.get('/accounts/:id', isLoggedIn, async (req, res) => {
     }
 })
 
-// Get name of account owner to show in the post page
-// app.get('/account/:id/name', async (req, res) => {
-//     try {
-//         const account = await Account.findById(req.params.id);
-//         // Valid ObjectId, but no account found
-//         if (!account) {
-//             return res.status(404).send('Account not found');
-//         }
-//         res.send(account.fullName);
-//     }
-//     // Invalid ObjectId
-//     catch (err) {
-//         return res.status(404).send('Account not found');
-//     }
-// })
-
 //Delete one player
 app.delete('/players/:id', isAdmin, async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
@@ -1262,6 +1246,7 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
         await account.save();
 
         if (changedUsername) {
+            console.log(`req.user before re log in: ${req.user}`);
             // Re log in the user with the updated info in the account object. Function provided by passport
             req.logIn(account, (err) => {
                 if (err) {
