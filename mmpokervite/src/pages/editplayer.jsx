@@ -15,7 +15,7 @@ export default function EditPlayer() {
     const [validationErrors, setValidationErrors] = useState({
         firstName: false,
         lastName: false,
-        nationality: true
+        nationality: false
     });
     const [submitted, setSubmitted] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
@@ -27,7 +27,9 @@ export default function EditPlayer() {
         axios.get(`http://localhost:8080/players/${id}`)
             .then((res) => {
                 setPlayerData(res.data);
-                console.log(res.data);
+                setFirstName(res.data.firstName);
+                setLastName(res.data.lastName);
+                setNationality(res.data.nationality);
             })
             .catch((err) => {
                 console.error('Error fetching player data:', err);
@@ -51,6 +53,7 @@ export default function EditPlayer() {
         if (validationErrors.firstName || validationErrors.lastName || validationErrors.nationality) {
             // If there are errors, do not submit the form
             setSubmitted(false);
+            setOpenAlert(true);
             return;
         }
 
@@ -97,7 +100,7 @@ export default function EditPlayer() {
                     helperText={validationErrors.firstName ? "Enter a valid name with at least 2 characters" : ""}
                     onChange={(e) => {
                         // Validate first name input
-                        // If valid, set the error state to false, otherwise true
+                        // If valid, set the error state to false, otherwise true which shows the error message
                         validateName(e.target.value) ? setValidationErrors({ ...validationErrors, firstName: false }) : setValidationErrors({ ...validationErrors, firstName: true });
                         setFirstName(e.target.value);
                     }}
