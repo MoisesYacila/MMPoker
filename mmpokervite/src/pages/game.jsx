@@ -70,7 +70,7 @@ export default function Game() {
             for (let player of gameInfo.leaderboard) {
                 await axios.get(`http://localhost:8080/players/${player.player}`)
                     .then((res) => {
-                        playerArr.push(res.data.name);
+                        playerArr.push(`${res.data.firstName} ${res.data.lastName}`);
                     });
             }
             setPlayerName(playerArr);

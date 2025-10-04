@@ -9,7 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import PersonIcon from '@mui/icons-material/Person';
-import { Us, Ar, Mx, Ni, Es, Ve } from "react-flags-select";
+import { Us, Ar, Mx, Ni, Es, Ve, Cr } from "react-flags-select";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -103,8 +103,8 @@ export default function Players() {
                                     setDisabled(true);
                                     const link = `/players/${player._id}`;
                                     await axios.get(`http://localhost:8080/players/${player._id}`)
-                                        .then((res) => {
-                                            navigate(link, { state: { playerData: res.data } });
+                                        .then(() => {
+                                            navigate(link);
                                         });
                                 }}>
                                     <ListItemIcon>
@@ -115,8 +115,9 @@ export default function Players() {
                                         {player.nationality === "NI" ? <Ni /> : null}
                                         {player.nationality === "ES" ? <Es /> : null}
                                         {player.nationality === "VE" ? <Ve /> : null}
+                                        {player.nationality === "CR" ? <Cr /> : null}
                                     </ListItemIcon>
-                                    <ListItemText primary={player.name} sx={{ textAlign: 'center' }} />
+                                    <ListItemText primary={`${player.firstName} ${player.lastName}`} sx={{ textAlign: 'center' }} />
 
                                 </ListItemButton>
                                 {/* async callback that gets the player that we are trying to delete, and opens

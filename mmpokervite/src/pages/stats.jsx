@@ -83,7 +83,7 @@ export default function Stats() {
                             {totalLeaders.mostGames ? totalLeaders.mostGames.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.gamesPlayed}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.gamesPlayed}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -100,7 +100,7 @@ export default function Stats() {
                             {totalLeaders.mostOTB ? totalLeaders.mostOTB.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.onTheBubble}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.onTheBubble}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -117,7 +117,7 @@ export default function Stats() {
                             {totalLeaders.mostWins ? totalLeaders.mostWins.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.wins}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.wins}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -134,7 +134,7 @@ export default function Stats() {
                             {totalLeaders.mostITM ? totalLeaders.mostITM.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.itmFinishes}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.itmFinishes}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -151,7 +151,7 @@ export default function Stats() {
                             {totalLeaders.mostBounties ? totalLeaders.mostBounties.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.bounties}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.bounties}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -168,7 +168,7 @@ export default function Stats() {
                             {totalLeaders.mostWinnings ? totalLeaders.mostWinnings.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.winnings}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: $${player.winnings}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -185,7 +185,7 @@ export default function Stats() {
                             {totalLeaders.mostRebuys ? totalLeaders.mostRebuys.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${player.rebuys}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${player.rebuys}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -202,7 +202,7 @@ export default function Stats() {
                             {totalLeaders.mostAddOns ? totalLeaders.mostAddOns.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${player.addOns}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: $${player.addOns}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -225,7 +225,7 @@ export default function Stats() {
                             {averageLeaders.bestAvgProfit ? averageLeaders.bestAvgProfit.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${formatNum(player.avgProfit)}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: $${formatNum(player.avgProfit)}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             })
@@ -243,7 +243,7 @@ export default function Stats() {
                             {averageLeaders.bestITM ? averageLeaders.bestITM.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${formatNum(player.itmPercentage * 100)}%`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${formatNum(player.itmPercentage * 100)}%`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -260,7 +260,7 @@ export default function Stats() {
                             {averageLeaders.mostOTB ? averageLeaders.mostOTB.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${formatNum(player.otbPercentage * 100)}%`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${formatNum(player.otbPercentage * 100)}%`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -277,7 +277,7 @@ export default function Stats() {
                             {averageLeaders.mostAvgBounties ? averageLeaders.mostAvgBounties.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${formatNum(player.avgBounties)}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${formatNum(player.avgBounties)}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -294,7 +294,7 @@ export default function Stats() {
                             {averageLeaders.mostAvgRebuys ? averageLeaders.mostAvgRebuys.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: ${formatNum(player.avgRebuys)}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: ${formatNum(player.avgRebuys)}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null
@@ -311,7 +311,7 @@ export default function Stats() {
                             {averageLeaders.mostAvgAddOns ? averageLeaders.mostAvgAddOns.map((player, i) => {
                                 return (<ListItem disablePadding key={i}>
                                     <ListItemButton>
-                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.name}: $${formatNum(player.avgAddOns)}`} />
+                                        <ListItemText sx={{ textAlign: 'center' }} primary={`1st. ${player.firstName} ${player.lastName}: $${formatNum(player.avgAddOns)}`} />
                                     </ListItemButton>
                                 </ListItem>)
                             }) : null

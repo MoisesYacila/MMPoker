@@ -159,7 +159,7 @@ export default function NewGame() {
                         <MenuItem value='-1'>Select a player</MenuItem>
                         {players.map((player, i) => {
                             return (
-                                <MenuItem key={i + 1} value={player._id}>{player.name}</MenuItem>
+                                <MenuItem key={i + 1} value={player._id}>{`${player.firstName} ${player.lastName}`}</MenuItem>
                             )
                         })}
                     </TextField>

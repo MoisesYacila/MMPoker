@@ -36,11 +36,9 @@ export default function NewPlayer() {
             return;
         }
 
-        // Save full name in a variable, if we use useState for the name, it won't get the last character
-        const finalName = `${firstName} ${lastName}`
         // Send post request for express to handle and clear the inputs of the form
         axios.post('http://localhost:8080/players', {
-            name: finalName,
+            firstName, lastName,
             country: nationality
         }, { withCredentials: true }).then(() => {
             setFirstName('');
@@ -110,8 +108,8 @@ export default function NewPlayer() {
                         setNationality(code);
                         setNationalityError(false);
                     }} id="flags-select"
-                    countries={["US", "AR", "MX", "NI", "ES", "VE"]}
-                    customLabels={{ "VE": "Venezuela" }} />
+                    searchable
+                    customLabels={{ "VE": "Venezuela", "BO": "Bolivia", "IR": "Iran", "LA": "Laos", "MK": "Macedonia", "MD": "Moldova", "VN": "Vietnam" }} />
                 <Button loading={submitted} loadingPosition='start' variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
             </Box>
             {/* When submitted is true, react will redirect back to the players page */}

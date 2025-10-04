@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -17,9 +17,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 
 export default function Player() {
     const { id } = useParams(); // Get player id from URL params
-    // //useLocation helps retrieve the data we passed in the navigate function that took us to this page
-    const location = useLocation();
-    const [playerData, setPlayerData] = useState(location.state?.playerData || null); //using the ? syntax to avoid errors if playerData is not set
+    const [playerData, setPlayerData] = useState(null);
     const [gameList, setGameList] = useState([]);
     const [disabled, setDisabled] = useState(false);
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -42,7 +40,8 @@ export default function Player() {
     }
 
     useEffect(() => {
-        // If playerData is not set, fetch it from the server
+        // If playerData is not set, fetch it from the server, otherwise do nothing
+        if (playerData) return;
         if (!playerData) {
             axios.get(`http://localhost:8080/players/${id}`)
                 .then((res) => {
@@ -63,7 +62,7 @@ export default function Player() {
                 })
             })
             .catch((err) => { console.log(err) })
-    }, [])
+    }, [playerData])
 
     return (
         <div>
@@ -79,7 +78,7 @@ export default function Player() {
                     This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
                 </Alert>
             </Collapse>
-            <h1>{playerData == null ? <CircularProgress /> : playerData.name}</h1>
+            <h1>{playerData == null ? <CircularProgress /> : `${playerData.firstName} ${playerData.lastName}`}</h1>
             <div className='player-data'>
                 <Typography variant='h4'>Earnings: ${playerData == null ? <CircularProgress /> : playerData.winnings}</Typography>
                 <Typography variant='h4'>Games Played: {playerData == null ? <CircularProgress /> : playerData.gamesPlayed}</Typography>
@@ -141,7 +140,7 @@ export default function Player() {
                 <DialogTitle>Permanently Delete Player?</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        You are about to permanently delete {playerData.name}.
+                        You are about to permanently delete {playerData ? `${playerData.firstName} ${playerData.lastName}` : <CircularProgress />}.
                         Are you sure you want to delete this player? This action cannot be undone.
                     </DialogContentText>
                     <DialogActions>

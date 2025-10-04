@@ -242,7 +242,7 @@ export default function Leaderboard() {
                                                 .then((res) => {
                                                     navigate(link, { state: { playerData: res.data } });
                                                 });
-                                        }}>{player.name}</Button>
+                                        }}>{`${player.firstName} ${player.lastName}`}</Button>
                                     </TableCell>
                                     <TableCell align='center'>{player.gamesPlayed}</TableCell>
                                     <TableCell align='center'>{player.wins}</TableCell>

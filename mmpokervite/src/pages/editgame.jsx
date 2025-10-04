@@ -305,7 +305,7 @@ export default function EditGame() {
                                                     {/* Add all the options */}
                                                     {allPlayers.map((player, i) => {
                                                         return (
-                                                            <MenuItem key={i + 1} value={player._id}>{player.name}</MenuItem>
+                                                            <MenuItem key={i + 1} value={player._id}>{`${player.firstName} ${player.lastName}`}</MenuItem>
                                                         )
                                                     })}
                                                 </TextField>

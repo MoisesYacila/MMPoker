@@ -848,9 +848,9 @@ app.post('/login', async (req, res, next) => {
 //Post request handling adding players to DB
 app.post('/players', isLoggedIn, async (req, res) => {
     //Destructure from req.body and add player with all the info to DB
-    const { name, country } = req.body;
+    const { firstName, lastName, country } = req.body;
     const player = new Player({
-        name: name, nationality: country, gamesPlayed: 0, wins: 0,
+        firstName, lastName, nationality: country, gamesPlayed: 0, wins: 0,
         itmFinishes: 0, onTheBubble: 0, bounties: 0,
         rebuys: 0, addOns: 0, winnings: 0
     });
@@ -1127,6 +1127,24 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
     await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length, prizePool });
 
     res.send('Received EDIT patch request');
+})
+
+// Patch request to edit a player's information
+app.patch('/players/player/:id', isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { firstName, lastName, nationality } = req.body;
+
+    try {
+        const player = await Player.findById(id);
+        player.firstName = firstName;
+        player.lastName = lastName;
+        player.nationality = nationality;
+        await player.save();
+    }
+    catch (err) {
+        return res.status(404).send('Player not found');
+    }
+    res.send('Player info updated successfully');
 })
 
 // Patch request to handle likes on posts
