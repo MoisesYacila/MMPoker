@@ -14,21 +14,16 @@ const PostSchema = new Schema({
         type: String,
         required: true
     },
-    // Array of comments, each with an author, content, and date
+    // Array of comments associated with the post
     comments: [{
-        author: String,
-        username: String,
-        content: String,
-        date: Date
+        type: Schema.Types.ObjectId,
+        ref: 'Comment'
     }],
     // Reference to the author of the post, which is an Account object
     author: {
-        id: {
-            type: Schema.Types.ObjectId,
-            ref: 'Account',
-            required: true
-        },
-        username: String
+        type: Schema.Types.ObjectId,
+        ref: 'Account',
+        required: true
     },
     date: Date,
     likes: Number,

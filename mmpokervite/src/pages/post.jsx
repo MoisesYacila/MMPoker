@@ -14,7 +14,7 @@ import { useUser } from "../UserContext";
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const { id: userId, isAdmin, username } = useUser();
+    const { id: userId, isAdmin } = useUser();
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
@@ -38,6 +38,22 @@ export default function Post() {
                 .catch(() => {
                     console.error('Error fetching post data');
                 });
+
+
+            // We are not populating comments in the post fetch, so we need to fetch them separately
+            axios.get(`http://localhost:8080/posts/${id}/comments`)
+                .then((res) => {
+                    // Functional update, safer than spreading postData directly because it ensures we have the latest state
+                    setPostData(prevData => ({
+                        ...prevData,
+                        comments: res.data
+                    }));
+                    console.log('Comments data:', res.data);
+                })
+                .catch(() => {
+                    console.error('Error fetching comments data');
+                });
+
         }
     }, []);
 
@@ -45,7 +61,7 @@ export default function Post() {
     useEffect(() => {
         if (postData && userId) {
             // includes will return true or false, so we can use it to set state
-            setIsLiked(postData.likedBy.includes(userId));
+            setIsLiked(postData?.likedBy?.includes(userId));
         }
     }, [postData, userId]);
 
@@ -74,7 +90,7 @@ export default function Post() {
                     <Box sx={{ padding: '2rem', textAlign: 'center', width: '80%' }}>
                         {/* Display post title and content */}
                         <h1>{postData.title}</h1>
-                        <h4>Posted by {postData.author.username} on {new Date(postData.date).toLocaleDateString()}</h4>
+                        <h4>Posted by {postData?.author?.username ? postData?.author?.username : <CircularProgress />} on {new Date(postData.date).toLocaleDateString()}</h4>
                         {postData.image && (
                             <img src={postData.image} alt="Post" style={{ width: '15%' }} />
                         )}
@@ -135,13 +151,13 @@ export default function Post() {
                                 // Disable the button to prevent multiple clicks
                                 setDisabled(true);
 
-                                // Patch request to add a comment to the post
-                                axios.patch(`http://localhost:8080/posts/${id}/comment`,
-                                    { author: userId, content: comment, username }, { withCredentials: true })
+                                // Post request to add the comment
+                                axios.post(`http://localhost:8080/posts/${postData._id}/comments`, { content: comment }, { withCredentials: true })
                                     .then((res) => {
                                         // Update the post data with the new comment
                                         // Reset the comment input field and hide the text area
                                         // Re-enable the button after the request
+                                        console.log(res.data);
                                         setPostData(res.data);
                                         setComment('');
                                         setTextFieldActive(false);
@@ -166,7 +182,7 @@ export default function Post() {
                                 <Box key={index} sx={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ccc', display: 'flex', justifyContent: 'space-between' }}>
                                     {/* div to separate the content from the delete button */}
                                     <div>
-                                        <p><strong>{comment.username}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
+                                        <p><strong>{comment.author?.username ? comment.author.username : <CircularProgress />}</strong> on {new Date(comment.date).toLocaleDateString()}</p>
                                         <p>{comment.content}</p>
                                     </div>
                                     <IconButton sx={{
@@ -175,7 +191,7 @@ export default function Post() {
                                         height: 40,
                                         borderRadius: '50%',
                                         alignSelf: 'center',
-                                        display: userId === comment.author ? 'inline' : 'none'
+                                        display: userId === comment.author?._id ? 'inline' : 'none'
                                     }} onClick={() => {
                                         setCurrentComment({
                                             id: comment._id,

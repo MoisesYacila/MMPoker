@@ -11,6 +11,7 @@ const Account = require('./models/account');
 const Player = require('./models/player');
 const Game = require('./models/game');
 const Post = require('./models/post');
+const Comment = require('./models/comment');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const passport = require('passport');
@@ -566,15 +567,32 @@ app.get('/games/game/:id', async (req, res) => {
 
 // Get all posts
 app.get('/posts', async (req, res) => {
-    // .sort({ date: -1 })
-    const posts = await Post.find({});
+    // Populate the author field to get the author's details
+    // Sort by date in descending order (newest first)
+    const posts = await Post.find({}).populate('author').sort({ date: -1 });
     res.send(posts);
 })
 
+// Get all comments from a specific post
+app.get('/posts/:id/comments', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const comments = await Comment.find({ post: id }).populate('author');
+        res.send(comments);
+    }
+    catch (err) {
+        console.error(err)
+        return res.status(500).send('Error retrieving comments')
+    }
+});
+
 // Get one post
 app.get('/posts/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const post = await Post.findById(req.params.id);
+        // Populate the author field to get the author's details
+        const post = await Post.findById(id).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
+        // await Post.findById(id).populate('author');
         // Valid ObjectId, but no post found
         if (!post) {
             return res.status(404).send('Post not found');
@@ -583,6 +601,7 @@ app.get('/posts/:id', async (req, res) => {
     }
     // Invalid ObjectId
     catch (err) {
+        console.error(err);
         return res.status(404).send('Post not found');
     }
 })
@@ -722,15 +741,25 @@ app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) =>
         }
 
         // Check if the author matches the user making the request
-        if (author.toString() !== req.user._id.toString()) {
+        if (author._id.toString() !== req.user._id.toString()) {
             return res.status(403).send('You are not authorized to delete this comment');
         }
-        // Filter out the comment to be deleted
+        // Delete the comment from the post's comments array and from the DB
         post.comments = post.comments.filter(comment => comment._id.toString() !== commentId);
+        const comment = await Comment.findByIdAndDelete(commentId);
+        if (!comment) {
+            return res.status(404).send('Comment not found');
+        }
 
         // Save and send the updated post
         await post.save();
-        res.send(post);
+
+        // Populate the author and comments fields to get the updated post with all details
+        // We also populate the author field in the comments
+        // This is called deep population
+        const updatedPost = await Post.findById(postId).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
+
+        res.send(updatedPost);
     } catch (err) {
         console.error(err);
         res.status(500).send('Error deleting comment');
@@ -918,10 +947,7 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     // Create a new Post object with the data from the request
     const post = new Post({
         // Get the user id from the request
-        author: {
-            id: user._id,
-            username: user.username
-        },
+        author: user._id,
         // Initially empty image, will be filled if a file is uploaded
         image: '',
         title: title,
@@ -963,6 +989,48 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     await post.save();
     res.send(post);
 });
+
+// Post request to add comments to a post
+app.post('/posts/:id/comments', isLoggedIn, async (req, res) => {
+    // Get the id and content from the request
+    const { id } = req.params;
+    const { content } = req.body;
+
+    try {
+        const post = await Post.findById(id);
+        const user = await Account.findById(req.user?._id);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+
+        // Create a new comment
+        // We need to reference the post and the author in the comment
+        // Store the object ids, not the full objects, then we can populate them later when we need the full objects
+        const comment = new Comment({
+            content: content,
+            author: user._id,
+            post: post._id,
+            date: new Date()
+        });
+
+        // Save the comment and add it to the post's comments array and save the post
+        await comment.save();
+        post.comments.push(comment._id);
+        await post.save();
+
+        // Populate the comments array with the author information and send the updated post back
+        const updatedPost = await Post.findById(id).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
+
+        res.send(updatedPost);
+
+    }
+
+    catch (err) {
+        console.error("Error adding comment:", err);
+        return res.status(500).json({ error: err.message });
+    }
+})
 
 // Patch request handles the new games, and it updates the stats for all the players involved
 app.patch('/players', isAdmin, async (req, res) => {
@@ -1165,7 +1233,13 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     }
 
     await post.save();
-    res.send(post);
+
+    // Mongoose snytax to populate the post's comments array with the author information
+    const updatedPost = await Post.findById(id).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
+
+    // await Post.findById(id).populate({ path: 'comments', populate: { path: 'author' } });
+
+    res.send(updatedPost);
 })
 
 // Patch request to add a comment to a post
