@@ -712,7 +712,7 @@ app.delete('/posts/:id', isAdmin, async (req, res) => {
             return res.status(404).send('Post not found');
         }
         // If the post has an image, delete it from Cloudinary
-        if (post.imagePublicId !== '') {
+        if (post.imagePublicId) {
             await cloudinary.uploader.destroy(post.imagePublicId)
                 .then(() => {
                     console.log('Image deleted from Cloudinary');
@@ -937,8 +937,11 @@ app.post('/games', isAdmin, async (req, res) => {
 // 'picture' is the name of the file input in the form
 app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
     const { title, content } = req.body;
-    console.log('req.body: ', req.body);
-    console.log('req.file: ', req.file);
+
+    // Validate that title and content are not empty
+    if (!title || title.trim() === '' || !content || content.trim() === '') {
+        return res.status(400).json({ error: 'Title and content cannot be empty' });
+    }
 
     const user = await Account.findById(req.user?._id);
 
@@ -993,6 +996,11 @@ app.post('/posts/:id/comments', isLoggedIn, async (req, res) => {
     // Get the id and content from the request
     const { id } = req.params;
     const { content } = req.body;
+
+    // Validate that the content is not empty
+    if (!content || content.trim() === '') {
+        return res.status(400).json({ error: 'Comment content cannot be empty' });
+    }
 
     try {
         const post = await Post.findById(id);
@@ -1256,6 +1264,11 @@ app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
 app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res) => {
     const { id } = req.params;
     const { title, content, deletedImage } = req.body;
+
+    // Validate that title and content are not empty
+    if (!title || title.trim() === '' || !content || content.trim() === '') {
+        return res.status(400).json({ error: 'Title and content cannot be empty' });
+    }
 
     // Find the post by id and update its title and content
     try {
