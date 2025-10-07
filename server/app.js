@@ -7,6 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
+const { isValidEmail, isValidFullName, isValidUsername } = require('../shared/validators');
 const Account = require('./models/account');
 const Player = require('./models/player');
 const Game = require('./models/game');
@@ -613,7 +614,6 @@ app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
     let isUsernameTaken = false;
     let isEmailTaken = false;
 
-    console.log('Validating account data:', accountData);
     try {
         const allAccounts = await Account.find({});
         // If no accounts found, return an empty array
@@ -830,8 +830,6 @@ app.post('/signup', async (req, res, next) => {
                 return next(err);
             }
             else {
-                console.log(registeredAccount);
-                console.log("User logged in after signing up");
                 res.send(registeredAccount);
             }
         });
@@ -1318,27 +1316,62 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
     const { username, email, fullName } = req.body;
     let changedUsername = false;
 
+    // Server side validation
+    if (!isValidEmail(email)) {
+        return res.status(400).send('Invalid email format');
+    }
+    if (!isValidUsername(username)) {
+        return res.status(400).send('Invalid username format');
+    }
+    if (!isValidFullName(fullName)) {
+        return res.status(400).send('Invalid full name format');
+    }
+
+
     try {
         // Find the account by id and update its information
         const account = await Account.findById(id);
         if (!account) {
-            return res.status(404).send('Account not found by Mongoose');
+            return res.status(404).send('Account not found.');
         }
 
-        if (username != '') {
-            account.username = username;
-            changedUsername = true;
+        // We need to check if the username already exists in the database
+        // We do a case insensitive ($options: 'i') search for the username, excluding the current account
+        const existingUsername = await Account.findOne({
+            username: { $regex: `^${username.trim()}$`, $options: 'i' },
+            _id: { $ne: id }
+        });
+
+        // If the username already exists in the database and it's not the current account, return an error
+        if (existingUsername) {
+            return res.status(400).send('Username already taken');
         }
 
-        if (email != '')
-            account.email = email;
+        // If we haven't returned yet, it means the username is valid and not taken, so we can update it
+        account.username = username.trim();
+        changedUsername = true;
+
+        // We need to check if the email already exists in the database
+        // We do a case insensitive ($options: 'i') search for the email, excluding the current account
+        const existingEmail = await Account.findOne({
+            email: { $regex: `^${email.trim()}$`, $options: 'i' },
+            _id: { $ne: id }
+        });
+
+        // If the email already exists in the database and it's not the current account, return an error
+        if (existingEmail) {
+            return res.status(400).send('Email already taken');
+        }
+
+        // If we haven't returned yet, it means the email is valid and not taken, so we can update it
+        account.email = email.trim();
+
         if (fullName != '')
-            account.fullName = fullName;
+            account.fullName = fullName.trim();
 
         await account.save();
 
         if (changedUsername) {
-            console.log(`req.user before re log in: ${req.user}`);
             // Re log in the user with the updated info in the account object. Function provided by passport
             req.logIn(account, (err) => {
                 if (err) {
@@ -1354,7 +1387,8 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
         }
     }
     catch (err) {
-        return res.status(404).send('Account not found via catch');
+        console.error(err);
+        return res.status(500).send('Server error');
     }
 })
 

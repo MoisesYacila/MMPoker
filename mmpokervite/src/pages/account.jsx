@@ -10,6 +10,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
+import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/validators';
 
 export default function Account() {
     const { id, setLoggedIn, setIsAdmin, setId } = useUser();
@@ -29,7 +30,12 @@ export default function Account() {
     const [tempAccountData, setTempAccountData] = useState({});
     const [validationErrors, setValidationErrors] = useState({
         // No errors initially
-        username: false,
+        username:
+        {
+            isTaken: false,
+            invalidFormat: false
+        }
+        ,
         email: {
             isTaken: false,
             isGoogle: false,
@@ -86,23 +92,24 @@ export default function Account() {
         }
     }
 
-    const isValidEmail = (email) => {
-        // RegEx to check if the input is a valid email format
-        let trimmedEmail = email.trim();
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+    // Get the appropriate helper text for the username field
+    const getUsernameHelperText = () => {
+        if (validationErrors.username.isTaken) {
+            return 'Username is already taken.';
+        } else if (validationErrors.username.invalidFormat) {
+            return 'Username must be 3-30 characters, alphanumeric characters or  _ - . allowed.';
+        }
+        else {
+            return '';
+        }
     }
 
     const disableButton = () => {
         // Disable if there are any validation errors or if all fields are empty
         let allEmpty = form.username.trim() === '' && form.email.trim() === '' && form.fullName.trim() === '';
-        return (validationErrors.username || validationErrors.fullName || validationErrors.email.isTaken || allEmpty);
+        return (validationErrors.username.isTaken || validationErrors.username.invalidFormat || validationErrors.fullName || validationErrors.email.isTaken || validationErrors.email.invalidFormat || allEmpty);
     }
 
-    const validateName = (name) => {
-        // RegEx to check if the input is a valid name, it checks for letters, accents, apostrophes, and hyphens
-        let trimmedName = name.trim();
-        return /^[A-Za-zÀ-ÿ' -]+$/.test(trimmedName) && trimmedName.length >= 5 && trimmedName.length <= 40;
-    }
 
     return (
         <div>
@@ -168,6 +175,11 @@ export default function Account() {
                                 // Makes less API calls than onChange
                                 onBlur={async (e) => {
                                     if (e.target.value.trim() !== '') {
+                                        // If the username format is invalid, set the error and return early
+                                        if (!isValidUsername(e.target.value)) {
+                                            setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, invalidFormat: true } });
+                                            return;
+                                        }
                                         // If any field has been changed, use tempAccountData to keep track of changes
                                         // Otherwise, use accountData
                                         if (tempAccountData?.usernameChanged || tempAccountData?.emailChanged || tempAccountData?.fullNameChanged)
@@ -177,12 +189,12 @@ export default function Account() {
 
                                         // Validate username uniqueness
                                         // In a GET request, we must send data as params
-                                        // We send the entire account data along with the new username to exclude the current user's username from the check 
+                                        // We send the entire account data along with the new username to exclude the current user's username from the check (if my username is "user123" and I didn't change it, it shouldn't say it's taken)
                                         // and when we get the response back, we only update the username error state
                                         await axios.get(`http://localhost:8080/accounts/validateData/`, { params: { ...accountData, username: e.target.value.trim() }, withCredentials: true })
                                             .then((res) => {
                                                 console.log('Username validation response:', res.data);
-                                                setValidationErrors({ ...validationErrors, username: res.data.isUsernameTaken });
+                                                setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, isTaken: res.data.isUsernameTaken } });
                                             })
                                             .catch((error) => {
                                                 console.error('Error validating username:', error);
@@ -195,11 +207,11 @@ export default function Account() {
                                 }}
                                 onChange={(e) => {
                                     // Clear username error when user starts typing and update form state
-                                    setValidationErrors({ ...validationErrors, username: false });
+                                    setValidationErrors({ ...validationErrors, username: { isTaken: false, invalidFormat: false } });
                                     setForm({ ...form, username: e.target.value });
                                 }}
-                                error={validationErrors.username}
-                                helperText={validationErrors.username ? 'Username is already taken.' : ''}
+                                error={validationErrors.username.isTaken || validationErrors.username.invalidFormat}
+                                helperText={getUsernameHelperText()}
                                 sx={{ width: '40%', marginBottom: '1rem' }}
                             />
                             <TextField
@@ -237,7 +249,7 @@ export default function Account() {
                                     }
                                 }}
                                 onChange={(e) => {
-                                    setValidationErrors({ ...validationErrors, email: false });
+                                    setValidationErrors({ ...validationErrors, email: { isTaken: false, invalidFormat: false } });
                                     setForm({ ...form, email: e.target.value });
                                 }}
                                 error={validationErrors.email.isTaken || validationErrors.email.invalidFormat}
@@ -252,7 +264,7 @@ export default function Account() {
                                 // Same logic as username and email fields except we don't need to check uniqueness
                                 onBlur={(e) => {
                                     if (e.target.value.trim() !== '') {
-                                        if (validateName(e.target.value)) {
+                                        if (isValidFullName(e.target.value)) {
                                             setValidationErrors({ ...validationErrors, fullName: false });
 
                                             if (tempAccountData?.usernameChanged || tempAccountData?.emailChanged || tempAccountData?.fullNameChanged)
