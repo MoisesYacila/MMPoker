@@ -1,6 +1,7 @@
-import axios from 'axios';
+import api from './api/axios';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Context allows us to share state across the website in a cleaner way
 // In this case, our navbar needs to know if the user is logged in or not, so we can use this context to share that information
@@ -19,27 +20,66 @@ export const UserProvider = ({ children }) => {
     const [id, setId] = useState(null);
     const [username, setUsername] = useState('');
     const [userFullName, setUserFullName] = useState('');
+    const navigate = useNavigate();
+
+    // Handler for session expiration
+    // This will reset the user context and redirect to the login page
+    const handleSessionExpired = () => {
+        console.warn('Session expired, resetting user context...');
+        setLoggedIn(false);
+        setIsAdmin(false);
+        setId(null);
+        setUserFullName('');
+        setUsername('');
+        navigate('/login');
+    };
+
+    // Handler for server down event
+    // This will reset the user context and redirect to the server down page
+    const handleServerDown = () => {
+        console.error('Server unreachable — consider showing an alert or redirecting.');
+        setLoggedIn(false);
+        setIsAdmin(false);
+        setId(null);
+        setUserFullName('');
+        setUsername('');
+        navigate('/serverdown');
+    };
 
     // Every time the app loads, we want to check the user's login and admin status
     // This will be triggered by hard reloads or when we first load the app
     // The navbar will use this information to show the correct button (Log In or Log Out)
     useEffect(() => {
         // Check every time if the user is an admin and logged in, otherwise, on hard reloads, admin and login status will be lost
-        axios.get('http://localhost:8080/isAdmin', { withCredentials: true })
+        api.get('/isAdmin')
             .then((res) => {
-                // The server will return a boolean value, so we can use that to set the isAdmin, loggedIn state and id
                 setIsAdmin(res.data.isAdmin);
                 setLoggedIn(res.data.isLoggedIn);
                 setLoading(false);
                 setId(res.data.id);
-                setUserFullName(res.data.userFullName || ''); // Set the user's full name if available
-                setUsername(res.data.username || ''); // Set the user's username if available
+                setUserFullName(res.data.userFullName || '');
+                setUsername(res.data.username || '');
             })
             .catch((error) => {
                 console.error('Error checking admin status:', error);
                 setIsAdmin(false);
             });
 
+    }, []);
+
+    // Set up event listeners for session expiration and server down events
+    // We are triggering these events from api/axios.js when we get a 401 or 503 response from the server
+    useEffect(() => {
+        window.addEventListener('sessionExpired', handleSessionExpired);
+        window.addEventListener('serverDown', handleServerDown);
+
+        // Clean up the event listeners when the component unmounts
+        // This is important to avoid memory leaks
+        // The return statement won't run until the component unmounts, so rarely in this case because this component is wrapping the entire app
+        return () => {
+            window.removeEventListener('sessionExpired', handleSessionExpired);
+            window.removeEventListener('serverDown', handleServerDown);
+        };
     }, []);
 
     return (

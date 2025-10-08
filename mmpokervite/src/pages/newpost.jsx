@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../api/axios";
 import { useState } from "react";
 import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -40,7 +40,7 @@ export default function NewPost() {
             formData.append('picture', image);
 
         // Post request to the server to create a new post
-        axios.post('http://localhost:8080/posts', formData, { withCredentials: true })
+        api.post('/posts', formData)
             .then(() => {
                 navigate('/updates');
             })

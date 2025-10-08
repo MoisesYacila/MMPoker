@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from "axios"
+import api from '../api/axios';
 import { Alert, Box, Button, Collapse, IconButton, TextField } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
 import ReactFlagsSelect from "react-flags-select";
@@ -24,7 +24,7 @@ export default function EditPlayer() {
         // Fetch player data from the server when the component mounts
         // You can use the player ID from the URL params to fetch specific player data
         if (playerData) return; // Avoid refetching if we already have the data
-        axios.get(`http://localhost:8080/players/${id}`)
+        api.get(`/players/${id}`)
             .then((res) => {
                 setPlayerData(res.data);
                 setFirstName(res.data.firstName);
@@ -57,11 +57,11 @@ export default function EditPlayer() {
             return;
         }
 
-        axios.patch(`http://localhost:8080/players/player/${id}`, {
+        api.patch(`/players/player/${id}`, {
             firstName,
             lastName,
             nationality
-        }, { withCredentials: true }).then(() => {
+        }).then(() => {
             console.log('Player updated successfully');
             navigate(`/players/${id}`);
 

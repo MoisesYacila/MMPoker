@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../api/axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -46,7 +46,7 @@ export default function Account() {
 
     // Fetching account data using the user ID from the UserContext
     useEffect(() => {
-        axios.get(`http://localhost:8080/accounts/${id}`, { withCredentials: true })
+        api.get(`/accounts/${id}`)
             .then((res) => {
                 console.log('Account data:', res.data);
                 setAccountData({ ...res.data, usernameChanged: false, emailChanged: false, fullNameChanged: false });
@@ -67,7 +67,7 @@ export default function Account() {
     // Log out handler function
     const handleLogout = async () => {
         // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
-        await axios.get('http://localhost:8080/logout', { withCredentials: true })
+        await api.get('/logout')
             .then(() => {
                 setLoggedIn(false);
                 setIsAdmin(false);
@@ -191,7 +191,7 @@ export default function Account() {
                                         // In a GET request, we must send data as params
                                         // We send the entire account data along with the new username to exclude the current user's username from the check (if my username is "user123" and I didn't change it, it shouldn't say it's taken)
                                         // and when we get the response back, we only update the username error state
-                                        await axios.get(`http://localhost:8080/accounts/validateData/`, { params: { ...accountData, username: e.target.value.trim() }, withCredentials: true })
+                                        await api.get(`/accounts/validateData/`, { params: { ...accountData, username: e.target.value.trim() } })
                                             .then((res) => {
                                                 console.log('Username validation response:', res.data);
                                                 setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, isTaken: res.data.isUsernameTaken } });
@@ -235,7 +235,7 @@ export default function Account() {
                                         else
                                             setTempAccountData({ ...accountData, email: e.target.value.trim(), emailChanged: true })
 
-                                        await axios.get(`http://localhost:8080/accounts/validateData/`, { params: { ...accountData, email: e.target.value.trim() }, withCredentials: true })
+                                        await api.get(`/accounts/validateData/`, { params: { ...accountData, email: e.target.value.trim() } })
                                             .then((res) => {
                                                 console.log('Email validation response:', res.data);
                                                 setValidationErrors({ ...validationErrors, email: { ...validationErrors.email, isTaken: res.data.isEmailTaken } });
@@ -325,7 +325,7 @@ export default function Account() {
                         <Button loading={submitted} onClick={async () => {
                             setSubmitted(true);
                             // Send the info to the backend to update the account
-                            await axios.patch(`http://localhost:8080/accounts/${id}`, { ...tempAccountData }, { withCredentials: true })
+                            await api.patch(`/accounts/${id}`, { ...tempAccountData })
                                 .then((res) => {
                                     console.log('Account updated successfully:', res.data);
                                     // Update the account data with the new info and reset the form and temp data
@@ -354,7 +354,7 @@ export default function Account() {
                         <Button loading={submitted} color='error' onClick={async () => {
                             // Call the delete account route
                             setSubmitted(true);
-                            await axios.delete(`http://localhost:8080/accounts/${id}`, { withCredentials: true })
+                            await api.delete(`/accounts/${id}`)
                                 .then(() => {
                                     // On success, log the user out and redirect to login page
                                     console.log('Account deleted successfully');

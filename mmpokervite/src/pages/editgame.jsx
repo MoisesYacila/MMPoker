@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import Box from '@mui/material/Box';
 import {
     FormControl, TextField, MenuItem,
@@ -76,14 +76,14 @@ export default function EditGame() {
 
     // Get the players and game data from the server when the component mounts
     useEffect(() => {
-        axios.get('http://localhost:8080/players')
+        api.get('/players')
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
                 setAllPlayers(playersArr);
             })
 
-        axios.get(`http://localhost:8080/games/game/${id}`)
+        api.get(`/games/game/${id}`)
             .then((res) => {
                 setGameData(res.data);
                 setNumPlayers(res.data.numPlayers);
@@ -162,12 +162,12 @@ export default function EditGame() {
             // Send patch request and send the data to the server side
             // The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
             // Important to pass the withCredentials option if we need to know if the user is logged in or not
-            await axios.patch(`http://localhost:8080/players/edit/${gameData._id}`, {
+            await api.patch(`/players/edit/${gameData._id}`, {
                 oldData: gameData, newData: gameInfo, prizePool
-            }, { withCredentials: true });
+            });
 
             // Get the new game data from the server to show on the next page
-            const res = await axios.get(`http://localhost:8080/games/game/${gameData._id}`);
+            const res = await api.get(`/games/game/${gameData._id}`);
 
             // Redirect and pass the new game data to the next page
             navigate(link, { state: { gameData: res.data } });

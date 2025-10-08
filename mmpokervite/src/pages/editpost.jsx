@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../api/axios";
 import { useState, useEffect } from "react";
 import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -45,7 +45,7 @@ export default function EditPost() {
 
 
 
-        axios.patch(`http://localhost:8080/posts/${id}/edit`, formData, { withCredentials: true })
+        api.patch(`/posts/${id}/edit`, formData)
             .then(() => {
                 console.log('Submitting edit post with title:', title);
                 navigate(`/updates/${id}`);
@@ -57,7 +57,7 @@ export default function EditPost() {
     }
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/posts/${id}`, { withCredentials: true })
+        api.get(`/posts/${id}`)
             .then((res) => {
                 setTitle(res.data.title);
                 setContent(res.data.content);

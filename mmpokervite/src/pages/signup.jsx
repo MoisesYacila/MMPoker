@@ -3,7 +3,7 @@ import {
     Box, Button, Card, CardContent,
     TextField, Typography, Collapse, Alert, IconButton
 } from "@mui/material";
-import axios from "axios";
+import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from '../UserContext';
@@ -23,15 +23,12 @@ export default function SignUp() {
         setDisabled(true);
 
         // Post request to the server with form data
-        axios.post('http://localhost:8080/signup', {
+        api.post('/signup', {
             email: e.target.email.value,
             username: e.target.username.value,
             firstName: e.target.first.value,
             lastName: e.target.last.value,
             password: e.target.password.value
-        }, {
-            withCredentials: true
-
         }).then((res) => {
             console.log(res.data);
             setLoggedIn(true);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from "../api/axios";
 import {
     Box, Collapse, Alert, IconButton, MenuItem, FormControl,
     TextField, Button, Table, TableBody, TableCell, TableContainer,
@@ -31,7 +31,7 @@ export default function NewGame() {
 
     //Gets the players from DB and adds the data to players array
     useEffect(() => {
-        axios.get('http://localhost:8080/players')
+        api.get('/players')
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
@@ -70,7 +70,7 @@ export default function NewGame() {
 
         // Send patch request and send the data to the server side
         // Redirect with the correct error message if the operation fails
-        await axios.patch("http://localhost:8080/players", { data: gameData }, { withCredentials: true })
+        await api.patch("/players", { data: gameData })
             .then((response) => {
                 console.log(response);
             }).catch((error) => {
@@ -87,11 +87,11 @@ export default function NewGame() {
 
         // Send post request to create a the new game
         // Redirect with the correct error message if the operation fails
-        await axios.post('http://localhost:8080/games', {
+        await api.post('/games', {
             data: gameData,
             numPlayers: numPlayers,
             prizePool: prizePool
-        }, { withCredentials: true })
+        })
             .then((response) => {
                 console.log(response)
                 navigate('/leaderboard');

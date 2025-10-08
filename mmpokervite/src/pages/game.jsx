@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import {
     Box, Table, TableBody,
     TableCell, TableContainer, TableHead,
@@ -47,7 +47,7 @@ export default function Game() {
     useEffect(() => {
         //For useEffect don't use async callback, instead we can do it like this
         async function getGameData() {
-            await axios.get(`http://localhost:8080/games/game/${id}`)
+            await api.get(`/games/game/${id}`)
                 .then((res) => {
                     // Set the gameInfo and gameDate state with the data from the server
                     setGameInfo(res.data);
@@ -68,7 +68,7 @@ export default function Game() {
             let playerArr = [];
 
             for (let player of gameInfo.leaderboard) {
-                await axios.get(`http://localhost:8080/players/${player.player}`)
+                await api.get(`/players/${player.player}`)
                     .then((res) => {
                         playerArr.push(`${res.data.firstName} ${res.data.lastName}`);
                     });
@@ -82,7 +82,7 @@ export default function Game() {
 
     //Doing this to use on the edit page, this way the information we need is available to use on the first render
     useEffect(() => {
-        axios.get('http://localhost:8080/players')
+        api.get('/players')
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
@@ -148,7 +148,7 @@ export default function Game() {
                                                         setDisabled(true);
 
                                                         const link = `/players/${player.player}`;
-                                                        await axios.get(`http://localhost:8080/players/${player.player}`)
+                                                        await api.get(link)
                                                             .then((res) => {
                                                                 navigate(link, { state: { playerData: res.data } });
                                                             });
@@ -175,7 +175,7 @@ export default function Game() {
                     <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
                         let link = `/games/${gameInfo._id}/edit`;
                         console.dir(gameInfo); //for debug
-                        await axios.get(`http://localhost:8080/games/game/${gameInfo._id}`)
+                        await api.get(`/games/game/${gameInfo._id}`)
                             .then(() => {
                                 //The format is nameWeAreGivingIt : variableThatAlreadyExists
                                 navigate(link, { state: { gameData: gameInfo, players: allPlayers } })
@@ -199,9 +199,7 @@ export default function Game() {
                         <Button loading={submitted} loadingPosition='start' onClick={async () => {
                             // Set submitted to true to prevent multiple submissions
                             setSubmitted(true);
-                            await axios.delete(`http://localhost:8080/games/game/${gameInfo._id}`, {
-                                withCredentials: true // Protected route, so we need to make sure the user is logged in
-                            })
+                            await api.delete(`/games/game/${gameInfo._id}`)
                                 .then(() => {
                                     console.log(`Deleted game ${gameInfo._id} from DB`);
                                     navigate(`/leaderboard`);

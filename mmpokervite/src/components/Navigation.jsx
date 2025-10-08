@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../api/axios';
 import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -34,7 +34,7 @@ export default function Navigation() {
     // Log out handler function
     const handleLogout = () => {
         // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
-        axios.get('http://localhost:8080/logout', { withCredentials: true })
+        api.get('/logout')
             .then(() => {
                 setLoggedIn(false);
                 setIsAdmin(false);

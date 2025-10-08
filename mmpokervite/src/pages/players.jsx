@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -40,7 +40,7 @@ export default function Players() {
 
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
-        axios.get('http://localhost:8080/players')
+        api.get('/players')
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
@@ -61,7 +61,7 @@ export default function Players() {
     // When gamesPlayed is 0, then they will be allowed to delete the player
     const handleOpen = async () => {
         // Get the player to check the stats
-        await axios.get(`http://localhost:8080/players/${playerData.id}`)
+        await api.get(`/players/${playerData.id}`)
             .then(() => {
                 // Allowed to delete
                 if (playerData.gamesPlayed == 0)
@@ -102,7 +102,7 @@ export default function Players() {
                                 <ListItemButton disabled={disabled} onClick={async () => {
                                     setDisabled(true);
                                     const link = `/players/${player._id}`;
-                                    await axios.get(`http://localhost:8080/players/${player._id}`)
+                                    await api.get(`/players/${player._id}`)
                                         .then(() => {
                                             navigate(link);
                                         });
@@ -126,7 +126,7 @@ export default function Players() {
                                     setSubmitted(true);
                                     setSelectedPlayerId(player._id);
 
-                                    await axios.get(`http://localhost:8080/players/${player._id}`)
+                                    await api.get(`/players/${player._id}`)
                                         .then((res) => {
                                             // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data
                                             setPlayerData({
@@ -159,9 +159,7 @@ export default function Players() {
                     <Button loading={submitted} loadingPosition='start' onClick={async () => {
                         setSubmitted(true);
 
-                        await axios.delete(`http://localhost:8080/players/${playerData.id}`, {
-                            withCredentials: true // Protected route, so we need to make sure the user is logged in
-                        })
+                        await api.delete(`/players/${playerData.id}`)
                             .then((res) => {
                                 console.log(`Deleted ${res.data.name} from DB`);
                                 let newArr = [];

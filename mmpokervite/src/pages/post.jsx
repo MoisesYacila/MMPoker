@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from "../api/axios";
 import {
     Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions,
     DialogContent, DialogContentText, DialogTitle, IconButton, Menu, MenuItem, TextareaAutosize
@@ -32,7 +32,7 @@ export default function Post() {
     useEffect(() => {
         if (!postData) {
             // Fetch post data from the server using the post id
-            axios.get(`http://localhost:8080/posts/${id}`)
+            api.get(`/posts/${id}`)
                 .then((res) => {
                     setPostData(res.data);
                     console.log('Post data:', res.data);
@@ -43,7 +43,7 @@ export default function Post() {
 
 
             // We are not populating comments in the post fetch, so we need to fetch them separately
-            axios.get(`http://localhost:8080/posts/${id}/comments`)
+            api.get(`/posts/${id}/comments`)
                 .then((res) => {
                     // Functional update, safer than spreading postData directly because it ensures we have the latest state
                     setPostData(prevData => ({
@@ -112,10 +112,7 @@ export default function Post() {
                             {/* Show the button red if the user has already liked it and gray otherwise. Disable the button if the user is not logged in */}
                             <IconButton color={isLiked ? 'error' : 'default'} disabled={userId ? false : true} onClick={() => {
                                 // Handle like action
-                                // The empty object is the data we are sending, which is empty in this case
-                                // The withCredentials option is set to true to include cookies in the request
-                                // If we send credentials without the empty object, the server will not recognize the request
-                                axios.patch(`http://localhost:8080/posts/${id}/like`, {}, { withCredentials: true })
+                                api.patch(`/posts/${id}/like`)
                                     .then((res) => {
                                         setPostData(res.data);
                                     })
@@ -172,7 +169,7 @@ export default function Post() {
                                     }
 
                                     // Post request to add the comment
-                                    axios.post(`http://localhost:8080/posts/${postData._id}/comments`, { content: comment }, { withCredentials: true })
+                                    api.post(`/posts/${postData._id}/comments`, { content: comment })
                                         .then((res) => {
                                             // Update the post data with the new comment
                                             // Reset the comment input field and hide the text area and the alert
@@ -245,10 +242,8 @@ export default function Post() {
 
                                     // Delete request to delete the comment
                                     console.log('Deleting comment', currentComment.id);
-                                    // On a delete request, we have to send the withCredentials in the same object as the data
-                                    axios.delete(`http://localhost:8080/posts/${id}/comments/${currentComment.id}`, {
-                                        data: { author: currentComment.author }, // body for DELETE
-                                        withCredentials: true
+                                    api.delete(`/posts/${id}/comments/${currentComment.id}`, {
+                                        data: { author: currentComment.author }
                                     })
                                         .then((res) => {
                                             // Update the post data to show the post without the deleted comment and re-enable the button
@@ -278,7 +273,7 @@ export default function Post() {
                                     setDisabled(true);
 
                                     // Handle delete post logic here
-                                    axios.delete(`http://localhost:8080/posts/${id}`, { withCredentials: true })
+                                    api.delete(`/posts/${id}`)
                                         .then(() => {
                                             // Navigate back to the updates page after deletion
                                             handleCloseMenuDialog();

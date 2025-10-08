@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import { Alert, Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
 import '../App.css';
-import axios from 'axios';
+import api from '../api/axios';
 import { Button, CircularProgress, Stack } from '@mui/material';
 import { useUser } from '../UserContext';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
@@ -43,7 +43,7 @@ export default function Player() {
         // If playerData is not set, fetch it from the server, otherwise do nothing
         if (playerData) return;
         if (!playerData) {
-            axios.get(`http://localhost:8080/players/${id}`)
+            api.get(`/players/${id}`)
                 .then((res) => {
                     setPlayerData(res.data);
                 })
@@ -53,7 +53,7 @@ export default function Player() {
         }
         //This gets the list of games from the DB and saves them in the gameList array
         //The server responds with the data we need, and we save it to an array in state for future use
-        axios.get(`http://localhost:8080/games/${id}`)
+        api.get(`/games/${id}`)
             .then((res) => {
                 let gamesArr = [];
                 res.data.forEach(game => {
@@ -96,7 +96,7 @@ export default function Player() {
             {isAdmin ? <Stack direction='row' spacing={2} sx={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
                 <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
                     let link = `/player/${id}/edit`;
-                    await axios.get(`http://localhost:8080/players/${id}`)
+                    await api.get(`/players/${id}`)
                         .then(() => {
                             navigate(link);
                         })
@@ -117,9 +117,9 @@ export default function Player() {
                                     setDisabled(true);
 
                                     //Link matches router stucture set in AppRoutes.jsx
-                                    //axios link matches express route endpoint
+                                    //api link matches express route endpoint
                                     const link = `/games/${game._id}`;
-                                    await axios.get(`http://localhost:8080/games/game/${game._id}`)
+                                    await api.get(`/games/game/${game._id}`)
                                         .then((res) => {
                                             navigate(link, { state: { gameData: res.data } });
                                         });
@@ -148,9 +148,7 @@ export default function Player() {
                         <Button loading={submitted} onClick={async () => {
 
                             setSubmitted(true);
-                            await axios.delete(`http://localhost:8080/players/${id}`, {
-                                withCredentials: true // Protected route, so we need to make sure the user is logged in
-                            })
+                            await api.delete(`/players/${id}`)
                                 .then((res) => {
                                     console.log(`Deleted ${res.data.name} from DB`);
                                     setSubmitted(false);

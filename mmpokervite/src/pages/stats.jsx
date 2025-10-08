@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../api/axios';
 import { useEffect, useState } from 'react';
 import {
     Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography,
@@ -15,7 +15,7 @@ export default function Stats() {
     // Also we'll initialize the averageLeaders state to the data we get from the DB
     const handleChange = async (e, newValue) => {
         if (averageLeaders.bestAverageProfit == null) {
-            await axios.get('http://localhost:8080/players/leaders/average')
+            await api.get('/players/leaders/average')
                 .then((res) => {
                     // The way that we get the data from the DB aggregation is an array with a single object containing the data
                     // So we need to get the first element of the array and set it to the state
@@ -43,7 +43,7 @@ export default function Stats() {
     useEffect(() => {
         // Get the total leaders from the DB
         async function getTotalLeaders() {
-            await axios.get('http://localhost:8080/players/leaders/total')
+            await api.get('/players/leaders/total')
                 .then((res) => {
                     // The way that we get the data from the DB aggregation is an array with a single object containing the data
                     // So we need to get the first element of the array and set it to the state

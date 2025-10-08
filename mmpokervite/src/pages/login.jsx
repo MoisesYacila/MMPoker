@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import GoogleIcon from '@mui/icons-material/Google';
-import axios from "axios";
+import api from '../api/axios';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../UserContext'
 import { useAlert } from '../AlertContext';
@@ -30,11 +30,9 @@ export default function LogIn() {
         setSubmitted(true);
 
         // Post request to the server with form data
-        axios.post('http://localhost:8080/login', {
+        api.post('/login', {
             username: e.target.username.value,
             password: e.target.password.value
-        }, {
-            withCredentials: true // Important for CORS validation
         }).then((res) => {
             console.log(res.data);
             setLoggedIn(true);

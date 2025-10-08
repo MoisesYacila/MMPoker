@@ -21,6 +21,7 @@ import Post from './pages/post.jsx';
 import EditPost from './pages/editpost.jsx';
 import Account from './pages/account.jsx';
 import EditPlayer from './pages/editplayer.jsx';
+import ServerDown from './pages/serverdown.jsx';
 import { Route, Routes } from 'react-router-dom';
 
 // This file contains all the routes of the application
@@ -30,6 +31,7 @@ export default function AppRoutes() {
             <Route path='/' element={<RootLayout />}>
                 <Route path='/' element={<App />}></Route>Main
                 <Route path='/unauthorized' element={<Unauthorized />}></Route>
+                <Route path='/serverdown' element={<ServerDown />}></Route>
                 <Route path='/leaderboard' element={<MainLayout />}>
                     <Route path='/leaderboard' element={<Leaderboard />}></Route>
                     <Route path='/leaderboard/new' element={

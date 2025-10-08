@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { Collapse, Alert, IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
-import axios from 'axios';
+import api from '../api/axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactFlagsSelect from "react-flags-select";
@@ -37,10 +37,10 @@ export default function NewPlayer() {
         }
 
         // Send post request for express to handle and clear the inputs of the form
-        axios.post('http://localhost:8080/players', {
+        api.post('/players', {
             firstName, lastName,
             country: nationality
-        }, { withCredentials: true }).then(() => {
+        }).then(() => {
             setFirstName('');
             setLastName('');
             navigate('/players');

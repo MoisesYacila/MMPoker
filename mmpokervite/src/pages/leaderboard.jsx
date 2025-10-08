@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import {
     Alert, Collapse, IconButton, Button, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -25,7 +25,7 @@ export default function Leaderboard() {
 
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
-        axios.get('http://localhost:8080/players')
+        api.get('/players')
             .then((res) => {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
@@ -238,7 +238,7 @@ export default function Leaderboard() {
                                             setDisabled(true);
 
                                             const link = `/players/${player._id}`;
-                                            await axios.get(`http://localhost:8080/players/${player._id}`)
+                                            await api.get(link)
                                                 .then((res) => {
                                                     navigate(link, { state: { playerData: res.data } });
                                                 });

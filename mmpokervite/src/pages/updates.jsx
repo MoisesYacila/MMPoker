@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useUser } from '../UserContext';
 import {
     Box, Button, Card, CardHeader, CardMedia, CardContent, Dialog, DialogActions, DialogTitle,
@@ -20,7 +20,7 @@ export default function Updates() {
 
     useEffect(() => {
         // Fetch all posts from the server
-        axios.get('http://localhost:8080/posts', { withCredentials: true })
+        api.get('/posts')
             .then((res) => {
                 setAllPosts(res.data);
             })
@@ -124,7 +124,7 @@ export default function Updates() {
                         setDisabled(true);
 
                         // Handle delete post logic here
-                        axios.delete(`http://localhost:8080/posts/${selectedPostId}`, { withCredentials: true })
+                        api.delete(`/posts/${selectedPostId}`)
                             .then(() => {
                                 // Re-enable the button after deletion
                                 setDisabled(false);
