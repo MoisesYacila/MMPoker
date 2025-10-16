@@ -23,7 +23,7 @@ const { isLoggedIn, isAdmin } = require('./middleware.js');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const upload = multer({
-    limits: { fileSize: 3.5 * 1024 * 1024 }, // Limit file size to 3.5MB
+    limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
     dest: 'uploads/' // Directory to store uploaded files temporarily
 });
 
@@ -961,28 +961,31 @@ app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
 
     // If a file is uploaded, upload it to Cloudinary
     if (req.file) {
-        await cloudinary.uploader.upload(req.file.path, {
-            folder: 'MMPoker/posts',          // organize in a subfolder for posts
-            resource_type: 'image',           // explicitly image
-            use_filename: true,               // keep original file name
-            unique_filename: true,            // avoid name conflicts by adding unique suffix
-            overwrite: false,                 // don't overwrite existing files
-            allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // whitelist of allowed image formats
-            transformation: [
-                { width: 800, height: 800, crop: 'limit' },   // limit max dimensions to 800x800
-                { fetch_format: 'auto', quality: 'auto' }     // auto format and quality for performance
-            ]
-        })
-            .then((result) => {
-                post.image = result.secure_url; // Store the secure URL of the uploaded image
-                post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
-                console.log(`Image URL: ${post.image}`);
-            })
-            .catch((error) => {
-                console.error('Error uploading image to Cloudinary:', error);
-                return res.status(500).send('Error uploading image');
+        try {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'MMPoker/posts',          // organize in a subfolder for posts
+                resource_type: 'image',           // explicitly image
+                use_filename: true,               // keep original file name
+                unique_filename: true,            // avoid name conflicts by adding unique suffix
+                overwrite: false,                 // don't overwrite existing files
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // whitelist of allowed image formats
+                transformation: [
+                    { width: 800, height: 800, crop: 'limit' },   // limit max dimensions to 800x800
+                    { fetch_format: 'auto', quality: 'auto' }     // auto format and quality for performance
+                ]
             });
+            // If the upload is successful, this code will run, otherwise, the catch block will handle errors
+            post.image = result.secure_url; // Store the secure URL of the uploaded image
+            post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
+            console.log(`Image URL: ${post.image}`);
 
+
+        }
+        catch (err) {
+            // Send error to the front end to handle it there
+            console.error('Error uploading image to Cloudinary:', err);
+            return res.status(415).send(err);
+        }
     }
 
     // Save the post to the database
@@ -1273,6 +1276,8 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
     // Find the post by id and update its title and content
     try {
         const post = await Post.findById(id);
+        if (!post)
+            return res.status(404).send('Post not found.');
         post.title = title;
         post.content = content;
 
@@ -1292,7 +1297,7 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
 
 
             // If a new image is uploaded, upload it to Cloudinary and update the post's image
-            await cloudinary.uploader.upload(req.file.path, {
+            const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'MMPoker/posts',
                 resource_type: 'image',
                 use_filename: true,
@@ -1303,21 +1308,22 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
                     { width: 800, height: 800, crop: 'limit' },
                     { fetch_format: 'auto', quality: 'auto' }
                 ]
-            })
-                .then((result) => {
-                    post.image = result.secure_url;
-                    post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
-                    console.log(`Image URL updated to: ${post.image}`);
-                })
-                .catch((error) => {
-                    console.error('Error uploading image to Cloudinary:', error);
-                    return res.status(500).send('Error uploading image');
-                });
+            });
+
+            // If the upload is successful, this code will run, otherwise, the catch block will handle errors
+            post.image = result.secure_url;
+            post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
+            console.log(`Image URL updated to: ${post.image}`);
         }
         await post.save();
     }
     catch (err) {
-        return res.status(404).send('Post not found');
+        console.error('Error uploading image to Cloudinary:', err);
+        if (err.http_code == 400) {
+            return res.status(415).send(err);
+        }
+
+        return res.status(500).send('Internal server error. Error uploading image');
     }
 
     res.send('Post updated successfully');

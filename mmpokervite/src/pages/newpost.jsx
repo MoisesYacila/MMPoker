@@ -1,8 +1,9 @@
 import api from "../api/axios";
 import { useState } from "react";
-import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField } from "@mui/material";
+import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField, Tooltip } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ClearIcon from '@mui/icons-material/Clear';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../AlertContext";
 
@@ -48,10 +49,18 @@ export default function NewPost() {
             })
             .catch((error) => {
                 console.error('Error creating post:', error);
+                // If user tries to upload a file that's not an image, show an alert telling them and reset the button
+                if (error.status === 415) {
+                    setImage({});
+                    setAlert({ message: `${error.response.data.message}. Allowed types are jpg, jpeg, png and webp.`, severity: 'error', open: true });
+                    setSubmitted(false); //resets button
+                }
+                else {
+                    setAlert({ message: 'Error creating post.', severity: 'error', open: true });
+                    navigate('/updates');
+                }
             });
     }
-
-
     return (
         <div>
             <Collapse in={alert.open}>
@@ -93,18 +102,40 @@ export default function NewPost() {
                     required
                 />
                 {/* Button with a hidden file input to allow image upload */}
-                <Button
-                    component="label"
-                    variant="contained"
-                    color="success"
-                    startIcon={<CloudUploadIcon />}
-                >
-                    Upload Picture
-                    <input hidden type="file" name="picture" onChange={(e) => {
-                        // e.target.files[0] is where the uploaded file will be if the user selects one
-                        setImage(e.target.files[0]);
-                    }} />
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {/* Show the upload button or the name of the updated file if the user already selected one */}
+                    {!image.name ? <Button
+                        component="label"
+                        variant="contained"
+                        color="success"
+                        startIcon={<CloudUploadIcon />}
+                    >
+                        Upload Picture
+                        <input hidden type="file" name="picture" onChange={(e) => {
+                            // If the image is larger than our established limit (2MB), don't allow the upload and show an alert
+                            if (e.target.files[0]?.size > 2 * 1024 * 1024) {
+                                // Reset e.target.value to keep showing the alert if the user tries uploading the same image multiple times
+                                e.target.value = null;
+                                setAlert({ message: 'Error. Maximum size allowed is 2MB.', severity: 'error', open: true });
+                                return;
+                            }
+                            // e.target.files[0] is where the uploaded file will be if the user selects one
+                            setImage(e.target.files[0]);
+                        }} />
+                    </Button> : <Box sx={{ display: 'flex' }}>
+                        <Box sx={{ marginRight: '0.7rem' }}>{image.name}</Box>
+                        {/* Reset image to re render the upload button */}
+                        <IconButton onClick={() => {
+                            setImage({});
+                        }}>
+                            <ClearIcon fontSize='small' />
+                        </IconButton>
+                    </Box>}
+
+                    <Tooltip title='2MB Max Size' sx={{ marginLeft: '0.7rem' }}>
+                        <InfoOutlineIcon />
+                    </Tooltip>
+                </Box>
                 <Button loading={submitted} loadingPosition="start" type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                     Create Post
                 </Button>
