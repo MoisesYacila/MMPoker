@@ -16,6 +16,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import { useUser } from '../UserContext';
+import { useAlert } from '../AlertContext';
 
 
 export default function Game() {
@@ -33,13 +34,9 @@ export default function Game() {
     //We will save the names for the game standings, since they are not saved in the Game object
     const [playerName, setPlayerName] = useState([]);
 
-    //We can get an array with all the players to use on load on the edit page
-    const [allPlayers, setAllPlayers] = useState([]);
-
     //For control of dialog and alert
     const [open, setOpen] = useState(false);
-    const openAlertLink = location.state?.openAlertLink || false;
-    const [openAlert, setOpenAlert] = useState(openAlertLink);
+    const { alert, setAlert } = useAlert();
 
     // We need to check if the current user is an admin to show the edit and delete buttons
     const { isAdmin } = useUser();
@@ -80,16 +77,6 @@ export default function Game() {
         // runs on initial render and when gameInfo changes
     }, [gameInfo]);
 
-    //Doing this to use on the edit page, this way the information we need is available to use on the first render
-    useEffect(() => {
-        api.get('/players')
-            .then((res) => {
-                let playersArr = [];
-                res.data.forEach(player => playersArr.push(player));
-                setAllPlayers(playersArr);
-            })
-    }, []);
-
     //Handlers for open and closing dialog (from Material UI)
     const handleOpen = () => {
         setOpen(true);
@@ -102,15 +89,15 @@ export default function Game() {
     return (
         <div>
             {/* Show in case the user is not allowed to edit the game */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    You do not have permission to edit this game.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -149,8 +136,9 @@ export default function Game() {
 
                                                         const link = `/players/${player.player}`;
                                                         await api.get(link)
-                                                            .then((res) => {
-                                                                navigate(link, { state: { playerData: res.data } });
+                                                            .then(() => {
+                                                                setAlert({ ...alert, open: false });
+                                                                navigate(link);
                                                             });
                                                     }}>{playerName[i] ? playerName[i] : <CircularProgress />}</Button>
 
@@ -174,11 +162,10 @@ export default function Game() {
                 {isAdmin ? <Stack direction='row' spacing={2} sx={{ marginBottom: '2rem' }}>
                     <Button variant='contained' color='success' endIcon={<ModeEditIcon />} onClick={async () => {
                         let link = `/games/${gameInfo._id}/edit`;
-                        console.dir(gameInfo); //for debug
                         await api.get(`/games/game/${gameInfo._id}`)
                             .then(() => {
-                                //The format is nameWeAreGivingIt : variableThatAlreadyExists
-                                navigate(link, { state: { gameData: gameInfo, players: allPlayers } })
+                                setAlert({ ...alert, open: false });
+                                navigate(link)
                             })
                     }}>Edit</Button>
                     <Button variant='contained' color='error' onClick={handleOpen} endIcon={<DeleteIcon />}>Delete</Button>
@@ -202,11 +189,13 @@ export default function Game() {
                             await api.delete(`/games/game/${gameInfo._id}`)
                                 .then(() => {
                                     console.log(`Deleted game ${gameInfo._id} from DB`);
+                                    setAlert({ message: 'Game deleted.', severity: 'success', open: true });
                                     navigate(`/leaderboard`);
                                 }).catch((err) => {
                                     console.error(err);
                                     // Redirect to login and show alert if user is not logged in
-                                    navigate(`/login`, { state: { message: 'Must be signed in to delete games.', openAlertLink: true } });
+                                    setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
+                                    navigate(`/login`);
                                 });
                             handleClose();
                         }}>Delete</Button>

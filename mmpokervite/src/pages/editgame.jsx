@@ -11,12 +11,14 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { useAlert } from '../AlertContext';
 
 export default function EditGame() {
     //Get the game id from the URL
     const { id } = useParams();
     const navigate = useNavigate();
     const link = `/games/${id}`; //This link is for the redirect
+    const { setAlert, alert } = useAlert();
 
     //Array for all players to show on the selects
     const [allPlayers, setAllPlayers] = useState([]);
@@ -24,7 +26,6 @@ export default function EditGame() {
     // Default to 0, but will update when the data loads
     const [numPlayers, setNumPlayers] = useState(0);
     const [rows, setRows] = useState([]);
-    const [openAlert, setOpenAlert] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     // The valErrors array will be used to store the error status for each field in the form
@@ -100,7 +101,8 @@ export default function EditGame() {
                 console.log(error);
                 // If the user is not logged in, redirect to login page and show alert
                 if (error.status === 401) {
-                    navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
+                    setAlert({ message: 'Must be signed in to edit games.', severity: 'error', open: true });
+                    navigate(`/login`);
                 }
                 // If the game is not found, redirect to not found page
                 else if (error.status === 404) {
@@ -161,29 +163,29 @@ export default function EditGame() {
         try {
             // Send patch request and send the data to the server side
             // The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
-            // Important to pass the withCredentials option if we need to know if the user is logged in or not
             await api.patch(`/players/edit/${gameData._id}`, {
                 oldData: gameData, newData: gameInfo, prizePool
             });
 
-            // Get the new game data from the server to show on the next page
-            const res = await api.get(`/games/game/${gameData._id}`);
-
-            // Redirect and pass the new game data to the next page
-            navigate(link, { state: { gameData: res.data } });
+            // Redirect and pass the new game data to the next page with the alert
+            setAlert({ message: 'Game updated.', severity: 'success', open: true });
+            navigate(link);
         }
+        // ProtectedRoute should prevent this from running, but just in case, we add another layer of error handling
         catch (error) {
             console.log(error);
             // If the user is not logged in, redirect to login page and show alert
             if (error.status === 401) {
-                navigate(`/login`, { state: { message: 'Must be signed in to edit games.', openAlertLink: true } });
+                setAlert({ message: 'Must be signed in to edit games.', severity: 'error', open: true });
+                console.log('User not logged in, redirecting to login page...');
+                navigate(`/login`);
             }
 
             // If the user is logged in, but is not an admin, redirect back to the game page and show alert
             else if (error.status === 403) {
-                navigate(`${link}`, { state: { message: 'You do not have permission to edit this game.', openAlertLink: true, gameData } });
+                setAlert({ message: 'Unauthorized.', severity: 'error', open: true });
+                navigate(`${link}`);
             }
-
         }
     }
 
@@ -201,7 +203,7 @@ export default function EditGame() {
         for (let i = 0; i < numPlayers; i++) {
             if (valErrors[i].earnings || valErrors[i].bounties || valErrors[i].rebuys ||
                 valErrors[i].addOns || valErrors[i].player || inGamePlayers.has(e.target[i * 14].value)) {
-                setOpenAlert(true);
+                setAlert({ open: true, message: 'Validation failed. Ensure all fields are filled out correctly and no players are repeated.', severity: 'error' });
                 setSubmitted(false);
                 return;
             }
@@ -217,15 +219,15 @@ export default function EditGame() {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
             {/* Alert to show if client side validation fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Validation failed. Ensure all fields are filled out correctly and no players are repeated.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>Edit Game</h1>
@@ -432,6 +434,7 @@ export default function EditGame() {
                 <Stack direction='row' spacing={2} sx={{ marginBottom: '1.5rem', marginTop: '1rem' }}>
                     <Button loading={submitted} loadingPosition="start" type='submit' variant="contained" color="success" endIcon={<SaveAltIcon />}>Save Changes</Button>
                     <Button disabled={submitted} variant="contained" color='error' onClick={() => {
+                        setAlert({ ...alert, open: false });
                         navigate(link, { state: { gameData } }); //short hand notation equivalent to gameData: gameData
                     }} endIcon={<CancelIcon />}>Cancel</Button>
                 </Stack>

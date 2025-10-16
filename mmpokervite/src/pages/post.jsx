@@ -11,16 +11,17 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from "../UserContext";
+import { useAlert } from "../AlertContext";
 
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
     const [postData, setPostData] = useState(null);
-    const { id: userId, isAdmin } = useUser();
+    const { id: userId, isAdmin } = useUser(); // define id from user context as userId
     const [isLiked, setIsLiked] = useState(false);
     const [textFieldActive, setTextFieldActive] = useState(false);
     const [comment, setComment] = useState('');
     const [currentComment, setCurrentComment] = useState({});
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const [openCommentDialog, setOpenCommentDialog] = useState(false);
     const [openMenuDialog, setOpenMenuDialog] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState(null);
@@ -87,15 +88,15 @@ export default function Post() {
     // Render the post data
     return (
         <div>
-            <Collapse in={openAlert}>
-                <Alert severity='warning' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    A comment cannot be empty.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -141,7 +142,10 @@ export default function Post() {
                             {/* MUI syntax */}
                             {/* For the open prop, we need to check if the menu anchor is set (if so, it will be truthy)  */}
                             <Menu anchorEl={menuAnchor} onClose={handleMenuClose} open={Boolean(menuAnchor)}>
-                                <MenuItem onClick={() => navigate(`/updates/${id}/edit`)}>Edit</MenuItem>
+                                <MenuItem onClick={() => {
+                                    setAlert({ ...alert, open: false });
+                                    navigate(`/updates/${id}/edit`);
+                                }}>Edit</MenuItem>
                                 <MenuItem onClick={() => {
                                     setOpenMenuDialog(true);
                                 }}>Delete</MenuItem>
@@ -163,7 +167,7 @@ export default function Post() {
                                     setDisabled(true);
 
                                     if (comment.trim() === '') {
-                                        setOpenAlert(true);
+                                        setAlert({ message: 'A comment cannot be empty.', severity: 'warning', open: true });
                                         setDisabled(false);
                                         return;
                                     }
@@ -178,7 +182,7 @@ export default function Post() {
                                             setPostData(res.data);
                                             setComment('');
                                             setTextFieldActive(false);
-                                            setOpenAlert(false);
+                                            setAlert({ ...alert, open: false });
                                         })
                                         .catch((err) => {
                                             console.error('Error adding comment');
@@ -248,6 +252,7 @@ export default function Post() {
                                         .then((res) => {
                                             // Update the post data to show the post without the deleted comment and re-enable the button
                                             setPostData(res.data);
+                                            setAlert({ message: 'Comment deleted.', severity: 'success', open: true });
                                             setDisabled(false);
                                         })
                                         .catch(() => {
@@ -277,6 +282,7 @@ export default function Post() {
                                         .then(() => {
                                             // Navigate back to the updates page after deletion
                                             handleCloseMenuDialog();
+                                            setAlert({ message: 'Post deleted.', severity: 'success', open: true });
                                             navigate('/updates');
                                         })
                                         .catch((error) => {

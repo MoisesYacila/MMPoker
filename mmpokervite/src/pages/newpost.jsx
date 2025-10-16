@@ -4,13 +4,14 @@ import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField }
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "../AlertContext";
 
 export default function NewPost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState({});
     const [submitted, setSubmitted] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
 
     // Function to handle form submission
@@ -31,7 +32,7 @@ export default function NewPost() {
 
         // Validate that title and content are not empty
         if (formData.get('title').trim() === '' || formData.get('content').trim() === '') {
-            setOpenAlert(true);
+            setAlert({ message: 'Title or content cannot be empty.', severity: 'warning', open: true });
             setSubmitted(false);
             return;
         }
@@ -42,6 +43,7 @@ export default function NewPost() {
         // Post request to the server to create a new post
         api.post('/posts', formData)
             .then(() => {
+                setAlert({ message: 'Post created.', severity: 'success', open: true });
                 navigate('/updates');
             })
             .catch((error) => {
@@ -52,15 +54,15 @@ export default function NewPost() {
 
     return (
         <div>
-            <Collapse in={openAlert}>
-                <Alert severity='warning' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Title or content cannot be empty.
+                    {alert.message}
                 </Alert>
             </Collapse>
             {/* Form to create a new post

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactFlagsSelect from "react-flags-select";
 import '../App.css';
+import { useAlert } from '../AlertContext';
 
 export default function NewPlayer() {
     const [firstName, setFirstName] = useState('');
@@ -17,7 +18,7 @@ export default function NewPlayer() {
     const [firstNameError, setFirstNameError] = useState(false);
     const [lastNameError, setLastNameError] = useState(false);
     const [nationalityError, setNationalityError] = useState(true);
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
 
     // Submit handler
@@ -31,7 +32,7 @@ export default function NewPlayer() {
 
         if (firstNameError || lastNameError || nationalityError) {
             // If there are errors, do not submit the form and show an alert
-            setOpenAlert(true);
+            setAlert({ message: 'Validation failed. Ensure all fields are filled out correctly and a nationality is selected.', severity: 'error', open: true });
             setSubmitted(false);
             return;
         }
@@ -43,9 +44,15 @@ export default function NewPlayer() {
         }).then(() => {
             setFirstName('');
             setLastName('');
+            setAlert({ message: 'New player added.', severity: 'success', open: true });
             navigate('/players');
         }).catch((error) => {
-            navigate(`/login`, { state: { message: 'Must be signed in to add players.', openAlertLink: true } });
+            if (error.status === 401) {
+                setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
+            }
+            else {
+                setAlert({ message: 'Error creating player. Please try again.', severity: 'error', open: true });
+            }
             console.log(error);
         });
     }
@@ -59,15 +66,15 @@ export default function NewPlayer() {
     return (
         <Box>
             {/* Alert to show if client side validation fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Validation failed. Ensure all fields are filled out correctly and a nationality is selected.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>Add New Player</h1>
@@ -112,8 +119,6 @@ export default function NewPlayer() {
                     customLabels={{ "VE": "Venezuela", "BO": "Bolivia", "IR": "Iran", "LA": "Laos", "MK": "Macedonia", "MD": "Moldova", "VN": "Vietnam" }} />
                 <Button loading={submitted} loadingPosition='start' variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
             </Box>
-            {/* When submitted is true, react will redirect back to the players page */}
-            {/* {submitted ? <Navigate to='/players' replace={true} /> : null} */}
         </Box>
     )
 }

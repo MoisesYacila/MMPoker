@@ -4,6 +4,7 @@ import { Alert, Box, Button, Collapse, IconButton, TextareaAutosize, TextField }
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useNavigate, useParams } from "react-router-dom";
+import { useAlert } from "../AlertContext";
 
 export default function EditPost() {
     //Get the game id from the URL
@@ -14,7 +15,7 @@ export default function EditPost() {
     const [uploadedImage, setUploadedImage] = useState(false);
     const [deletedImage, setDeletedImage] = useState('');
     const [submitted, setSubmitted] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
 
     // Function to handle form submission
@@ -35,7 +36,7 @@ export default function EditPost() {
 
         // Validate that title and content are not empty
         if (formData.get('title').trim() === '' || formData.get('content').trim() === '') {
-            setOpenAlert(true);
+            setAlert({ message: 'Title or content cannot be empty.', severity: 'warning', open: true });
             setSubmitted(false);
             return;
         }
@@ -48,6 +49,7 @@ export default function EditPost() {
         api.patch(`/posts/${id}/edit`, formData)
             .then(() => {
                 console.log('Submitting edit post with title:', title);
+                setAlert({ ...alert, open: false });
                 navigate(`/updates/${id}`);
             })
             .catch((error) => {
@@ -74,15 +76,15 @@ export default function EditPost() {
 
     return (
         <div>
-            <Collapse in={openAlert}>
-                <Alert severity='warning' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Title or content cannot be empty.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box component="form" action='http://localhost:8080/posts/:id/edit?_method=PATCH' method='POST' encType="multipart/form-data"

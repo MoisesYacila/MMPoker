@@ -14,12 +14,11 @@ import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/
 
 export default function Account() {
     const { id, setLoggedIn, setIsAdmin, setId } = useUser();
-    const { setAlertMessage } = useAlert();
+    const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
 
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [form, setForm] = useState({
         username: '',
@@ -30,8 +29,7 @@ export default function Account() {
     const [tempAccountData, setTempAccountData] = useState({});
     const [validationErrors, setValidationErrors] = useState({
         // No errors initially
-        username:
-        {
+        username: {
             isTaken: false,
             invalidFormat: false
         }
@@ -66,15 +64,14 @@ export default function Account() {
 
     // Log out handler function
     const handleLogout = async () => {
-        // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
+        // Call the logout route, reset the user context and redirect to the leaderboard page with the alert
         await api.get('/logout')
             .then(() => {
                 setLoggedIn(false);
                 setIsAdmin(false);
-                setAlertMessage('Logged out.');
+                setAlert({ message: 'Logged out.', severity: 'success', open: true });
                 setId(null);
-                navigate('/leaderboard', { state: { openAlertLink: true } });
-                console.log('User logged out');
+                navigate('/leaderboard');
             })
     }
 
@@ -113,15 +110,15 @@ export default function Account() {
 
     return (
         <div>
-            <Collapse in={openAlert}>
-                <Alert severity='success' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Account updated successfully.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box sx={{ textAlign: 'center', marginTop: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -333,7 +330,7 @@ export default function Account() {
                                     setForm({ username: '', email: '', fullName: '' });
                                     setTempAccountData({});
                                     setSubmitted(false);
-                                    setOpenAlert(true);
+                                    setAlert({ message: 'Account updated successfully.', severity: 'success', open: true })
                                 }
                                 ).catch((err) => {
                                     console.error('Error updating account:', err);
@@ -356,15 +353,14 @@ export default function Account() {
                             setSubmitted(true);
                             await api.delete(`/accounts/${id}`)
                                 .then(() => {
-                                    // On success, log the user out and redirect to login page
-                                    console.log('Account deleted successfully');
+                                    // On success, log the user out and redirect to login page with an alert
                                     setSubmitted(false);
                                     setOpenDeleteDialog(false);
-                                    setAlertMessage('Account deleted successfully.');
+                                    setAlert({ message: 'Account deleted successfully.', severity: 'success', open: true });
                                     setLoggedIn(false);
                                     setIsAdmin(false);
                                     setId(null);
-                                    navigate('/login', { state: { message: 'Your account has been deleted.', openAlertLink: true } });
+                                    navigate('/login');
                                 })
                                 .catch((err) => {
                                     console.error('Error deleting account:', err);

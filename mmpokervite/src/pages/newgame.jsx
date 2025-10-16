@@ -26,8 +26,7 @@ export default function NewGame() {
         })
     }));
     const navigate = useNavigate();
-    const [openAlert, setOpenAlert] = useState(false);
-    const { setAlertMessage, setSeverity } = useAlert();
+    const { alert, setAlert } = useAlert();
 
     //Gets the players from DB and adds the data to players array
     useEffect(() => {
@@ -75,13 +74,15 @@ export default function NewGame() {
                 console.log(response);
             }).catch((error) => {
                 console.log(error);
+                // ProtectedRoute should catch these cases before API calls are made, but this is another layer of security
                 if (error.status === 401) {
-                    navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                    setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
                 }
                 else if (error.status === 403) {
-                    setAlertMessage('You do not have permission to create a game.');
-                    setSeverity('error');
-                    navigate(`/leaderboard`, { state: { openAlertLink: true } });
+                    setAlert({ message: 'You do not have permission to create a game.', severity: 'error', open: true });
+                }
+                else {
+                    setAlert({ message: 'Error updating players. Please try again.', severity: 'error', open: true });
                 }
             });
 
@@ -94,16 +95,18 @@ export default function NewGame() {
         })
             .then((response) => {
                 console.log(response)
+                setAlert({ ...alert, open: false });
                 navigate('/leaderboard');
             }).catch((error) => {
                 console.log(error);
                 if (error.status === 401) {
-                    navigate(`/login`, { state: { message: 'Must be signed in to create a game.', openAlertLink: true } });
+                    setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
                 }
                 else if (error.status === 403) {
-                    setAlertMessage('You do not have permission to create a game.');
-                    setSeverity('error');
-                    navigate(`/leaderboard`, { state: { openAlertLink: true } });
+                    setAlert({ message: 'You do not have permission to create a game.', severity: 'error', open: true });
+                }
+                else {
+                    setAlert({ message: 'Error creating game. Please try again.', severity: 'error', open: true });
                 }
             });
     }
@@ -123,7 +126,7 @@ export default function NewGame() {
         for (let i = 0; i < numPlayers; i++) {
             if (valErrors[i].earnings || valErrors[i].bounties || valErrors[i].rebuys ||
                 valErrors[i].addOns || valErrors[i].player || inGamePlayers.has(e.target[i * 14].value)) {
-                setOpenAlert(true);
+                setAlert({ message: 'Validation failed. Ensure all fields are filled out correctly and no players are repeated.', severity: 'error', open: true });
                 setSubmitted(false);
                 return;
             }
@@ -276,15 +279,15 @@ export default function NewGame() {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
             {/* Alert to show if client side validation fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Validation failed. Ensure all fields are filled out correctly and no players are repeated.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>New Game</h1>

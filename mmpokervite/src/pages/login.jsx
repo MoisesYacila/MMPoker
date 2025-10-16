@@ -6,20 +6,15 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import GoogleIcon from '@mui/icons-material/Google';
 import api from '../api/axios';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext'
 import { useAlert } from '../AlertContext';
 
 export default function LogIn() {
     const navigate = useNavigate();
-    const location = useLocation();
-    // Get the error message from the previous page or an empty object if not available
-    let { message, openAlertLink } = location.state || {};
-    const [openAlert, setOpenAlert] = useState(false);
-    const [openAlert2, setOpenAlert2] = useState(openAlertLink);
     const [submitted, setSubmitted] = useState(false);
     const { setLoggedIn, setIsAdmin, setId, setUserFullName, setUsername } = useUser();
-    const { setAlertMessage, setSeverity } = useAlert();
+    const { alert, setAlert } = useAlert();
 
     const handleSubmit = (e) => {
         // Prevent the default form submission behavior
@@ -39,15 +34,15 @@ export default function LogIn() {
             setIsAdmin(res.data.user.isAdmin);
             setId(res.data.user.id);
             setUsername(res.data.user.username);
-            setUserFullName(res.data.user.fullName || ''); // Set the user's full name if available
+            setUserFullName(res.data.user.fullName || '');
+
             // Redirect to the leaderboard page after successful login
-            setAlertMessage('Welcome');
-            setSeverity('success');
-            navigate('/leaderboard', { state: { openAlertLink: true } });
+            setAlert({ message: 'Welcome', severity: 'success', open: true });
+            navigate('/leaderboard');
         }).catch(err => {
             console.error('Login failed:', err.response?.data || err.message);
             // Show alert if login fails
-            setOpenAlert(true);
+            setAlert({ message: 'Invalid credentials. Please check your username and password.', severity: 'error', open: true });
             // Reset submitted state on error
             setSubmitted(false);
         });
@@ -68,26 +63,15 @@ export default function LogIn() {
     return (
         <div>
             {/* Alert to show if login fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Invalid credentials. Please check your username and password.
-                </Alert>
-            </Collapse>
-            <Collapse in={openAlert2}>
-                <Alert severity='error' action={
-                    <IconButton onClick={() => {
-                        setOpenAlert2(false);
-                    }}>
-                        <ClearIcon></ClearIcon>
-                    </IconButton>
-                }>
-                    {message}
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box component='form'
@@ -107,7 +91,7 @@ export default function LogIn() {
                             sx={{ display: 'flex', marginBottom: '1rem', width: '80%' }}>
                             <GoogleIcon sx={{ marginRight: '1rem' }}></GoogleIcon>Log In with Google
                         </Button>
-                        <Typography sx={{ marginBottom: '1rem' }}>New to MMPoker? <Link to='/signup'>Create Account</Link> </Typography>
+                        <Typography sx={{ marginBottom: '1rem' }}>New to MMPoker? <Link to='/signup' onClick={() => { setAlert({ ...alert, open: false }); }}>Create Account</Link> </Typography>
                     </CardContent>
                 </Card>
             </Box>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
     Alert, Collapse, IconButton, Button, Table,
@@ -15,13 +15,9 @@ export default function Leaderboard() {
     const [players, setPlayers] = useState([]);
     const [order, setOrder] = useState('asc');
     const navigate = useNavigate();
-    const location = useLocation();
     const { isAdmin } = useUser();
-
-    let { openAlertLink } = location.state || {};
-    const [openAlert, setOpenAlert] = useState(openAlertLink);
     const [disabled, setDisabled] = useState(false);
-    const { alertMessage, severity } = useAlert();
+    const { alert, setAlert } = useAlert();
 
     //This gets all the players from the DB and saves their data in the players array
     useEffect(() => {
@@ -39,19 +35,19 @@ export default function Leaderboard() {
         //Move div styles to css file
         <div style={{ textAlign: 'center' }}>
             {/* Alert to show login/logout feedback. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity={severity} sx={{ backgroundColor: severity == 'success' ? '#c8e6c9' : '#fdeded' }} action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} sx={{ backgroundColor: alert.severity == 'success' ? '#c8e6c9' : '#fdeded' }} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    {alertMessage}
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>Leaderboard</h1>
-            {isAdmin ? <Link to='/leaderboard/new'>Add Game</Link> : null}
+            {isAdmin ? <Link to='/leaderboard/new' onClick={() => { setAlert({ ...alert, open: false }); }}>Add Game</Link> : null}
             <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>
                 <Table>
                     <TableHead>
@@ -234,13 +230,14 @@ export default function Leaderboard() {
                                         {/* When we click on a player's button, we want to request their info from the DB
                                         and pass it in the navigate state object for retrieval at the player's page */}
                                         <Button disabled={disabled} sx={{ textTransform: 'none' }} onClick={async () => {
-                                            // Disable the button to prevent multiple clicks
+                                            // Disable the button to prevent multiple clicks and reset any alerts
                                             setDisabled(true);
+                                            setAlert({ message: '', severity: 'success', open: false });
 
                                             const link = `/players/${player._id}`;
                                             await api.get(link)
-                                                .then((res) => {
-                                                    navigate(link, { state: { playerData: res.data } });
+                                                .then(() => {
+                                                    navigate(link);
                                                 });
                                         }}>{`${player.firstName} ${player.lastName}`}</Button>
                                     </TableCell>

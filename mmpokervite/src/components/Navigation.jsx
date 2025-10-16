@@ -21,7 +21,7 @@ const LinkButton = styled(Button)({
 export default function Navigation() {
     // We are using the custom hooks we made to handle several states in the application
     const { loggedIn, setLoggedIn, setIsAdmin, setId } = useUser();
-    const { setAlertMessage } = useAlert();
+    const { alert, setAlert } = useAlert();
 
     const navigate = useNavigate();
 
@@ -33,16 +33,21 @@ export default function Navigation() {
 
     // Log out handler function
     const handleLogout = () => {
-        // Call the logout route, set the loggedIn and admin state to false and redirect to the leaderboard page
+        // Call the logout route, reset user context and redirect to the leaderboard page with an alert
         api.get('/logout')
             .then(() => {
                 setLoggedIn(false);
                 setIsAdmin(false);
-                setAlertMessage('Logged out.');
+                setAlert({ message: 'Logged out.', severity: 'success', open: true });
                 setId(null);
-                navigate('/leaderboard', { state: { openAlertLink: true } });
+                navigate('/leaderboard');
                 console.log('User logged out');
             })
+    }
+
+    // Use this function on all Links to reset any possible stale alerts
+    const closeAlert = () => {
+        setAlert({ ...alert, open: false });
     }
 
     return (
@@ -50,19 +55,19 @@ export default function Navigation() {
             <AppBar position='sticky' sx={{ display: 'flex', justifyContent: 'space-around' }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, justifyContent: 'space-around' }}>
-                        <Link to='/'>MMPoker League Manager</Link>
+                        <Link to='/' onClick={() => { closeAlert() }}>MMPoker League Manager</Link>
                     </Typography>
                     <LinkButton>
-                        <Typography><Link to='/leaderboard'>Leaderboard</Link></Typography>
+                        <Typography><Link to='/leaderboard' onClick={() => { closeAlert() }}>Leaderboard</Link></Typography>
                     </LinkButton>
                     <LinkButton>
-                        <Typography><Link to='/players'>Players</Link></Typography>
+                        <Typography><Link to='/players' onClick={() => { closeAlert() }}>Players</Link></Typography>
                     </LinkButton>
                     <LinkButton>
-                        <Typography><Link to='/updates'>Updates</Link></Typography>
+                        <Typography><Link to='/updates' onClick={() => { closeAlert() }}>Updates</Link></Typography>
                     </LinkButton>
                     <LinkButton>
-                        <Typography><Link to='/stats'>Stats</Link></Typography>
+                        <Typography><Link to='/stats' onClick={() => { closeAlert() }}>Stats</Link></Typography>
                     </LinkButton>
                     {
                         loggedIn ? (
@@ -73,7 +78,7 @@ export default function Navigation() {
                         ) :
                             (
                                 <LinkButton>
-                                    <Typography><Link to='/login'>Log in</Link></Typography>
+                                    <Typography><Link to='/login' onClick={() => { closeAlert() }}>Log in</Link></Typography>
                                 </LinkButton>)
                     }
                 </Toolbar>
@@ -82,10 +87,12 @@ export default function Navigation() {
             {/* MUI Syntax */}
             <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
                 <MenuItem onClick={() => {
+                    closeAlert();
                     setMenuAnchor(null);
                     navigate('/account');
                 }}>Account</MenuItem>
                 <MenuItem onClick={() => {
+                    closeAlert();
                     setMenuAnchor(null);
                     handleLogout();
                 }}>Log out</MenuItem>

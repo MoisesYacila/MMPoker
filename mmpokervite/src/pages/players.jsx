@@ -20,22 +20,24 @@ import DialogActions from '@mui/material/DialogActions';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
 import { useUser } from '../UserContext';
+import { useAlert } from '../AlertContext';
 
 export default function Players() {
     const [players, setPlayers] = useState([]);
     const [open, setOpen] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const { loggedIn, isAdmin } = useUser();
     const [submitted, setSubmitted] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [selectedPlayerId, setSelectedPlayerId] = useState('');
-    // We need these 3 values to be updated in state together, so we can put them in an object and track its changes
+    // We need these values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
         id: '',
-        name: '',
+        firstName: '',
+        lastName: '',
         gamesPlayed: 0
     });
-    //The Navigate component didn't work as expected when used inside a onClick callback, so we can use this instead
+
     const navigate = useNavigate();
 
     //This gets all the players from the DB and saves their data in the players array
@@ -68,7 +70,8 @@ export default function Players() {
                     setOpen(true);
                 // Prompt user to edit games and remove this player from them if they want to delete them
                 else
-                    setOpenAlert(true);
+                    setAlert({ message: 'This player cannot be deleted as they are in at least one game. Remove from all games and then delete.', severity: 'warning', open: true });
+
             });
     };
 
@@ -79,20 +82,20 @@ export default function Players() {
     return (
         <div>
             {/* Alert to show when player should not be deleted. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='warning' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>Players</h1>
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {loggedIn ? <Link to='/players/new'>Add Player</Link> : null}
+                {loggedIn ? <Link to='/players/new' onClick={() => { setAlert({ ...alert, open: false }); }}>Add Player</Link> : null}
                 <List sx={{ width: '25%' }}>
                     {/* Use the arr.map function to make a list of components */}
                     {players.map((player, i) => {
@@ -100,6 +103,7 @@ export default function Players() {
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
                                 {/* async callback that gets the clicked player, and links to their personal page */}
                                 <ListItemButton disabled={disabled} onClick={async () => {
+                                    setAlert({ ...alert, open: false });
                                     setDisabled(true);
                                     const link = `/players/${player._id}`;
                                     await api.get(`/players/${player._id}`)
@@ -131,7 +135,8 @@ export default function Players() {
                                             // Important to have this data together in the object, otherwise handleOpen could be called with incomplete data
                                             setPlayerData({
                                                 id: res.data._id,
-                                                name: res.data.name,
+                                                firstName: res.data.firstName,
+                                                lastName: res.data.lastName,
                                                 gamesPlayed: res.data.gamesPlayed
                                             });
 
@@ -149,7 +154,7 @@ export default function Players() {
                 <DialogTitle>Permanently Delete Player?</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        You are about to permanently delete {playerData.name}.
+                        You are about to permanently delete {`${playerData.firstName} ${playerData.lastName}`}.
                         Are you sure you want to delete this player? This action cannot be undone.
                     </DialogContentText>
                 </DialogContent>
@@ -161,7 +166,7 @@ export default function Players() {
 
                         await api.delete(`/players/${playerData.id}`)
                             .then((res) => {
-                                console.log(`Deleted ${res.data.name} from DB`);
+                                console.log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
                                 let newArr = [];
                                 // Creates a new array with all the players except the one being deleted
                                 // if the id is equal the fuction won't add this to the array because this is
@@ -169,9 +174,16 @@ export default function Players() {
                                 newArr = players.filter((player) => player._id != playerData.id);
                                 setPlayers(newArr);
                                 setSubmitted(false);
+                                setAlert({ message: 'Player deleted.', severity: 'success', open: true });
                             }).catch((err) => {
                                 console.log(err);
-                                navigate(`/login`, { state: { message: 'Must be signed in to delete players.', openAlertLink: true } });
+                                if (err.status === 401) {
+                                    setAlert({ message: 'You must be logged in to perform delete a player.', severity: 'error', open: true });
+                                    navigate(`/login`);
+                                }
+                                else {
+                                    setAlert({ message: 'Error deleting player.', severity: 'error', open: true });
+                                }
                             });
                         handleClose();
                     }}>Delete</Button>

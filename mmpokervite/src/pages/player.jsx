@@ -11,6 +11,7 @@ import '../App.css';
 import api from '../api/axios';
 import { Button, CircularProgress, Stack } from '@mui/material';
 import { useUser } from '../UserContext';
+import { useAlert } from '../AlertContext';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -24,7 +25,7 @@ export default function Player() {
         'July', 'August', 'September', 'October', 'November', 'December'];
     const navigate = useNavigate();
     const { isAdmin } = useUser();
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const [openDialog, setOpenDialog] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -35,7 +36,7 @@ export default function Player() {
         if (playerData.gamesPlayed <= 0) {
             setOpenDialog(true);
         } else {
-            setOpenAlert(true);
+            setAlert({ message: 'This player cannot be deleted as they are in at least one game. Remove from all games and then delete.', severity: 'warning', open: true });
         }
     }
 
@@ -67,15 +68,15 @@ export default function Player() {
     return (
         <div>
             {/* Alert to show when player should not be deleted. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='warning' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    This player cannot be deleted as they are in at least one game. Remove from all games and then delete.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <h1>{playerData == null ? <CircularProgress /> : `${playerData.firstName} ${playerData.lastName}`}</h1>
@@ -98,6 +99,7 @@ export default function Player() {
                     let link = `/player/${id}/edit`;
                     await api.get(`/players/${id}`)
                         .then(() => {
+                            setAlert({ ...alert, open: false });
                             navigate(link);
                         })
                 }}>Edit</Button>
@@ -120,8 +122,9 @@ export default function Player() {
                                     //api link matches express route endpoint
                                     const link = `/games/${game._id}`;
                                     await api.get(`/games/game/${game._id}`)
-                                        .then((res) => {
-                                            navigate(link, { state: { gameData: res.data } });
+                                        .then(() => {
+                                            setAlert({ ...alert, open: false });
+                                            navigate(link);
                                         });
                                     console.log(link);
                                 }}>
@@ -146,16 +149,23 @@ export default function Player() {
                     <DialogActions>
                         <Button disabled={submitted} onClick={() => setOpenDialog(false)}>Cancel</Button>
                         <Button loading={submitted} onClick={async () => {
-
                             setSubmitted(true);
+
                             await api.delete(`/players/${id}`)
                                 .then((res) => {
-                                    console.log(`Deleted ${res.data.name} from DB`);
+                                    console.log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
                                     setSubmitted(false);
+                                    setAlert({ message: 'Player deleted', severity: 'success', open: true });
                                     navigate('/players');
                                 }).catch((err) => {
                                     console.log(err);
-                                    navigate(`/login`, { state: { message: 'Must be signed in to delete players.', openAlertLink: true } });
+                                    if (err.status === 401) {
+                                        setAlert({ message: 'Must be signed in to delete players.', severity: 'error', open: true });
+                                        navigate(`/login`);
+                                    }
+                                    else {
+                                        setAlert({ message: 'Error deleting player', severity: 'error', open: true })
+                                    }
                                 });
                             setOpenDialog(false);
                         }}>Delete</Button>

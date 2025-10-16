@@ -7,9 +7,10 @@ import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from '../UserContext';
+import { useAlert } from '../AlertContext';
 
 export default function SignUp() {
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
     const { setLoggedIn, setIsAdmin, setId, setUserFullName } = useUser();
     const [disabled, setDisabled] = useState(false);
@@ -35,11 +36,12 @@ export default function SignUp() {
             setIsAdmin(res.data.admin);
             setId(res.data._id);
             setUserFullName(res.data.fullName || ''); // Set the user's full name if available
+            setAlert({ message: 'Welcome to MMPoker.', severity: 'success', open: true });
             navigate('/leaderboard');
         }).catch(err => {
             console.error('Sign up failed:', err.response?.data || err.message);
             // Show alert if signup fails
-            setOpenAlert(true);
+            setAlert({ message: 'Unable to sign up. A user with the given username or email is already registered.', severity: 'error', open: true });
         });
 
         console.log("Form submitted");
@@ -48,15 +50,15 @@ export default function SignUp() {
     return (
         <div>
             {/* Alert to show if signup fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Unable to sign up. A user with the given username or email is already registered.
+                    {alert.message}
                 </Alert>
             </Collapse>
             {/* Form to create a new account
@@ -80,7 +82,7 @@ export default function SignUp() {
                         <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
                         <Button loading={disabled} loadingPosition='start' type="submit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Create account</Button>
-                        <Typography sx={{ marginBottom: '1rem' }}>Already have an account? <Link to='/login'>Log in</Link> </Typography>
+                        <Typography sx={{ marginBottom: '1rem' }}>Already have an account? <Link to='/login' onClick={() => { setAlert({ ...alert, open: false }); }}>Log in</Link> </Typography>
                     </CardContent>
                 </Card>
             </Box>

@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { Alert, Box, Button, Collapse, IconButton, TextField } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
 import ReactFlagsSelect from "react-flags-select";
+import { useAlert } from "../AlertContext";
 
 export default function EditPlayer() {
     const { id } = useParams();
@@ -18,7 +19,7 @@ export default function EditPlayer() {
         nationality: false
     });
     const [submitted, setSubmitted] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
+    const { alert, setAlert } = useAlert();
 
     useEffect(() => {
         // Fetch player data from the server when the component mounts
@@ -53,7 +54,7 @@ export default function EditPlayer() {
         if (validationErrors.firstName || validationErrors.lastName || validationErrors.nationality) {
             // If there are errors, do not submit the form
             setSubmitted(false);
-            setOpenAlert(true);
+            setAlert({ message: 'Validation failed. Ensure all fields are filled out correctly and a nationality is selected.', severity: 'error', open: true });
             return;
         }
 
@@ -63,27 +64,28 @@ export default function EditPlayer() {
             nationality
         }).then(() => {
             console.log('Player updated successfully');
+            setAlert({ message: 'Player updated.', severity: 'success', open: true });
             navigate(`/players/${id}`);
 
         }).catch((err) => {
             console.error('Error updating player:', err);
             setSubmitted(false);
-            setOpenAlert(true);
+            setAlert({ message: 'Error updating player. Please try again.', severity: 'error', open: true });
         });
     }
 
     return (
         <Box>
             {/* Alert to show if client side validation fails. Syntax from MUI */}
-            <Collapse in={openAlert}>
-                <Alert severity='error' action={
+            <Collapse in={alert.open}>
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
-                        setOpenAlert(false)
+                        setAlert({ ...alert, open: false });
                     }}>
                         <ClearIcon></ClearIcon>
                     </IconButton>
                 }>
-                    Validation failed. Ensure all fields are filled out correctly and a nationality is selected.
+                    {alert.message}
                 </Alert>
             </Collapse>
             <Box component='form' action='http://localhost:8080/players?_method=PATCH' method='POST' onSubmit={handleSubmit}
