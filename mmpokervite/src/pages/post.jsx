@@ -107,7 +107,7 @@ export default function Post() {
                             <h1>{postData.title}</h1>
                             <h4>Posted by {postData?.author?.username ? postData?.author?.username : <CircularProgress />} on {new Date(postData.date).toLocaleDateString()}</h4>
                             {postData.image && (
-                                <img src={postData.image} alt="Post" style={{ width: '15%' }} />
+                                <img src={postData.image} alt="Post" style={{ width: '20%' }} />
                             )}
                             <p>{postData.content}</p>
                             {/* Show the button red if the user has already liked it and gray otherwise. Disable the button if the user is not logged in */}

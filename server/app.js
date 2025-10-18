@@ -1281,22 +1281,23 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
         post.title = title;
         post.content = content;
 
-        // If a new image is uploaded, delete the old image from Cloudinary if it exists and upload the new one
+        // If the user removed the image, delete it from Cloudinary and update the post
+        if (deletedImage != '') {
+            // The parameter has to be the public ID of the image to be deleted
+            await cloudinary.uploader.destroy(deletedImage)
+                .then(() => {
+                    console.log('Old image deleted successfully');
+                    post.image = '';
+                    post.imagePublicId = '';
+                })
+                .catch((error) => {
+                    console.error('Error deleting old image from Cloudinary:', error);
+                    return res.status(500).send('Error deleting old image');
+                });
+        }
+
+        // If a new image is uploaded, upload it to Cloudinary and update the post's image
         if (req.file) {
-            if (deletedImage != '') {
-                // The parameter has to be the public ID of the image to be deleted
-                await cloudinary.uploader.destroy(deletedImage)
-                    .then(() => {
-                        console.log('Old image deleted successfully');
-                    })
-                    .catch((error) => {
-                        console.error('Error deleting old image from Cloudinary:', error);
-                        return res.status(500).send('Error deleting old image');
-                    });
-            }
-
-
-            // If a new image is uploaded, upload it to Cloudinary and update the post's image
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'MMPoker/posts',
                 resource_type: 'image',

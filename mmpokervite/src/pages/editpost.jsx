@@ -12,8 +12,8 @@ export default function EditPost() {
     const { id } = useParams();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [image, setImage] = useState({});
-    const [uploadedImage, setUploadedImage] = useState(false);
+    const [existingImage, setExistingImage] = useState('');
+    const [newImage, setNewImage] = useState({});
     const [deletedImage, setDeletedImage] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const { alert, setAlert } = useAlert();
@@ -42,22 +42,23 @@ export default function EditPost() {
             return;
         }
 
-        if (image && uploadedImage)
-            formData.append('picture', image);
+        // If there's a new image, add it to the form data
+        if (newImage?.name) {
+            formData.append('picture', newImage);
+        }
 
-
-
+        // Post request to edit the post
         api.patch(`/posts/${id}/edit`, formData)
             .then(() => {
                 console.log('Submitting edit post with title:', title);
-                setAlert({ ...alert, open: false });
+                setAlert({ message: 'Post updated.', severity: 'success', open: true });
                 navigate(`/updates/${id}`);
             })
             .catch((error) => {
                 console.error('Error editing post:', error);
                 // If user tries to upload a file that's not an image, show an alert telling them and reset the button
                 if (error.status === 415) {
-                    setImage({});
+                    setNewImage({});
                     setAlert({ message: `${error.response.data.message}. Allowed types are jpg, jpeg, png and webp.`, severity: 'error', open: true });
                     setSubmitted(false); //resets button
                 }
@@ -75,8 +76,7 @@ export default function EditPost() {
                 setContent(res.data.content);
                 // If the post has an image, set it
                 if (res.data.image) {
-                    setImage(res.data.image);
-                    setDeletedImage(res.data.imagePublicId); // Set the public ID for the image to be deleted if a new one is uploaded
+                    setExistingImage(res.data);
                 }
             })
             .catch((error) => {
@@ -124,39 +124,61 @@ export default function EditPost() {
                     onChange={(e) => setContent(e.target.value)}
                     required
                 />
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {!image.name ? <Button
-                        component="label"
-                        variant="contained"
-                        color="success"
-                        startIcon={<CloudUploadIcon />}
-                    >
-                        Swap or Upload Photo
-                        <input hidden type="file" name="picture" onChange={(e) => {
-                            // If the image is larger than our established limit (2MB), don't allow the upload and show an alert
-                            if (e.target.files[0]?.size > 2 * 1024 * 1024) {
-                                // Reset e.target.value to keep showing the alert if the user tries uploading the same image multiple times
-                                e.target.value = null;
-                                setAlert({ message: 'Error. Maximum size allowed is 2MB.', severity: 'error', open: true });
-                                return;
-                            }
-                            // e.target.files[0] is where the uploaded file will be if the user selects one
-                            setImage(e.target.files[0]);
-                            setUploadedImage(true);
-                        }} />
-                    </Button> : <Box sx={{ display: 'flex' }}>
-                        <Box sx={{ marginRight: '0.7rem' }}>{image.name}</Box>
-                        {/* Reset image to re render the upload button */}
-                        <IconButton onClick={() => {
-                            setImage({});
+
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    {/* If the post has an image already, show it with an x button to remove it */}
+                    {existingImage ? <>
+                        <img src={existingImage.image} alt="Post" style={{ width: '15%' }} />
+                        <IconButton sx={{
+                            // Prevents the button shade from being an oval shape
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            alignSelf: 'center',
+                            marginLeft: '1rem'
+                        }} onClick={() => {
+                            // Set the deleted image for the backend to handle it and remove the existing image
+                            setDeletedImage(existingImage.imagePublicId)
+                            setExistingImage('');
                         }}>
                             <ClearIcon fontSize='small' />
                         </IconButton>
-                    </Box>}
+                    </> : <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop: newImage ? '1rem' : '' }}>
+                            {/* If there's no new image uploaded, show the button to upload one, otherwise, show the name with the x to cancel the upload */}
+                            {!newImage.name ? <Button
+                                component="label"
+                                variant="contained"
+                                color="success"
+                                startIcon={<CloudUploadIcon />}
+                            >
+                                Upload Photo
+                                <input hidden type="file" name="picture" onChange={(e) => {
+                                    // If the image is larger than our established limit (2MB), don't allow the upload and show an alert
+                                    if (e.target.files[0]?.size > 2 * 1024 * 1024) {
+                                        // Reset e.target.value to keep showing the alert if the user tries uploading the same image multiple times
+                                        e.target.value = null;
+                                        setAlert({ message: 'Error. Maximum size allowed is 2MB.', severity: 'error', open: true });
+                                        return;
+                                    }
+                                    // e.target.files[0] is where the uploaded file will be if the user selects one
+                                    setNewImage(e.target.files[0]);
+                                }} />
+                            </Button> : <Box sx={{ display: 'flex' }}>
+                                <Box sx={{ marginRight: '0.7rem' }}>{newImage.name}</Box>
+                                {/* Reset image to re render the upload button */}
+                                <IconButton onClick={() => {
+                                    setNewImage({});
+                                }}>
+                                    <ClearIcon fontSize='small' />
+                                </IconButton>
+                            </Box>}
 
-                    <Tooltip title='2MB Max Size' sx={{ marginLeft: '0.7rem' }}>
-                        <InfoOutlineIcon />
-                    </Tooltip>
+                            <Tooltip title='2MB Max Size' sx={{ marginLeft: '0.7rem' }}>
+                                <InfoOutlineIcon />
+                            </Tooltip>
+                        </Box>
+                    </>}
                 </Box>
                 <Button loading={submitted} loadingPosition="start" type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                     Save Changes
