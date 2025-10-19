@@ -659,6 +659,12 @@ app.get('/accounts/:id', isLoggedIn, async (req, res) => {
     }
 })
 
+// Get all active accounts. Only available to admins
+app.get('/accounts', isAdmin, async (req, res) => {
+    const allAccounts = await Account.find({ deleted: false });
+    res.send(allAccounts);
+})
+
 //Delete one player
 app.delete('/players/:id', isAdmin, async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
@@ -770,43 +776,48 @@ app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) =>
 app.delete('/accounts/:id', isLoggedIn, async (req, res) => {
     const { id } = req.params;
 
-    // Only the account owner can delete the account
-    if (req.user._id.toString() !== id) {
-        return res.status(403).send('You are not authorized to delete this account');
-    }
-
-    try {
-        const account = await Account.findById(id);
-        if (!account) {
-            return res.status(404).send('Account not found');
-        }
-
-        // We are doing a soft delete, so we are not actually deleting the account from the database
-        // Instead, we are just clearing out the sensitive information
-
-        // If the account was created with Google, we clear out the Google ID
-        if (account.googleId) {
-            account.googleId = null;
-        }
-
-        // We're setting the username and email to something that indicates the account was deleted
-        // Needs to be unique to avoid issues with the DB, so we add the account ID to it
-        account.username = `[deleted]${account._id}`;
-        account.email = `deleted-${account._id}@example.com`;
-        account.deleted = true;
-
-        await account.save();
-
-        // Log out the user after deleting the account
-        req.logout((err) => {
-            if (err) {
-                return next(err);
+    // Only the account owner or an admin can delete the account
+    if (req.user._id.toString() == id || req.user.admin) {
+        try {
+            const account = await Account.findById(id);
+            if (!account) {
+                return res.status(404).send('Account not found');
             }
-            res.send('Account deleted and logged out successfully');
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting account');
+
+            // We are doing a soft delete, so we are not actually deleting the account from the database
+            // Instead, we are just clearing out the sensitive information
+
+            // If the account was created with Google, we clear out the Google ID
+            if (account.googleId) {
+                account.googleId = null;
+            }
+
+            // We're setting the username and email to something that indicates the account was deleted
+            // Needs to be unique to avoid issues with the DB, so we add the account ID to it
+            account.username = `[deleted]${account._id}`;
+            account.email = `deleted-${account._id}@example.com`;
+            account.deleted = true;
+
+            await account.save();
+
+            // Log out the user if they deleted their own account
+            if (req.user._id.toString() == id) {
+                req.logout((err) => {
+                    if (err) {
+                        return next(err);
+                    }
+                    res.send('Account deleted and logged out successfully');
+                });
+            }
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error deleting account');
+        }
+        res.send('Account deleted successfully');
+    }
+    else {
+        return res.status(403).send('You are not authorized to delete this account');
     }
 });
 

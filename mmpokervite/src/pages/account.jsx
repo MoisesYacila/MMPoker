@@ -4,21 +4,24 @@ import { useNavigate } from 'react-router-dom';
 import {
     Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button,
     Collapse, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-    TextField
+    Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
 import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/validators';
 
 export default function Account() {
-    const { id, setLoggedIn, setIsAdmin, setId } = useUser();
+    const { id, isAdmin, setLoggedIn, setIsAdmin, setId } = useUser();
     const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
 
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [openDeleteDialog2, setOpenDeleteDialog2] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [form, setForm] = useState({
         username: '',
@@ -27,6 +30,7 @@ export default function Account() {
     });
     const [accountData, setAccountData] = useState({});
     const [tempAccountData, setTempAccountData] = useState({});
+    const [accountToDelete, setAccountToDelete] = useState({});
     const [validationErrors, setValidationErrors] = useState({
         // No errors initially
         username: {
@@ -41,6 +45,7 @@ export default function Account() {
         },
         fullName: false
     });
+    const [allAccounts, setAllAccounts] = useState([]);
 
     // Fetching account data using the user ID from the UserContext
     useEffect(() => {
@@ -60,6 +65,18 @@ export default function Account() {
             .catch((error) => {
                 console.error('Error fetching account data:', error);
             });
+
+        // If the user is an admin, get all the accounts for the admin panel
+        if (isAdmin) {
+            api.get('/accounts')
+                .then((res) => {
+                    setAllAccounts(res.data);
+                    console.log('All accounts: ', res.data);
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
+        }
     }, [id]);
 
     // Log out handler function
@@ -124,7 +141,6 @@ export default function Account() {
             <Box sx={{ textAlign: 'center', marginTop: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <h1>Account</h1>
                 <h2>Settings</h2>
-
                 {/* Accordion components to display account settings */}
                 {/* MUI Syntax */}
                 <Accordion sx={{ width: '50%' }}>
@@ -156,6 +172,50 @@ export default function Account() {
                         <p>Current League: Moi&apos;s Poker Nights</p>
                     </AccordionDetails>
                 </Accordion>
+                {/* Admin panel. Admins can delete non admin accounts from here */}
+                {isAdmin ? <Accordion sx={{ width: '50%' }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        Admin Panel
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <h3>All accounts</h3>
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Username</TableCell>
+                                        <TableCell>Email</TableCell>
+                                        <TableCell>Admin</TableCell>
+                                        <TableCell align='center'>Delete?</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {allAccounts.map((account, i) => {
+                                        return (<TableRow key={i}>
+                                            <TableCell>{account.username}</TableCell>
+                                            <TableCell>{account.email}</TableCell>
+                                            <TableCell>{account.admin ? 'Yes' : 'No'}</TableCell>
+                                            {/* If the account is not an admin, then admins can delete it */}
+                                            <TableCell align='center'>{!account.admin ?
+                                                <IconButton onClick={() => {
+                                                    console.log(account);
+                                                    setAccountToDelete(account);
+                                                    setOpenDeleteDialog2(true)
+                                                }}>
+                                                    <DeleteIcon></DeleteIcon>
+                                                </IconButton> :
+                                                <Tooltip title='Cannot delete admin&apos;s account. If you want to delete your account, use the button at the bottom of the page.'>
+                                                    <InfoOutlineIcon />
+                                                </Tooltip>
+                                            }</TableCell>
+                                        </TableRow>);
+                                    })}
+
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </AccordionDetails>
+                </Accordion> : null}
                 <Accordion sx={{ width: '50%' }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         Edit Profile
@@ -367,6 +427,38 @@ export default function Account() {
                                 });
                         }}>Delete</Button>
                         <Button disabled={submitted} onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={openDeleteDialog2} onClose={() => setOpenDeleteDialog2(false)}>
+                    <DialogTitle>Deleting account</DialogTitle>
+                    <DialogContent>
+                        <p>Are you sure you want to delete this account? This action cannot be undone.</p>
+                        <ul>
+                            <li>Username: {accountToDelete.username}</li>
+                            <li>Email: {accountToDelete.email}</li>
+                        </ul>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button loading={submitted} color='error' onClick={() => {
+                            // Call the delete account route
+                            setSubmitted(true);
+                            api.delete(`/accounts/${accountToDelete._id}`)
+                                .then(() => {
+                                    // On success, log the user out and redirect to login page with an alert
+                                    setSubmitted(false);
+                                    setOpenDeleteDialog2(false);
+                                    // Remove the account we just deleted from allAccounts. This change should trigger a re render for us to see the updated table
+                                    setAllAccounts(allAccounts.filter((account) => account._id != accountToDelete._id));
+                                    setAccountToDelete({});
+                                    setAlert({ message: 'Account deleted successfully.', severity: 'success', open: true });
+                                })
+                                .catch((err) => {
+                                    console.error('Error deleting account:', err);
+                                    setSubmitted(false);
+                                    setOpenDeleteDialog2(false);
+                                });
+                        }}>Delete</Button>
+                        <Button disabled={submitted} onClick={() => setOpenDeleteDialog2(false)}>Cancel</Button>
                     </DialogActions>
                 </Dialog>
             </Box>
