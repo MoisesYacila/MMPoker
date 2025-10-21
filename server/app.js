@@ -739,36 +739,43 @@ app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) =>
     const { postId, commentId } = req.params;
     const { author } = req.body; // Get the author from the request body
 
-    try {
-        // Find the post and remove the comment
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).send('Post not found');
+    // Get the comment and populate to get the author's info
+    let comment = await Comment.findById(commentId).populate('author');
+    if (!comment) {
+        return res.status(404).send('Comment not found');
+    }
+
+    // If a user has an active account, only they can delete their comments
+    // If the account is deleted, then admins can delete the comment
+    if (author._id.toString() == comment.author._id.toString() || (comment.author.deleted && req.user.admin)) {
+        try {
+            // Find the post and remove the comment
+            const post = await Post.findById(postId);
+            if (!post) {
+                return res.status(404).send('Post not found');
+            }
+
+            // Delete the comment from the post's comments array and from the DB
+            post.comments = post.comments.filter(comment => comment._id.toString() !== commentId);
+
+            comment = await Comment.findByIdAndDelete(commentId);
+
+            // Save and send the updated post
+            await post.save();
+
+            // Populate the author and comments fields to get the updated post with all details
+            // We also populate the author field in the comments
+            // This is called deep population
+            const updatedPost = await Post.findById(postId).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
+
+            res.send(updatedPost);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error deleting comment');
         }
-
-        // Check if the author matches the user making the request
-        if (author._id.toString() !== req.user._id.toString()) {
-            return res.status(403).send('You are not authorized to delete this comment');
-        }
-        // Delete the comment from the post's comments array and from the DB
-        post.comments = post.comments.filter(comment => comment._id.toString() !== commentId);
-        const comment = await Comment.findByIdAndDelete(commentId);
-        if (!comment) {
-            return res.status(404).send('Comment not found');
-        }
-
-        // Save and send the updated post
-        await post.save();
-
-        // Populate the author and comments fields to get the updated post with all details
-        // We also populate the author field in the comments
-        // This is called deep population
-        const updatedPost = await Post.findById(postId).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
-
-        res.send(updatedPost);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting comment');
+    }
+    else {
+        return res.status(403).send('Unauthorized to delete comment.');
     }
 })
 
@@ -809,12 +816,14 @@ app.delete('/accounts/:id', isLoggedIn, async (req, res) => {
                     res.send('Account deleted and logged out successfully');
                 });
             }
+            else {
+                res.send('Account deleted successfully');
+            }
 
         } catch (err) {
             console.error(err);
             res.status(500).send('Error deleting account');
         }
-        res.send('Account deleted successfully');
     }
     else {
         return res.status(403).send('You are not authorized to delete this account');

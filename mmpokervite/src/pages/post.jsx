@@ -214,7 +214,8 @@ export default function Post() {
                                             height: 40,
                                             borderRadius: '50%',
                                             alignSelf: 'center',
-                                            display: userId === comment.author?._id ? 'inline' : 'none'
+                                            // Can only delete the comment if the user owns it or if their account was deleted it, then admins can delete it
+                                            display: userId === comment.author?._id || (comment.author.deleted && isAdmin) ? 'inline' : 'none'
                                         }} onClick={() => {
                                             setCurrentComment({
                                                 id: comment._id,
@@ -255,8 +256,8 @@ export default function Post() {
                                             setAlert({ message: 'Comment deleted.', severity: 'success', open: true });
                                             setDisabled(false);
                                         })
-                                        .catch(() => {
-                                            console.error('Error deleting comment');
+                                        .catch((err) => {
+                                            console.error('Error deleting comment', err);
                                         });
                                     handleCloseCommentDialog();
                                 }}>Delete</Button>
