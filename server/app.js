@@ -82,8 +82,23 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Setting up passport according to its documentation
-passport.use(Account.createStrategy());
+// Setting up passport local strategy for username/password authentication
+// We want to make sure that the user can login regardless of the case of their username, so we check against the lowercase version
+passport.use(new LocalStrategy(async (username, password, done) => {
+    try {
+        // Find the user by their lowercase username
+        const user = await Account.findOne({ usernameLower: username.toLowerCase() });
+        if (!user) return done(null, false, { message: 'Incorrect username or password.' });
+
+        // Check if the password is correct
+        const isValid = await user.authenticate(password);
+        if (!isValid) return done(null, false, { message: 'Incorrect username or password.' });
+        return done(null, user);
+    } catch (err) {
+        return done(err);
+    }
+}));
+
 passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
@@ -106,7 +121,7 @@ passport.use(new GoogleStrategy(googleConfig,
                     // Optional chaining
                     // We are saying: If profile.emails and profile.emails[0] are not undefined,
                     // then get the value, which is the email address
-                    email: profile.emails?.[0]?.value,
+                    email: profile.emails?.[0]?.value.toLowerCase(),
                     admin: false
                 });
                 await account.save();
@@ -614,28 +629,24 @@ app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
     let isUsernameTaken = false;
     let isEmailTaken = false;
 
+    // Try to find an account with the given username or email
+    // If the username or email match, then we know they are taken
     try {
-        const allAccounts = await Account.find({});
-        // If no accounts found, return an empty array
-        if (!allAccounts || allAccounts.length === 0) {
-            return res.status(404).send('No accounts found');
-        }
+        const accountUsername = await Account.findOne({ usernameLower: accountData.username.toLowerCase() });
+        const accountEmail = await Account.findOne({ email: accountData.email.toLowerCase() });
 
-        // Check if the username already exists in the database
-        if (accountData.username != '') {
-            isUsernameTaken = allAccounts.some(account => account.username.toLowerCase() === accountData.username.toLowerCase());
+        if (accountUsername?.usernameLower == accountData.username.toLowerCase()) {
+            isUsernameTaken = true;
         }
-
-        // Check if the email already exists in the database
-        if (accountData.email != '') {
-            isEmailTaken = allAccounts.some(account => account.email.toLowerCase() === accountData.email.toLowerCase());
+        if (accountEmail?.email == accountData.email.toLowerCase()) {
+            isEmailTaken = true;
         }
-
         res.send({
             isUsernameTaken,
             isEmailTaken
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
         return res.status(500).send('Error retrieving accounts');
     }
@@ -840,8 +851,8 @@ app.post('/signup', async (req, res, next) => {
         // Make an account with the data from the form
         // We don't initially pass the password to the Account constructor 
         // because the register method will hash it for us and store the hashed password it in the DB
-        // Make one user admin to restrict certain actions, but after that, we will set admin to false
-        const account = new Account({ username, email, fullName: `${firstName} ${lastName}`, admin: false });
+        // Lowercase the email for consistency. For the username, the schema already handles that with usernameLower, which is automatically added when we save the account
+        const account = new Account({ username, email: email.toLowerCase(), fullName: `${firstName} ${lastName}`, admin: false });
         const registeredAccount = await Account.register(account, password);
 
         // Passport function to log in the user after signing up
@@ -1375,10 +1386,10 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('Account not found.');
         }
 
-        // We need to check if the username already exists in the database
-        // We do a case insensitive ($options: 'i') search for the username, excluding the current account
+        // Check if the username already exists in the database excluding the current account
+        // We do a case insensitive search by using usernameLower field
         const existingUsername = await Account.findOne({
-            username: { $regex: `^${username.trim()}$`, $options: 'i' },
+            usernameLower: username.trim().toLowerCase(),
             _id: { $ne: id }
         });
 
@@ -1391,10 +1402,9 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
         account.username = username.trim();
         changedUsername = true;
 
-        // We need to check if the email already exists in the database
-        // We do a case insensitive ($options: 'i') search for the email, excluding the current account
+        // Check if the email already exists in the database excluding the current account
         const existingEmail = await Account.findOne({
-            email: { $regex: `^${email.trim()}$`, $options: 'i' },
+            email: email.trim().toLowerCase(),
             _id: { $ne: id }
         });
 

@@ -10,6 +10,10 @@ const AccountSchema = new Schema({
         required: true,
         unique: true
     },
+    usernameLower: {
+        type: String,
+        unique: true
+    },
     googleId: String,
     fullName: {
         type: String,
@@ -25,6 +29,15 @@ const AccountSchema = new Schema({
 
 // Set up passport-local-mongoose
 AccountSchema.plugin(passportLocalMongoose);
+
+// Set usernameLower before saving
+AccountSchema.pre('save', function (next) {
+    // this.isModified is provided by Mongoose to check if a field has been modified. It works when we create or update a document.
+    if (this.isModified('username')) {
+        this.usernameLower = this.username.toLowerCase();
+    }
+    next();
+});
 
 const Account = mongoose.model('Account', AccountSchema);
 module.exports = Account;

@@ -26,7 +26,7 @@ export default function LogIn() {
 
         // Post request to the server with form data
         api.post('/login', {
-            username: e.target.username.value,
+            username: e.target.username.value.trim().toLowerCase(),
             password: e.target.password.value
         }).then((res) => {
             console.log(res.data);
