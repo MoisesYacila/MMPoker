@@ -623,7 +623,7 @@ app.get('/posts/:id', async (req, res) => {
 })
 
 // Validate account data (username and email) for uniqueness
-app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
+app.get('/accounts/validateData', async (req, res) => {
     // Get the account data from the request body
     const accountData = req.query;
     let isUsernameTaken = false;
@@ -632,14 +632,18 @@ app.get('/accounts/validateData', isLoggedIn, async (req, res) => {
     // Try to find an account with the given username or email
     // If the username or email match, then we know they are taken
     try {
-        const accountUsername = await Account.findOne({ usernameLower: accountData.username.toLowerCase() });
-        const accountEmail = await Account.findOne({ email: accountData.email.toLowerCase() });
+        const accountUsername = await Account.findOne({ usernameLower: accountData.username?.toLowerCase() });
+        const accountEmail = await Account.findOne({ email: accountData.email?.toLowerCase() });
 
-        if (accountUsername?.usernameLower == accountData.username.toLowerCase()) {
-            isUsernameTaken = true;
+        if (accountData.username) {
+            if (accountUsername?.usernameLower == accountData.username.toLowerCase()) {
+                isUsernameTaken = true;
+            }
         }
-        if (accountEmail?.email == accountData.email.toLowerCase()) {
-            isEmailTaken = true;
+        if (accountData.email) {
+            if (accountEmail?.email == accountData.email.toLowerCase()) {
+                isEmailTaken = true;
+            }
         }
         res.send({
             isUsernameTaken,
