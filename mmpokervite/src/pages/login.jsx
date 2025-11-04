@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box, Button, Card, CardContent,
     TextField, Typography, Collapse, Alert, IconButton
@@ -13,8 +13,16 @@ import { useAlert } from '../AlertContext';
 export default function LogIn() {
     const navigate = useNavigate();
     const [submitted, setSubmitted] = useState(false);
-    const { setLoggedIn, setIsAdmin, setId, setUserFullName, setUsername } = useUser();
+    const { setLoggedIn, loggedIn, setIsAdmin, setId, setUserFullName, setUsername } = useUser();
     const { alert, setAlert } = useAlert();
+
+    useEffect(() => {
+        // If the user is already logged in, redirect to the leaderboard
+        if (loggedIn) {
+            setAlert({ message: 'User currently logged in.', severity: 'info', open: true });
+            navigate('/leaderboard');
+        }
+    }, [loggedIn]);
 
     const handleSubmit = (e) => {
         // Prevent the default form submission behavior

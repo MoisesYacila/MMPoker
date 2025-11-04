@@ -847,6 +847,11 @@ app.delete('/accounts/:id', isLoggedIn, async (req, res) => {
 
 // Post request handling sign ups
 app.post('/signup', async (req, res, next) => {
+    // Check if the user is already logged in
+    // It shouldn't be the case, but we add it for safety
+    if (req.isAuthenticated()) {
+        return res.status(400).json('Already logged in');
+    }
     // Destructure data from req.body
     const { username, password, email, firstName, lastName } = req.body;
 
@@ -876,6 +881,12 @@ app.post('/signup', async (req, res, next) => {
 
 // Post request handling log in
 app.post('/login', async (req, res, next) => {
+    // Check if the user is already logged in
+    // It shouldn't be the case, but we add it for safety
+    if (req.isAuthenticated()) {
+        return res.status(400).json('Already logged in');
+    }
+
     // Remember to add the withCredentials: true to the axios request in the front end
     // Passport custom callback function to handle login and pass over info to React
     passport.authenticate('local', (err, user, info) => {

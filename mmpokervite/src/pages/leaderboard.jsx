@@ -36,7 +36,7 @@ export default function Leaderboard() {
         <div style={{ textAlign: 'center' }}>
             {/* Alert to show login/logout feedback. Syntax from MUI */}
             <Collapse in={alert.open}>
-                <Alert severity={alert.severity} sx={{ backgroundColor: alert.severity == 'success' ? '#c8e6c9' : '#fdeded' }} action={
+                <Alert severity={alert.severity} action={
                     <IconButton onClick={() => {
                         setAlert({ ...alert, open: false });
                     }}>

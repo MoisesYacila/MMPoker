@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box, Button, Card, CardContent,
     TextField, Typography, Collapse, Alert, IconButton
@@ -13,7 +13,7 @@ import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/
 export default function SignUp() {
     const { alert, setAlert } = useAlert();
     const navigate = useNavigate();
-    const { setLoggedIn, setIsAdmin, setId, setUserFullName } = useUser();
+    const { setLoggedIn, loggedIn, setIsAdmin, setId, setUserFullName } = useUser();
     const [disabled, setDisabled] = useState(false);
     const [validationErrors, setValidationErrors] = useState({
         // No errors initially
@@ -27,6 +27,14 @@ export default function SignUp() {
             invalidFormat: false
         }
     });
+
+    useEffect(() => {
+        // If the user is already logged in, redirect to the leaderboard
+        if (loggedIn) {
+            setAlert({ message: 'User currently logged in.', severity: 'info', open: true });
+            navigate('/leaderboard');
+        }
+    }, [loggedIn]);
 
     const handleSubmit = (e) => {
         // Prevent the default form submission behavior
