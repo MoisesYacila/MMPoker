@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
+import FlagIcon from '../components/FlagIcon';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -9,7 +10,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import PersonIcon from '@mui/icons-material/Person';
-import { Us, Ar, Mx, Ni, Es, Ve, Cr } from "react-flags-select";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -112,14 +112,8 @@ export default function Players() {
                                         });
                                 }}>
                                     <ListItemIcon>
-                                        {/* There has to be a better way to do this. Research later */}
-                                        {player.nationality === "US" ? <Us /> : null}
-                                        {player.nationality === "AR" ? <Ar /> : null}
-                                        {player.nationality === "MX" ? <Mx /> : null}
-                                        {player.nationality === "NI" ? <Ni /> : null}
-                                        {player.nationality === "ES" ? <Es /> : null}
-                                        {player.nationality === "VE" ? <Ve /> : null}
-                                        {player.nationality === "CR" ? <Cr /> : null}
+                                        {/* Using our custom Flag component */}
+                                        <FlagIcon code={player.nationality} size={24} />
                                     </ListItemIcon>
                                     <ListItemText primary={`${player.firstName} ${player.lastName}`} sx={{ textAlign: 'center' }} />
 
