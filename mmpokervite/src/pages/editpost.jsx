@@ -63,8 +63,15 @@ export default function EditPost() {
                     setSubmitted(false); //resets button
                 }
                 else {
-                    setAlert({ message: 'Error editing post.', severity: 'error', open: true });
-                    navigate('updates');
+                    // Show alert for validation errors from the server
+                    if (error?.response?.data && error.response.data.startsWith('Validation error:')) {
+                        setAlert({ message: error.response.data, severity: 'error', open: true });
+                        setSubmitted(false);
+                    }
+                    else {
+                        setAlert({ message: 'Error editing post.', severity: 'error', open: true });
+                        navigate('updates');
+                    }
                 }
             });
     }

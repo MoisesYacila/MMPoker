@@ -19,7 +19,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const session = require('express-session');
-const { isLoggedIn, isAdmin, validatePlayer, validateTournament } = require('./middleware.js');
+const { isLoggedIn, isAdmin, validatePlayer, validateTournament, validatePost } = require('./middleware.js');
 const multer = require('multer');
 const Joi = require('joi');
 const cloudinary = require('cloudinary').v2;
@@ -982,7 +982,7 @@ app.post('/games', isAdmin, validateTournament, async (req, res) => {
 // This endpoint allows admins to create new posts with an optional image upload
 // upload.single('picture') comes from multer, which handles file uploads and allows us to upload one picture
 // 'picture' is the name of the file input in the form
-app.post('/posts', upload.single('picture'), isAdmin, async (req, res) => {
+app.post('/posts', upload.single('picture'), isAdmin, validatePost, async (req, res) => {
     const { title, content } = req.body;
 
     // Validate that title and content are not empty
@@ -1293,8 +1293,6 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     // Mongoose snytax to populate the post's comments array with the author information
     const updatedPost = await Post.findById(id).populate('author').populate({ path: 'comments', populate: { path: 'author' } });
 
-    // await Post.findById(id).populate({ path: 'comments', populate: { path: 'author' } });
-
     res.send(updatedPost);
 })
 
@@ -1311,7 +1309,7 @@ app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
 })
 
 // Patch request to edit a post
-app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res) => {
+app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, validatePost, async (req, res) => {
     const { id } = req.params;
     const { title, content, deletedImage } = req.body;
 
@@ -1329,7 +1327,7 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, async (req, res)
         post.content = content;
 
         // If the user removed the image, delete it from Cloudinary and update the post
-        if (deletedImage != '') {
+        if (deletedImage && deletedImage != '') {
             // The parameter has to be the public ID of the image to be deleted
             await cloudinary.uploader.destroy(deletedImage)
                 .then(() => {

@@ -45,7 +45,8 @@ const validateTournament = (req, res, next) => {
         // Data array with at least 5 players
         // Each one must have the following fields
         leaderboard: Joi.array().items(Joi.object({
-            player: Joi.string().required(),
+            // 24 character hex string which is the format for MongoDB ObjectIDs
+            player: Joi.string().hex().length(24).required(),
             itm: Joi.boolean().required(),
             otb: Joi.boolean().required(),
             profit: Joi.number().required(),
@@ -57,8 +58,9 @@ const validateTournament = (req, res, next) => {
         prizePool: Joi.number().required().min(0),
         // Optional field for editing tournaments. It holds the previous leaderboard data
         oldLeaderboard: Joi.array().items(Joi.object({
-            _id: Joi.string().optional(),
-            player: Joi.string().required(),
+            // 24 character hex string which is the format for MongoDB ObjectIDs
+            _id: Joi.string().hex().length(24).optional(),
+            player: Joi.string().hex().length(24).required(),
             itm: Joi.boolean().required(),
             otb: Joi.boolean().required(),
             profit: Joi.number().required(),
@@ -74,6 +76,19 @@ const validateTournament = (req, res, next) => {
     next();
 }
 
+const validatePost = (req, res, next) => {
+    // Schema for post data validation
+    const postSchema = Joi.object({
+        title: Joi.string().min(3).max(100).required(),
+        content: Joi.string().min(2).required()
+    }).unknown(true); // Allow unknown keys for handling multipart/form-data (like images)
+    const { error } = postSchema.validate(req.body);
+    if (error) {
+        return res.status(400).send(`Validation error: ${error.details[0].message}`);
+    }
+    next();
+}
+
 
 // Export the middleware functions
 // Make sure to export as an object and not separately, otherwise module.exports will be the last middleware
@@ -82,5 +97,6 @@ module.exports = {
     isLoggedIn,
     isAdmin,
     validatePlayer,
-    validateTournament
+    validateTournament,
+    validatePost
 }
