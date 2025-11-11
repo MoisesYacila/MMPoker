@@ -19,8 +19,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const session = require('express-session');
-const { isLoggedIn, isAdmin } = require('./middleware.js');
+const { isLoggedIn, isAdmin, validatePlayer, validateTournament } = require('./middleware.js');
 const multer = require('multer');
+const Joi = require('joi');
 const cloudinary = require('cloudinary').v2;
 const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
@@ -919,11 +920,11 @@ app.post('/login', async (req, res, next) => {
 });
 
 //Post request handling adding players to DB
-app.post('/players', isLoggedIn, async (req, res) => {
+app.post('/players', isLoggedIn, validatePlayer, async (req, res) => {
     //Destructure from req.body and add player with all the info to DB
-    const { firstName, lastName, country } = req.body;
+    const { firstName, lastName, nationality } = req.body;
     const player = new Player({
-        firstName, lastName, nationality: country, gamesPlayed: 0, wins: 0,
+        firstName, lastName, nationality, gamesPlayed: 0, wins: 0,
         itmFinishes: 0, onTheBubble: 0, bounties: 0,
         rebuys: 0, addOns: 0, winnings: 0
     });
@@ -936,18 +937,18 @@ app.post('/players', isLoggedIn, async (req, res) => {
 })
 
 //Post request to add games to DB
-app.post('/games', isAdmin, async (req, res) => {
+app.post('/games', isAdmin, validateTournament, async (req, res) => {
     //Get info from request
-    const { data, numPlayers, prizePool } = req.body;
+    const { leaderboard, numPlayers, prizePool } = req.body;
 
     //gameData will be part of the Game object
     const gameData = new Array(numPlayers);
     const currDate = new Date();
 
-    //The data array is an array of objects with all the info about each player's stats in this game
-    //Revise this later: No need to do all of this, when we can just add the data array directly to Game object
+    //The leaderboard array is an array of objects with all the info about each player's stats in this game
+    //Revise this later: No need to do all of this, when we can just add the leaderboard array directly to Game object
     //Input validation required tho
-    data.forEach((player, i) => {
+    leaderboard.forEach((player, i) => {
         if (player._id !== '-1') {
             const playerData = {
                 player: player.player,
@@ -1089,9 +1090,9 @@ app.post('/posts/:id/comments', isLoggedIn, async (req, res) => {
 
 // Patch request handles the new games, and it updates the stats for all the players involved
 app.patch('/players', isAdmin, async (req, res) => {
-    const { data } = req.body;
+    const { leaderboard } = req.body;
 
-    data.forEach(async (player, i) => {
+    leaderboard.forEach(async (player, i) => {
         if (player.player !== '-1') {
             //Mongoose syntax, increase games played by 1
             await Player.findByIdAndUpdate(player.player, { $inc: { gamesPlayed: +1 } });
@@ -1122,19 +1123,19 @@ app.patch('/players', isAdmin, async (req, res) => {
 })
 
 //Patch request to handle the edited games and update the stats for the players involved
-app.patch('/players/edit/:id', isAdmin, async (req, res) => {
-    const { oldData, newData, prizePool } = req.body;
-    const { id } = req.params;
+app.patch('/players/edit/:gameId', isAdmin, validateTournament, async (req, res) => {
+    const { oldLeaderboard, leaderboard, prizePool, numPlayers } = req.body;
+    const { gameId } = req.params;
 
     //Use two sets to check if we need to change the gamesPlayed stat for every player involved in the edit
     let oldSet = new Set();
     let newSet = new Set();
-    oldData.leaderboard.forEach((player) => { oldSet.add(player.player) });
-    newData.forEach((player) => { newSet.add(player.player) });
+    oldLeaderboard.forEach((player) => { oldSet.add(player.player) });
+    leaderboard.forEach((player) => { newSet.add(player.player) });
 
     //Use map for O(1) lookups
     const oldMap = new Map();
-    oldData.leaderboard.forEach((player) => {
+    oldLeaderboard.forEach((player) => {
         // The key is the player id, and the value is the player object which contains all the stats
         oldMap.set(player.player, player);
     });
@@ -1157,18 +1158,18 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
             await Player.findByIdAndUpdate(player, { $inc: { gamesPlayed: +1 } });
 
             // Increase one to the stats if player made it to the money or was on the bubble
-            if (newData[i].itm)
+            if (leaderboard[i].itm)
                 await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
-            if (newData[i].otb)
+            if (leaderboard[i].otb)
                 await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
 
             //Update all other stats
             await Player.findByIdAndUpdate(player, {
                 $inc: {
-                    winnings: +newData[i].profit,
-                    bounties: +newData[i].bounties,
-                    rebuys: +newData[i].rebuys,
-                    addOns: +newData[i].addOns
+                    winnings: +leaderboard[i].profit,
+                    bounties: +leaderboard[i].bounties,
+                    rebuys: +leaderboard[i].rebuys,
+                    addOns: +leaderboard[i].addOns
                 }
             });
         }
@@ -1179,31 +1180,31 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
             const currPlayerData = oldMap.get(player);
 
             //Update ITM and OTB if they changed. They're both booleans
-            if (newData[i].itm != currPlayerData.itm) {
-                if (newData[i].itm)
+            if (leaderboard[i].itm != currPlayerData.itm) {
+                if (leaderboard[i].itm)
                     await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: +1 } });
                 else
                     await Player.findByIdAndUpdate(player, { $inc: { itmFinishes: -1 } });
             }
 
-            if (newData[i].otb != currPlayerData.otb) {
-                if (newData[i].otb)
+            if (leaderboard[i].otb != currPlayerData.otb) {
+                if (leaderboard[i].otb)
                     await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: +1 } });
                 else
                     await Player.findByIdAndUpdate(player, { $inc: { onTheBubble: -1 } });
             }
 
             //If any other stat has changed update it
-            if (newData[i].profit != currPlayerData.profit
-                || newData[i].rebuys != currPlayerData.rebuys
-                || newData[i].bounties != currPlayerData.bounties
-                || newData[i].addOns != currPlayerData.addOns) {
+            if (leaderboard[i].profit != currPlayerData.profit
+                || leaderboard[i].rebuys != currPlayerData.rebuys
+                || leaderboard[i].bounties != currPlayerData.bounties
+                || leaderboard[i].addOns != currPlayerData.addOns) {
 
                 // Calculate the net difference between their old stat and their new stat
-                const diffProfit = newData[i].profit - currPlayerData.profit;
-                const diffRebuys = newData[i].rebuys - currPlayerData.rebuys;
-                const diffBounties = newData[i].bounties - currPlayerData.bounties;
-                const diffAddOns = newData[i].addOns - currPlayerData.addOns;
+                const diffProfit = leaderboard[i].profit - currPlayerData.profit;
+                const diffRebuys = leaderboard[i].rebuys - currPlayerData.rebuys;
+                const diffBounties = leaderboard[i].bounties - currPlayerData.bounties;
+                const diffAddOns = leaderboard[i].addOns - currPlayerData.addOns;
 
                 // Update everything else
                 await Player.findByIdAndUpdate(player, {
@@ -1247,13 +1248,13 @@ app.patch('/players/edit/:id', isAdmin, async (req, res) => {
     });
 
     //Update leaderboard
-    await Game.findByIdAndUpdate(id, { leaderboard: newData, numPlayers: newData.length, prizePool });
+    await Game.findByIdAndUpdate(gameId, { leaderboard, numPlayers, prizePool });
 
     res.send('Received EDIT patch request');
 })
 
 // Patch request to edit a player's information
-app.patch('/players/player/:id', isAdmin, async (req, res) => {
+app.patch('/players/player/:id', isAdmin, validatePlayer, async (req, res) => {
     const { id } = req.params;
     const { firstName, lastName, nationality } = req.body;
 

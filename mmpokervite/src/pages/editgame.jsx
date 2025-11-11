@@ -164,7 +164,7 @@ export default function EditGame() {
             // Send patch request and send the data to the server side
             // The format is nameWeAreGivingIt : variableThatAlreadyExists, the first name is what will be received in the back end
             await api.patch(`/players/edit/${gameData._id}`, {
-                oldData: gameData, newData: gameInfo, prizePool
+                oldLeaderboard: gameData.leaderboard, leaderboard: gameInfo, prizePool, numPlayers
             });
 
             // Redirect and pass the new game data to the next page with the alert

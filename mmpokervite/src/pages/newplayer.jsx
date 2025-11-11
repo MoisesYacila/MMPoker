@@ -40,7 +40,7 @@ export default function NewPlayer() {
         // Send post request for express to handle and clear the inputs of the form
         api.post('/players', {
             firstName, lastName,
-            country: nationality
+            nationality
         }).then(() => {
             setFirstName('');
             setLastName('');

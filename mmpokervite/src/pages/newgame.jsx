@@ -54,8 +54,8 @@ export default function NewGame() {
             gameData.push({
                 player: e.target[i * 14].value,
                 profit: e.target[(i * 14) + 2].value,
-                itm: e.target[(i * 14) + 4].value,
-                otb: e.target[(i * 14) + 6].value,
+                itm: e.target[(i * 14) + 4].value === 'yes',
+                otb: e.target[(i * 14) + 6].value === 'yes',
                 bounties: e.target[(i * 14) + 8].value,
                 rebuys: e.target[(i * 14) + 10].value,
                 addOns: e.target[(i * 14) + 12].value
@@ -65,11 +65,9 @@ export default function NewGame() {
             prizePool += parseInt(gameData[i].addOns) + parseInt(gameData[i].rebuys * 20);
         }
 
-        console.log(prizePool);
-
         // Send patch request and send the data to the server side
         // Redirect with the correct error message if the operation fails
-        await api.patch("/players", { data: gameData })
+        await api.patch("/players", { leaderboard: gameData })
             .then((response) => {
                 console.log(response);
             }).catch((error) => {
@@ -89,13 +87,13 @@ export default function NewGame() {
         // Send post request to create a the new game
         // Redirect with the correct error message if the operation fails
         await api.post('/games', {
-            data: gameData,
+            leaderboard: gameData,
             numPlayers: numPlayers,
             prizePool: prizePool
         })
             .then((response) => {
                 console.log(response)
-                setAlert({ ...alert, open: false });
+                setAlert({ message: 'Game created successfully.', severity: 'success', open: true });
                 navigate('/leaderboard');
             }).catch((error) => {
                 console.log(error);
