@@ -63,3 +63,12 @@ button:hover {
   /* width: 25%; */
   /* margin: 1rem 1rem; */
 }
+
+.privacy-policy h2 {
+    text-align: left;
+}
+
+.privacy-date {
+  text-align: center;
+  font-style: italic;
+}

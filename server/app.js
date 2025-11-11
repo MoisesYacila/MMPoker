@@ -1296,18 +1296,6 @@ app.patch('/posts/:id/like', isLoggedIn, async (req, res) => {
     res.send(updatedPost);
 })
 
-// Patch request to add a comment to a post
-app.patch('/posts/:id/comment', isLoggedIn, async (req, res) => {
-    const { id } = req.params;
-    const { author, content, username } = req.body;
-
-    // Find the post by id, add a new comment to the comments array, and save it
-    const post = await Post.findById(id);
-    post.comments.push({ author, username, content, date: new Date() });
-    await post.save();
-    res.send(post);
-})
-
 // Patch request to edit a post
 app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, validatePost, async (req, res) => {
     const { id } = req.params;
