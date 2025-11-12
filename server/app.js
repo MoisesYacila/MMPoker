@@ -23,6 +23,7 @@ const { isLoggedIn, isAdmin, validatePlayer, validateTournament, validatePost } 
 const multer = require('multer');
 const Joi = require('joi');
 const cloudinary = require('cloudinary').v2;
+const mongoSanitize = require('express-mongo-sanitize');
 const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
     dest: 'uploads/' // Directory to store uploaded files temporarily
@@ -66,15 +67,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
 
+// To prevent MongoDB Operator Injection attacks
+app.use(mongoSanitize());
+
 // Setting up session and passport, from the documentation
 const sessionConfig = {
+    name: 'session', // By default, the session cookie is named 'connect.sid', we change it for security reasons
     secret: 'secret',   // Change this to a random string in production
     resave: false,
+    //secure: true, // Set to true if using HTTPS, consider this for production
     saveUninitialized: false,
     cookie: {
         // Sets the max age of the cookie to 1 week
         maxAge: 1000 * 60 * 60 * 24 * 7
-        //secure: true, // Set to true if using HTTPS, consider this for production
     }
 };
 
@@ -989,8 +994,11 @@ app.post('/posts', upload.single('picture'), isAdmin, validatePost, async (req, 
     if (!title || title.trim() === '' || !content || content.trim() === '') {
         return res.status(400).json({ error: 'Title and content cannot be empty' });
     }
-
     const user = await Account.findById(req.user?._id);
+
+    if (!user) {
+        return res.status(401).send('User not found');
+    }
 
     // Create a new Post object with the data from the request
     const post = new Post({
