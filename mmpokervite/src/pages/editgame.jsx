@@ -12,6 +12,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { useAlert } from '../AlertContext';
+import { errorLog } from '../utils/logger.js';
 
 export default function EditGame() {
     //Get the game id from the URL
@@ -98,7 +99,7 @@ export default function EditGame() {
                 })));
             })
             .catch((error) => {
-                console.log(error);
+                errorLog(error);
                 // If the user is not logged in, redirect to login page and show alert
                 if (error.status === 401) {
                     setAlert({ message: 'Must be signed in to edit games.', severity: 'error', open: true });
@@ -173,11 +174,10 @@ export default function EditGame() {
         }
         // ProtectedRoute should prevent this from running, but just in case, we add another layer of error handling
         catch (error) {
-            console.log(error);
+            errorLog(error);
             // If the user is not logged in, redirect to login page and show alert
             if (error.status === 401) {
                 setAlert({ message: 'Must be signed in to edit games.', severity: 'error', open: true });
-                console.log('User not logged in, redirecting to login page...');
                 navigate(`/login`);
             }
 

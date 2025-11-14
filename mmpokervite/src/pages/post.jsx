@@ -12,6 +12,7 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from "../UserContext";
 import { useAlert } from "../AlertContext";
+import { errorLog, log } from '../utils/logger.js';
 
 export default function Post() {
     const { id } = useParams(); // Get post id from URL params
@@ -36,10 +37,10 @@ export default function Post() {
             api.get(`/posts/${id}`)
                 .then((res) => {
                     setPostData(res.data);
-                    console.log('Post data:', res.data);
+                    log('Post data:', res.data);
                 })
                 .catch(() => {
-                    console.error('Error fetching post data');
+                    errorLog('Error fetching post data');
                 });
 
 
@@ -51,10 +52,10 @@ export default function Post() {
                         ...prevData,
                         comments: res.data
                     }));
-                    console.log('Comments data:', res.data);
+                    log('Comments data:', res.data);
                 })
                 .catch(() => {
-                    console.error('Error fetching comments data');
+                    errorLog('Error fetching comments data');
                 });
 
         }
@@ -118,7 +119,7 @@ export default function Post() {
                                         setPostData(res.data);
                                     })
                                     .catch(() => {
-                                        console.error('Error liking post');
+                                        errorLog('Error liking post');
                                     });
                             }}>
                                 <FavoriteIcon />
@@ -178,15 +179,13 @@ export default function Post() {
                                             // Update the post data with the new comment
                                             // Reset the comment input field and hide the text area and the alert
                                             // Re-enable the button after the request
-                                            console.log(res.data);
                                             setPostData(res.data);
                                             setComment('');
                                             setTextFieldActive(false);
                                             setAlert({ ...alert, open: false });
                                         })
                                         .catch((err) => {
-                                            console.error('Error adding comment');
-                                            console.error(err);
+                                            errorLog('Error adding comment', err);
                                         });
 
                                     setDisabled(false);
@@ -246,7 +245,6 @@ export default function Post() {
                                     setDisabled(true);
 
                                     // Delete request to delete the comment
-                                    console.log('Deleting comment', currentComment.id);
                                     api.delete(`/posts/${id}/comments/${currentComment.id}`, {
                                         data: { author: currentComment.author }
                                     })
@@ -257,7 +255,7 @@ export default function Post() {
                                             setDisabled(false);
                                         })
                                         .catch((err) => {
-                                            console.error('Error deleting comment', err);
+                                            errorLog('Error deleting comment', err);
                                         });
                                     handleCloseCommentDialog();
                                 }}>Delete</Button>
@@ -287,7 +285,7 @@ export default function Post() {
                                             navigate('/updates');
                                         })
                                         .catch((error) => {
-                                            console.error('Error deleting post:', error);
+                                            errorLog('Error deleting post:', error);
                                         });
                                 }}>Delete</Button>
                             </DialogActions>

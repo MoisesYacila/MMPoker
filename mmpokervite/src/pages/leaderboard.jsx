@@ -9,6 +9,7 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
 import { useUser } from '../UserContext';
+import { errorLog } from '../utils/logger.js';
 
 
 export default function Leaderboard() {
@@ -28,8 +29,9 @@ export default function Leaderboard() {
                 // By default, we'll show the players sorted by their winnings
                 playersArr.sort((a, b) => { return b.winnings - a.winnings });
                 setPlayers(playersArr);
-            })
-        // .catch((err) => { console.log(err) })
+            }).catch((err) => {
+                errorLog('Error fetching players for leaderboard:', err);
+            });
     }, [])
     return (
         //Move div styles to css file
@@ -238,6 +240,10 @@ export default function Leaderboard() {
                                             await api.get(link)
                                                 .then(() => {
                                                     navigate(link);
+                                                }).catch((err) => {
+                                                    errorLog('Error fetching player data for leaderboard button:', err);
+                                                    setAlert({ message: 'Error fetching player data. Please try again.', severity: 'error', open: true });
+                                                    setDisabled(false);
                                                 });
                                         }}>{`${player.firstName} ${player.lastName}`}</Button>
                                     </TableCell>

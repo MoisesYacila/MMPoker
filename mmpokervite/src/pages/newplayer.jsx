@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import ReactFlagsSelect from "react-flags-select";
 import '../App.css';
 import { useAlert } from '../AlertContext';
+import { errorLog } from '../utils/logger.js';
 
 export default function NewPlayer() {
     const [firstName, setFirstName] = useState('');
@@ -53,7 +54,7 @@ export default function NewPlayer() {
             else {
                 setAlert({ message: 'Error creating player. Please try again.', severity: 'error', open: true });
             }
-            console.log(error);
+            errorLog(error);
         });
     }
 

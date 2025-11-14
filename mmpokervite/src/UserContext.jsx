@@ -2,6 +2,7 @@ import api from './api/axios';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { log, errorLog } from './utils/logger.js';
 
 // Context allows us to share state across the website in a cleaner way
 // In this case, our navbar needs to know if the user is logged in or not, so we can use this context to share that information
@@ -25,7 +26,7 @@ export const UserProvider = ({ children }) => {
     // Handler for session expiration
     // This will reset the user context and redirect to the login page
     const handleSessionExpired = () => {
-        console.warn('Session expired, resetting user context...');
+        log('Session expired, resetting user context...');
         setLoggedIn(false);
         setIsAdmin(false);
         setId(null);
@@ -37,7 +38,6 @@ export const UserProvider = ({ children }) => {
     // Handler for server down event
     // This will reset the user context and redirect to the server down page
     const handleServerDown = () => {
-        console.error('Server unreachable — consider showing an alert or redirecting.');
         setLoggedIn(false);
         setIsAdmin(false);
         setId(null);
@@ -61,7 +61,7 @@ export const UserProvider = ({ children }) => {
                 setUsername(res.data.username || '');
             })
             .catch((error) => {
-                console.error('Error checking admin status:', error);
+                errorLog('Error checking admin status:', error);
                 setIsAdmin(false);
             });
 

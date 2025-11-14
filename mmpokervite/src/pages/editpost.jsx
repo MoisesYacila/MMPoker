@@ -6,6 +6,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import { useNavigate, useParams } from "react-router-dom";
 import { useAlert } from "../AlertContext";
+import { errorLog } from '../utils/logger.js';
 
 export default function EditPost() {
     //Get the game id from the URL
@@ -50,12 +51,11 @@ export default function EditPost() {
         // Post request to edit the post
         api.patch(`/posts/${id}/edit`, formData)
             .then(() => {
-                console.log('Submitting edit post with title:', title);
                 setAlert({ message: 'Post updated.', severity: 'success', open: true });
                 navigate(`/updates/${id}`);
             })
             .catch((error) => {
-                console.error('Error editing post:', error);
+                errorLog('Error editing post:', error);
                 // If user tries to upload a file that's not an image, show an alert telling them and reset the button
                 if (error.status === 415) {
                     setNewImage({});
@@ -87,7 +87,7 @@ export default function EditPost() {
                 }
             })
             .catch((error) => {
-                console.error('Error fetching post:', error);
+                errorLog('Error fetching post:', error);
             });
     }, [id]);
 

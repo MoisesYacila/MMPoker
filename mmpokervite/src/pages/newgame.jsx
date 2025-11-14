@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
+import { errorLog, log } from '../utils/logger.js';
 
 export default function NewGame() {
     const [players, setPlayers] = useState([]);
@@ -67,11 +68,10 @@ export default function NewGame() {
 
         // Send patch request and send the data to the server side
         // Redirect with the correct error message if the operation fails
+        // We don't have a .then because we don't need to do anything on success, the backend will handle it
         await api.patch("/players", { leaderboard: gameData })
-            .then((response) => {
-                console.log(response);
-            }).catch((error) => {
-                console.log(error);
+            .catch((error) => {
+                errorLog(error);
                 // ProtectedRoute should catch these cases before API calls are made, but this is another layer of security
                 if (error.status === 401) {
                     setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
@@ -92,11 +92,11 @@ export default function NewGame() {
             prizePool: prizePool
         })
             .then((response) => {
-                console.log(response)
+                log(response)
                 setAlert({ message: 'Game created successfully.', severity: 'success', open: true });
                 navigate('/leaderboard');
             }).catch((error) => {
-                console.log(error);
+                errorLog(error);
                 if (error.status === 401) {
                     setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
                 }

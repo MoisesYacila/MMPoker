@@ -17,6 +17,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
+import { errorLog } from '../utils/logger.js';
 
 
 export default function Game() {
@@ -188,11 +189,10 @@ export default function Game() {
                             setSubmitted(true);
                             await api.delete(`/games/game/${gameInfo._id}`)
                                 .then(() => {
-                                    console.log(`Deleted game ${gameInfo._id} from DB`);
                                     setAlert({ message: 'Game deleted.', severity: 'success', open: true });
                                     navigate(`/leaderboard`);
                                 }).catch((err) => {
-                                    console.error(err);
+                                    errorLog(err);
                                     // Redirect to login and show alert if user is not logged in
                                     setAlert({ message: 'You must be logged in to perform this action.', severity: 'error', open: true });
                                     navigate(`/login`);

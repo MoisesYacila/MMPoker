@@ -13,6 +13,7 @@ import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
 import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/validators';
+import { log, errorLog } from '../utils/logger.js';
 
 export default function Account() {
     const { id, isAdmin, setLoggedIn, setIsAdmin, setId } = useUser();
@@ -51,7 +52,7 @@ export default function Account() {
     useEffect(() => {
         api.get(`/accounts/${id}`)
             .then((res) => {
-                console.log('Account data:', res.data);
+                log('Account data:', res.data);
                 setAccountData({ ...res.data, usernameChanged: false, emailChanged: false, fullNameChanged: false });
 
                 // Check if the account is linked to Google
@@ -63,7 +64,7 @@ export default function Account() {
                 }
             })
             .catch((error) => {
-                console.error('Error fetching account data:', error);
+                errorLog('Error fetching account data:', error);
             });
 
         // If the user is an admin, get all the accounts for the admin panel
@@ -71,10 +72,10 @@ export default function Account() {
             api.get('/accounts')
                 .then((res) => {
                     setAllAccounts(res.data);
-                    console.log('All accounts: ', res.data);
+                    log('All accounts: ', res.data);
                 })
                 .catch((err) => {
-                    console.error(err);
+                    errorLog(err);
                 })
         }
     }, [id]);
@@ -198,7 +199,7 @@ export default function Account() {
                                             {/* If the account is not an admin, then admins can delete it */}
                                             <TableCell align='center'>{!account.admin ?
                                                 <IconButton onClick={() => {
-                                                    console.log(account);
+                                                    log(account);
                                                     setAccountToDelete(account);
                                                     setOpenDeleteDialog2(true)
                                                 }}>
@@ -250,11 +251,11 @@ export default function Account() {
                                         // and when we get the response back, we only update the username error state
                                         await api.get(`/accounts/validateData/`, { params: { ...accountData, username: e.target.value.trim() } })
                                             .then((res) => {
-                                                console.log('Username validation response:', res.data);
+                                                log('Username validation response:', res.data);
                                                 setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, isTaken: res.data.isUsernameTaken } });
                                             })
                                             .catch((error) => {
-                                                console.error('Error validating username:', error);
+                                                errorLog('Error validating username:', error);
                                             });
                                     }
                                     else {
@@ -294,11 +295,11 @@ export default function Account() {
 
                                         await api.get(`/accounts/validateData/`, { params: { ...accountData, email: e.target.value.trim() } })
                                             .then((res) => {
-                                                console.log('Email validation response:', res.data);
+                                                log('Email validation response:', res.data);
                                                 setValidationErrors({ ...validationErrors, email: { ...validationErrors.email, isTaken: res.data.isEmailTaken } });
                                             })
                                             .catch((error) => {
-                                                console.error('Error validating email:', error);
+                                                errorLog('Error validating email:', error);
                                             });
                                     }
                                     else {
@@ -351,7 +352,6 @@ export default function Account() {
                                     onClick={() => {
                                         // Open the dialog to confirm changes
                                         setOpenEditDialog(true);
-                                        console.log('Temp Account Data:', tempAccountData);
                                     }}>
                                     Save Changes
                                 </Button>
@@ -384,7 +384,7 @@ export default function Account() {
                             // Send the info to the backend to update the account
                             await api.patch(`/accounts/${id}`, { ...tempAccountData })
                                 .then((res) => {
-                                    console.log('Account updated successfully:', res.data);
+                                    log('Account updated successfully:', res.data);
                                     // Update the account data with the new info and reset the form and temp data
                                     setAccountData(res.data);
                                     setForm({ username: '', email: '', fullName: '' });
@@ -393,7 +393,7 @@ export default function Account() {
                                     setAlert({ message: 'Account updated successfully.', severity: 'success', open: true })
                                 }
                                 ).catch((err) => {
-                                    console.error('Error updating account:', err);
+                                    errorLog('Error updating account:', err);
                                     setSubmitted(false);
                                 });
                             setOpenEditDialog(false);
@@ -423,7 +423,7 @@ export default function Account() {
                                     navigate('/login');
                                 })
                                 .catch((err) => {
-                                    console.error('Error deleting account:', err);
+                                    errorLog('Error deleting account:', err);
                                 });
                         }}>Delete</Button>
                         <Button disabled={submitted} onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
@@ -453,7 +453,7 @@ export default function Account() {
                                     setAlert({ message: 'Account deleted successfully.', severity: 'success', open: true });
                                 })
                                 .catch((err) => {
-                                    console.error('Error deleting account:', err);
+                                    errorLog('Error deleting account:', err);
                                     setSubmitted(false);
                                     setOpenDeleteDialog2(false);
                                 });

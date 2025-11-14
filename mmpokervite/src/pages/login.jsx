@@ -9,6 +9,7 @@ import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../UserContext'
 import { useAlert } from '../AlertContext';
+import { errorLog } from '../utils/logger.js';
 
 export default function LogIn() {
     const navigate = useNavigate();
@@ -37,7 +38,6 @@ export default function LogIn() {
             username: e.target.username.value.trim().toLowerCase(),
             password: e.target.password.value
         }).then((res) => {
-            console.log(res.data);
             setLoggedIn(true);
             setIsAdmin(res.data.user.isAdmin);
             setId(res.data.user.id);
@@ -48,7 +48,7 @@ export default function LogIn() {
             setAlert({ message: 'Welcome', severity: 'success', open: true });
             navigate('/leaderboard');
         }).catch(err => {
-            console.error('Login failed:', err.response?.data || err.message);
+            errorLog('Login failed:', err.response?.data || err.message);
             // Show alert if login fails
             setAlert({ message: 'Invalid credentials. Please check your username and password.', severity: 'error', open: true });
             // Reset submitted state on error

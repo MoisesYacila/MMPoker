@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { log, errorLog } from '../utils/logger.js';
 
 // Create an axios instance with default settings
 const api = axios.create({
@@ -16,7 +17,7 @@ api.interceptors.response.use(
     error => {
         // Handle server unreachable
         if (!error.response || error.code === 'ERR_NETWORK') {
-            console.error('⚠️ Server unreachable or stopped.');
+            errorLog('⚠️ Server unreachable or stopped.');
 
             // Here, we are triggering a custom event that we will listen to in UserContext.jsx
             window.dispatchEvent(new Event('serverDown'));
@@ -24,7 +25,7 @@ api.interceptors.response.use(
 
         // Handle unauthorized (expired session)
         if (error.response && error.response.status === 401) {
-            console.warn('⚠️ Session expired, logging out.');
+            log('⚠️ Session expired, logging out.');
 
             // Here, we are triggering a custom event that we will listen to in UserContext.jsx
             window.dispatchEvent(new Event('sessionExpired'));

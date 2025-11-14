@@ -5,6 +5,7 @@ import { Alert, Box, Button, Collapse, IconButton, TextField } from "@mui/materi
 import ClearIcon from '@mui/icons-material/Clear';
 import ReactFlagsSelect from "react-flags-select";
 import { useAlert } from "../AlertContext";
+import { errorLog } from '../utils/logger.js';
 
 export default function EditPlayer() {
     const { id } = useParams();
@@ -33,7 +34,7 @@ export default function EditPlayer() {
                 setNationality(res.data.nationality);
             })
             .catch((err) => {
-                console.error('Error fetching player data:', err);
+                errorLog('Error fetching player data:', err);
             });
     }, [playerData]);
 
@@ -63,12 +64,11 @@ export default function EditPlayer() {
             lastName,
             nationality
         }).then(() => {
-            console.log('Player updated successfully');
             setAlert({ message: 'Player updated.', severity: 'success', open: true });
             navigate(`/players/${id}`);
 
         }).catch((err) => {
-            console.error('Error updating player:', err);
+            errorLog('Error updating player:', err);
             setSubmitted(false);
             setAlert({ message: 'Error updating player. Please try again.', severity: 'error', open: true });
         });

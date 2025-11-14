@@ -2,25 +2,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import FlagIcon from '../components/FlagIcon';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { IconButton } from '@mui/material';
+import {
+    Alert, Box, Button, Collapse, Dialog, DialogTitle, DialogContent, DialogContentText,
+    DialogActions, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText
+} from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import PersonIcon from '@mui/icons-material/Person';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Alert from '@mui/material/Alert';
-import Collapse from '@mui/material/Collapse';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
+import { errorLog, log } from '../utils/logger.js';
 
 export default function Players() {
     const [players, setPlayers] = useState([]);
@@ -160,7 +150,7 @@ export default function Players() {
 
                         await api.delete(`/players/${playerData.id}`)
                             .then((res) => {
-                                console.log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
+                                log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
                                 let newArr = [];
                                 // Creates a new array with all the players except the one being deleted
                                 // if the id is equal the fuction won't add this to the array because this is
@@ -170,7 +160,7 @@ export default function Players() {
                                 setSubmitted(false);
                                 setAlert({ message: 'Player deleted.', severity: 'success', open: true });
                             }).catch((err) => {
-                                console.log(err);
+                                errorLog(err);
                                 if (err.status === 401) {
                                     setAlert({ message: 'You must be logged in to perform delete a player.', severity: 'error', open: true });
                                     navigate(`/login`);

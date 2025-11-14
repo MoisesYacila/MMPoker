@@ -9,6 +9,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
 import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/validators';
+import { log, errorLog } from '../utils/logger.js';
 
 export default function SignUp() {
     const { alert, setAlert } = useAlert();
@@ -63,7 +64,7 @@ export default function SignUp() {
             lastName: e.target.last.value,
             password: e.target.password.value
         }).then((res) => {
-            console.log(res.data);
+            log(res.data);
             setLoggedIn(true);
             setIsAdmin(res.data.admin);
             setId(res.data._id);
@@ -71,11 +72,10 @@ export default function SignUp() {
             setAlert({ message: 'Welcome to MMPoker.', severity: 'success', open: true });
             navigate('/leaderboard');
         }).catch(err => {
-            console.error('Sign up failed:', err.response?.data || err.message);
+            errorLog('Sign up failed:', err.response?.data || err.message);
             // Show alert if signup fails
             setAlert({ message: 'Unable to sign up. A user with the given username or email is already registered.', severity: 'error', open: true });
         });
-        console.log("Form submitted");
     }
 
     // Get the appropriate helper text for the email and username
@@ -138,12 +138,12 @@ export default function SignUp() {
                             // When we get the response back, we only update the email error state
                             await api.get(`/accounts/validateData/`, { params: { email: e.target.value.trim() } })
                                 .then((res) => {
-                                    console.log('Email validation response:', res.data);
+                                    log('Email validation response:', res.data);
                                     setValidationErrors({ ...validationErrors, email: { ...validationErrors.email, isTaken: res.data.isEmailTaken } });
                                     setDisabled(res.data.isEmailTaken);
                                 })
                                 .catch((error) => {
-                                    console.error('Error validating email:', error);
+                                    errorLog('Error validating email:', error);
                                 });
                         }}
                             // Reset email errors when user starts typing
@@ -168,12 +168,12 @@ export default function SignUp() {
                             // When we get the response back, we only update the username error state
                             await api.get(`/accounts/validateData/`, { params: { username: e.target.value.trim() } })
                                 .then((res) => {
-                                    console.log('Username validation response:', res.data);
+                                    log('Username validation response:', res.data);
                                     setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, isTaken: res.data.isUsernameTaken } });
                                     setDisabled(res.data.isUsernameTaken);
                                 })
                                 .catch((error) => {
-                                    console.error('Error validating username:', error);
+                                    errorLog('Error validating username:', error);
                                 });
                         }}
                             // Clear username error when user starts typing

@@ -35,6 +35,8 @@ const upload = multer({
 const pinoLogger = pino({
     // In production, we will log only 'warn' and higher importance logs, in development we will log 'info' and higher
     level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'warn' : 'info'),
+    // Redact sensitive information from logs
+    redact: ['req.headers.cookie', 'req.headers.authorization', 'req.body.password']
 });
 
 // Use pino-http middleware for HTTP request logging
@@ -884,7 +886,7 @@ app.post('/signup', async (req, res, next) => {
                 return next(err);
             }
             else {
-                res.send(registeredAccount);
+                res.send('Created account');
             }
         });
     }
@@ -988,7 +990,7 @@ app.post('/games', isAdmin, validateTournament, async (req, res) => {
 
     //Save to DB
     await newGame.save();
-    res.send(req.body);
+    res.send(newGame);
 })
 
 // Post request to add posts to the blog 

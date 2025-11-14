@@ -9,6 +9,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ClearIcon from '@mui/icons-material/Clear';
+import { errorLog } from '../utils/logger.js';
 
 export default function Updates() {
     // Check if the user is an admin to conditionally render the "New Post" link
@@ -28,7 +29,7 @@ export default function Updates() {
                 setAllPosts(res.data);
             })
             .catch((error) => {
-                console.error('Error fetching posts:', error);
+                errorLog('Error fetching posts:', error);
             });
     }, []);
 
@@ -154,7 +155,7 @@ export default function Updates() {
                                     handleCloseDialog();
                                 })
                                 .catch((error) => {
-                                    console.error('Error deleting post:', error);
+                                    errorLog('Error deleting post:', error);
                                 });
                         }}>Delete</Button>
                     </DialogActions>

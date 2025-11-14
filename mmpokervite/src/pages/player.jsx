@@ -15,6 +15,7 @@ import { useAlert } from '../AlertContext';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ClearIcon from '@mui/icons-material/Clear';
+import { errorLog, log } from '../utils/logger.js';
 
 export default function Player() {
     const { id } = useParams(); // Get player id from URL params
@@ -62,7 +63,7 @@ export default function Player() {
                     setGameList(gamesArr);
                 })
             })
-            .catch((err) => { console.log(err) })
+            .catch((err) => { errorLog(err) })
     }, [playerData])
 
     return (
@@ -126,7 +127,6 @@ export default function Player() {
                                             setAlert({ ...alert, open: false });
                                             navigate(link);
                                         });
-                                    console.log(link);
                                 }}>
                                     <ListItemText primary={`Home Game - ${gameDay.getDate()} ${monthNames[gameDay.getMonth()]} 
                                 ${gameDay.getFullYear()}`}
@@ -153,12 +153,12 @@ export default function Player() {
 
                             await api.delete(`/players/${id}`)
                                 .then((res) => {
-                                    console.log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
+                                    log(`Deleted ${res.data.firstName} ${res.data.lastName} from DB`);
                                     setSubmitted(false);
                                     setAlert({ message: 'Player deleted', severity: 'success', open: true });
                                     navigate('/players');
                                 }).catch((err) => {
-                                    console.log(err);
+                                    errorLog(err);
                                     if (err.status === 401) {
                                         setAlert({ message: 'Must be signed in to delete players.', severity: 'error', open: true });
                                         navigate(`/login`);

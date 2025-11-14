@@ -6,6 +6,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../AlertContext";
+import { errorLog } from '../utils/logger.js';
 
 export default function NewPost() {
     const [title, setTitle] = useState('');
@@ -48,7 +49,7 @@ export default function NewPost() {
                 navigate('/updates');
             })
             .catch((error) => {
-                console.error('Error creating post:', error);
+                errorLog('Error creating post:', error);
                 // If user tries to upload a file that's not an image, show an alert telling them and reset the button
                 if (error.status === 415) {
                     setImage({});
