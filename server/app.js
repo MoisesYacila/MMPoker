@@ -24,19 +24,29 @@ const multer = require('multer');
 const Joi = require('joi');
 const cloudinary = require('cloudinary').v2;
 const mongoSanitize = require('express-mongo-sanitize');
+const pino = require('pino');
+const pinoHttp = require('pino-http');
 const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
     dest: 'uploads/' // Directory to store uploaded files temporarily
 });
 
+// Create a pino logger instance for production
+const pinoLogger = pino({
+    // In production, we will log only 'warn' and higher importance logs, in development we will log 'info' and higher
+    level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'warn' : 'info'),
+});
+
+// Use pino-http middleware for HTTP request logging
+app.use(pinoHttp({ logger: pinoLogger }));
+
 //Connect to DB
 mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
     .then(() => {
-        console.log("Database connected.")
+        pinoLogger.info("Database connected.");
     })
     .catch(err => {
-        console.log("Database connection error.")
-        console.log(err)
+        pinoLogger.error({ err }, "Database connection error.");
     });
 
 // Configuration for Google authentication
@@ -603,7 +613,7 @@ app.get('/posts/:id/comments', async (req, res) => {
         res.send(comments);
     }
     catch (err) {
-        console.error(err)
+        pinoLogger.error({ err }, 'Error retrieving comments:');
         return res.status(500).send('Error retrieving comments')
     }
 });
@@ -623,7 +633,7 @@ app.get('/posts/:id', async (req, res) => {
     }
     // Invalid ObjectId
     catch (err) {
-        console.error(err);
+        pinoLogger.error({ err }, 'Error retrieving post:');
         return res.status(404).send('Post not found');
     }
 })
@@ -657,7 +667,7 @@ app.get('/accounts/validateData', async (req, res) => {
         });
     }
     catch (err) {
-        console.error(err);
+        pinoLogger.error({ err }, 'Error retrieving accounts:');
         return res.status(500).send('Error retrieving accounts');
     }
 })
@@ -722,8 +732,6 @@ app.delete('/games/game/:id', isAdmin, async (req, res) => {
         await Game.findByIdAndDelete(id);
     });
 
-    console.log(game);
-
     res.send('Deleted game (TEST)');
 });
 
@@ -742,14 +750,14 @@ app.delete('/posts/:id', isAdmin, async (req, res) => {
         if (post.imagePublicId) {
             await cloudinary.uploader.destroy(post.imagePublicId)
                 .then(() => {
-                    console.log('Image deleted from Cloudinary');
+                    pinoLogger.info('Image deleted from Cloudinary');
                 })
                 .catch((error) => {
-                    console.error('Error deleting image from Cloudinary:', error);
+                    pinoLogger.error({ error }, 'Error deleting image from Cloudinary:');
                 });
         }
     } catch (err) {
-        console.error(err);
+        pinoLogger.error({ err }, 'Error deleting post:');
         res.status(500).send('Error deleting post');
     }
     res.send('Deleted post');
@@ -791,7 +799,7 @@ app.delete('/posts/:postId/comments/:commentId', isLoggedIn, async (req, res) =>
 
             res.send(updatedPost);
         } catch (err) {
-            console.error(err);
+            pinoLogger.error({ err }, 'Error deleting comment:');
             res.status(500).send('Error deleting comment');
         }
     }
@@ -842,7 +850,7 @@ app.delete('/accounts/:id', isLoggedIn, async (req, res) => {
             }
 
         } catch (err) {
-            console.error(err);
+            pinoLogger.error({ err }, 'Error deleting account:');
             res.status(500).send('Error deleting account');
         }
     }
@@ -1032,19 +1040,14 @@ app.post('/posts', upload.single('picture'), isAdmin, validatePost, async (req, 
             // If the upload is successful, this code will run, otherwise, the catch block will handle errors
             post.image = result.secure_url; // Store the secure URL of the uploaded image
             post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
-            console.log(`Image URL: ${post.image}`);
-
-
         }
         catch (err) {
             // Send error to the front end to handle it there
-            console.error('Error uploading image to Cloudinary:', err);
+            pinoLogger.error({ err }, 'Error uploading image to Cloudinary');
             return res.status(415).send(err);
         }
     }
-
     // Save the post to the database
-    console.log('Saving post to DB');
     await post.save();
     res.send(post);
 });
@@ -1091,7 +1094,7 @@ app.post('/posts/:id/comments', isLoggedIn, async (req, res) => {
     }
 
     catch (err) {
-        console.error("Error adding comment:", err);
+        pinoLogger.error({ err }, 'Error adding comment:');
         return res.status(500).json({ error: err.message });
     }
 })
@@ -1327,12 +1330,11 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, validatePost, as
             // The parameter has to be the public ID of the image to be deleted
             await cloudinary.uploader.destroy(deletedImage)
                 .then(() => {
-                    console.log('Old image deleted successfully');
                     post.image = '';
                     post.imagePublicId = '';
                 })
                 .catch((error) => {
-                    console.error('Error deleting old image from Cloudinary:', error);
+                    pinoLogger.error({ error }, 'Error deleting old image from Cloudinary:');
                     return res.status(500).send('Error deleting old image');
                 });
         }
@@ -1355,12 +1357,11 @@ app.patch('/posts/:id/edit', upload.single('picture'), isAdmin, validatePost, as
             // If the upload is successful, this code will run, otherwise, the catch block will handle errors
             post.image = result.secure_url;
             post.imagePublicId = result.public_id; // Store the public ID in case we need to delete it later
-            console.log(`Image URL updated to: ${post.image}`);
         }
         await post.save();
     }
     catch (err) {
-        console.error('Error uploading image to Cloudinary:', err);
+        pinoLogger.error({ err }, 'Error uploading image to Cloudinary:');
         if (err.http_code == 400) {
             return res.status(415).send(err);
         }
@@ -1447,11 +1448,11 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
         }
     }
     catch (err) {
-        console.error(err);
+        pinoLogger.error({ err }, 'Error updating account information:');
         return res.status(500).send('Server error');
     }
 })
 
 app.listen(8080, () => {
-    console.log("Server listening on port 8080");
+    pinoLogger.info("Server listening on port 8080");
 })
