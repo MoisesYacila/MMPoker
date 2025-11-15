@@ -26,6 +26,7 @@ const cloudinary = require('cloudinary').v2;
 const mongoSanitize = require('express-mongo-sanitize');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
+const helmet = require('helmet');
 const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
     dest: 'uploads/' // Directory to store uploaded files temporarily
@@ -79,8 +80,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
 
-// To prevent MongoDB Operator Injection attacks
+// To prevent MongoDB Operator Injection attacks and activate helmet, which adds security headers
 app.use(mongoSanitize());
+app.use(helmet());
 
 // Setting up session and passport, from the documentation
 const sessionConfig = {
