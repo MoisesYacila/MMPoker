@@ -59,10 +59,10 @@ const redisClient = createClient({
 
 // Connect to Redis and handle connection errors
 redisClient.connect().catch((err) => {
-    // pinoLogger.error({ err }, "Redis connection error.");
-    console.error("Redis connection error:", err);
+    pinoLogger.error({ err }, "Redis connection error.");
 });
 
+// Also handle Redis client errors after connection
 redisClient.on('error', (err) => {
     pinoLogger.error({ err }, "Redis client error");
 });
@@ -117,10 +117,10 @@ app.use(helmet());
 // Setting up session and passport, from the documentation
 const sessionConfig = {
     store: redisStore,
-    name: 'session', // By default, the session cookie is named 'connect.sid', we change it for security reasons
-    secret: 'secret',   // Change this to a random string in production
+    name: process.env.SESSION_COOKIE_NAME, // By default, the session cookie is named 'connect.sid', we change it for security reasons
+    secret: process.env.SESSION_SECRET || 'secret',   // Change this to a random string in production
     resave: false,
-    //secure: true, // Set to true if using HTTPS, consider this for production
+    secure: true, // Set to true if using HTTPS, consider this for production
     saveUninitialized: false,
     cookie: {
         // Sets the max age of the cookie to 1 week
@@ -1488,6 +1488,7 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
     }
 })
 
-app.listen(8080, () => {
-    pinoLogger.info("Server listening on port 8080");
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    pinoLogger.info(`Server listening on port ${port}`);
 })
