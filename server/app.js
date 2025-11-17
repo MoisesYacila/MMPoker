@@ -186,6 +186,9 @@ passport.use(new GoogleStrategy(googleConfig,
     }
 ));
 
+app.get('/ping', (req, res) => res.send('pong'));
+
+
 //Handling requests
 app.get('/players', async (req, res) => {
     const players = await Player.find({});
