@@ -66,8 +66,10 @@ export default function Account() {
             .catch((error) => {
                 errorLog('Error fetching account data:', error);
             });
+    }, [id]);
 
-        // If the user is an admin, get all the accounts for the admin panel
+    // If the user is an admin, get all the accounts for the admin panel
+    useEffect(() => {
         if (isAdmin) {
             api.get('/accounts')
                 .then((res) => {
@@ -78,7 +80,7 @@ export default function Account() {
                     errorLog(err);
                 })
         }
-    }, [id]);
+    }, [submitted, isAdmin]);
 
     // Log out handler function
     const handleLogout = async () => {

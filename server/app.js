@@ -31,6 +31,10 @@ const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
     dest: 'uploads/' // Directory to store uploaded files temporarily
 });
+const { createClient } = require('redis');
+const { RedisStore } = require('connect-redis');
+
+const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/mmpoker';
 
 // Create a pino logger instance for production
 const pinoLogger = pino({
@@ -43,8 +47,34 @@ const pinoLogger = pino({
 // Use pino-http middleware for HTTP request logging
 app.use(pinoHttp({ logger: pinoLogger }));
 
+// Initialize Redis client with our Redis URL
+const redisClient = createClient({
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+    socket: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+    }
+});
+
+// Connect to Redis and handle connection errors
+redisClient.connect().catch((err) => {
+    // pinoLogger.error({ err }, "Redis connection error.");
+    console.error("Redis connection error:", err);
+});
+
+redisClient.on('error', (err) => {
+    pinoLogger.error({ err }, "Redis client error");
+});
+
+// Initialize Redis store for session management
+const redisStore = new RedisStore({
+    client: redisClient,
+    prefix: "mmpoker:"
+})
+
 //Connect to DB
-mongoose.connect('mongodb://127.0.0.1:27017/mmpoker')
+mongoose.connect(dbUrl)
     .then(() => {
         pinoLogger.info("Database connected.");
     })
@@ -73,7 +103,7 @@ cloudinary.config({
 //Check documentation if there are any questions with these
 app.use(cors({
     // Need these to allow React to interact with the server
-    origin: 'http://localhost:5173', // React app URL
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true, // Allow credentials (cookies) to be sent
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -86,6 +116,7 @@ app.use(helmet());
 
 // Setting up session and passport, from the documentation
 const sessionConfig = {
+    store: redisStore,
     name: 'session', // By default, the session cookie is named 'connect.sid', we change it for security reasons
     secret: 'secret',   // Change this to a random string in production
     resave: false,
