@@ -103,7 +103,7 @@ cloudinary.config({
 //Check documentation if there are any questions with these
 app.use(cors({
     // Need these to allow React to interact with the server
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     credentials: true, // Allow credentials (cookies) to be sent
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -185,9 +185,6 @@ passport.use(new GoogleStrategy(googleConfig,
         }
     }
 ));
-
-app.get('/ping', (req, res) => res.send('pong'));
-
 
 //Handling requests
 app.get('/players', async (req, res) => {
@@ -575,9 +572,9 @@ app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "em
 // Passport will handle the authentication and redirect the user to the success or failure URL
 app.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "http://localhost:5173/login" }),
+    passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login` }),
     (req, res) => {
-        res.redirect("http://localhost:5173/leaderboard"); // Success!
+        res.redirect(`${process.env.FRONTEND_URL}/leaderboard`); // Success!
     }
 );
 

@@ -92,7 +92,7 @@ export default function Players() {
                         return (
                             <ListItem disablePadding key={i} sx={{ width: '100%' }}>
                                 {/* async callback that gets the clicked player, and links to their personal page */}
-                                <ListItemButton disabled={disabled} onClick={async () => {
+                                <ListItemButton disabled={submitted || disabled} onClick={async () => {
                                     setAlert({ ...alert, open: false });
                                     setDisabled(true);
                                     const link = `/players/${player._id}`;
@@ -110,7 +110,7 @@ export default function Players() {
                                 </ListItemButton>
                                 {/* async callback that gets the player that we are trying to delete, and opens
                                 a confirmation dialog */}
-                                {isAdmin ? <IconButton loading={submitted && selectedPlayerId == player._id} onClick={async () => {
+                                {isAdmin ? <IconButton loading={submitted && selectedPlayerId == player._id} disabled={submitted || disabled} onClick={async () => {
                                     setSubmitted(true);
                                     setSelectedPlayerId(player._id);
 
