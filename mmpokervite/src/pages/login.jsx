@@ -65,7 +65,8 @@ export default function LogIn() {
         setSubmitted(true);
 
         // We cannot use axios here because Google login requires a pure redirect
-        window.location.href = "http://localhost:8080/auth/google";
+        const backend = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+        window.location.href = `${backend}/auth/google`;
     }
 
     return (

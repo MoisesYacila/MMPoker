@@ -118,13 +118,14 @@ app.use(helmet());
 const sessionConfig = {
     store: redisStore,
     name: process.env.SESSION_COOKIE_NAME, // By default, the session cookie is named 'connect.sid', we change it for security reasons
-    secret: process.env.SESSION_SECRET || 'secret',   // Change this to a random string in production
+    secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
-    secure: true, // Set to true if using HTTPS, consider this for production
     saveUninitialized: false,
     cookie: {
         // Sets the max age of the cookie to 1 week
-        maxAge: 1000 * 60 * 60 * 24 * 7
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        secure: process.env.NODE_ENV === 'production', // Make the cookie work only on HTTPS if we are in production mode
+        httpOnly: true
     }
 };
 
