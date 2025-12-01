@@ -117,8 +117,6 @@ export default function SignUp() {
             {/* Form to create a new account
             name is used to get the value of the input field in the handleSubmit function */}
             <Box component='form'
-                action='http://localhost:8080/signup'
-                method='POST'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>
                 <Card sx={{ width: '30%', textAlign: 'center', height: '65vh' }}>

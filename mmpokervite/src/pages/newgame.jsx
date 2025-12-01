@@ -310,8 +310,6 @@ export default function NewGame() {
             {/* <form method="POST" action="http://localhost:8080/players?_method=PATCH" > */}
             {/* Actually both POST and PATCH requests are sent on the handleSubmit, but it doesn´t matter which one we use on the form component */}
             <Box component='form'
-                method="POST"
-                action="http://localhost:8080/players?_method=PATCH"
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <TableContainer sx={{ marginTop: '1rem', marginBottom: '2rem' }}>

@@ -83,8 +83,6 @@ export default function LogIn() {
                 </Alert>
             </Collapse>
             <Box component='form'
-                action='http://localhost:8080/login'
-                method='POST'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>
                 <Card sx={{ width: '30%', textAlign: 'center', height: '40vh' }}>

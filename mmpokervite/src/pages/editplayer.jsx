@@ -88,7 +88,7 @@ export default function EditPlayer() {
                     {alert.message}
                 </Alert>
             </Collapse>
-            <Box component='form' action='http://localhost:8080/players?_method=PATCH' method='POST' onSubmit={handleSubmit}
+            <Box component='form' onSubmit={handleSubmit}
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',

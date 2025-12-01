@@ -252,8 +252,6 @@ export default function EditGame() {
                 </TextField>
             </FormControl>
             <Box component='form'
-                method="POST"
-                action="http://localhost:8080/players/edit/:id?_method=PATCH"
                 onSubmit={handleSubmit} //handle submit
                 sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >

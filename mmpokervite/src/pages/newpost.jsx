@@ -84,7 +84,7 @@ export default function NewPost() {
             </Collapse>
             {/* Form to create a new post
              We need the encType to be multipart/form-data to allow file uploads */}
-            <Box component="form" action='http://localhost:8080/posts' method='POST' encType="multipart/form-data"
+            <Box component="form" encType="multipart/form-data"
                 onSubmit={handleSubmit}
                 sx={{
                     display: 'flex',

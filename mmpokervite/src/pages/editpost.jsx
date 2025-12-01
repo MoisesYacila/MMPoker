@@ -104,7 +104,7 @@ export default function EditPost() {
                     {alert.message}
                 </Alert>
             </Collapse>
-            <Box component="form" action='http://localhost:8080/posts/:id/edit?_method=PATCH' method='POST' encType="multipart/form-data"
+            <Box component="form" encType="multipart/form-data"
                 onSubmit={handleSubmit}
                 sx={{
                     display: 'flex',

@@ -80,7 +80,6 @@ export default function NewPlayer() {
             </Collapse>
             <h1>Add New Player</h1>
             <Box component="form"
-                action='http://localhost:8080/players' method='POST'
                 onSubmit={postPlayer} sx={{
                     display: 'flex',
                     flexDirection: 'column',
