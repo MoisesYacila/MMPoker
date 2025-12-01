@@ -99,12 +99,24 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_SECRET
 });
 
+const allowedOrigins = [
+    'http://localhost:4173',  // local build and preview
+    'http://localhost:5173', // local dev
+    'https://mmpoker.netlify.app' // deployed frontend
+];
 
 //Check documentation if there are any questions with these
 app.use(cors({
-    // Need these to allow React to interact with the server
-    origin: process.env.FRONTEND_URL,
-    credentials: true, // Allow credentials (cookies) to be sent
+    // Dynamic origin function allows us to set more than one origin and avoid CORS errors on different environments
+    origin: function (origin, callback) {
+        // If we need to use Postman add !origin || to the next line
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`CORS policy: origin ${origin} not allowed`));
+        }
+    },
+    credentials: true // required if sending cookies
 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
