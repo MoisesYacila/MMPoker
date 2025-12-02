@@ -105,12 +105,13 @@ const allowedOrigins = [
     'https://mmpoker.netlify.app' // deployed frontend
 ];
 
+console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
+
 //Check documentation if there are any questions with these
 app.use(cors({
     // Dynamic origin function allows us to set more than one origin and avoid CORS errors on different environments
     origin: function (origin, callback) {
-        // If we need to use Postman add !origin || to the next line
-        if (allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error(`CORS policy: origin ${origin} not allowed`));
@@ -137,7 +138,8 @@ const sessionConfig = {
         // Sets the max age of the cookie to 1 week
         maxAge: 1000 * 60 * 60 * 24 * 7,
         secure: process.env.NODE_ENV === 'production', // Make the cookie work only on HTTPS if we are in production mode
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'none' // To allow cross-site cookies, required for our setup with separate frontend and backend domains
     }
 };
 
