@@ -36,6 +36,11 @@ const { RedisStore } = require('connect-redis');
 
 const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/mmpoker';
 
+// Trust the first proxy (Render) so req.secure is correct, otherwise Express will see is as HTTP and not HTTPS
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
+
 // Create a pino logger instance for production
 const pinoLogger = pino({
     // In production, we will log only 'warn' and higher importance logs, in development we will log 'info' and higher
@@ -105,8 +110,6 @@ const allowedOrigins = [
     'https://mmpoker.netlify.app' // deployed frontend
 ];
 
-console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
-
 //Check documentation if there are any questions with these
 app.use(cors({
     // Dynamic origin function allows us to set more than one origin and avoid CORS errors on different environments
@@ -139,7 +142,7 @@ const sessionConfig = {
         maxAge: 1000 * 60 * 60 * 24 * 7,
         secure: process.env.NODE_ENV === 'production', // Make the cookie work only on HTTPS if we are in production mode
         httpOnly: true,
-        sameSite: 'none' // To allow cross-site cookies, required for our setup with separate frontend and backend domains
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // To allow cross-site cookies, required for our setup with separate frontend and backend domains
     }
 };
 
