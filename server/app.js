@@ -1018,7 +1018,6 @@ app.post('/games', isAdmin, validateTournament, async (req, res) => {
         if (player._id !== '-1') {
             const playerData = {
                 player: player.player,
-                //Mongoose automatically converts 'yes' and 'no' string to true and false values
                 itm: player.itm,
                 otb: player.otb,
                 profit: parseInt(player.profit),
@@ -1162,9 +1161,9 @@ app.patch('/players', isAdmin, async (req, res) => {
             await Player.findByIdAndUpdate(player.player, { $inc: { gamesPlayed: +1 } });
 
             //Increase one to stats if player made it to the money or was on the bubble
-            if (player.itm === 'yes')
+            if (player.itm)
                 await Player.findByIdAndUpdate(player.player, { $inc: { itmFinishes: +1 } });
-            if (player.otb === 'yes')
+            if (player.otb)
                 await Player.findByIdAndUpdate(player.player, { $inc: { onTheBubble: +1 } });
 
             //index 0 means first row, this player has won
