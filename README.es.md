@@ -7,7 +7,7 @@
 
 Una aplicación web full-stack para registrar partidas de poker, estadísticas de jugadores y clasificaciones para noches de poker entre amigos o ligas locales. Construida con el stack MERN (MongoDB, Express, React, Node.js), esta app calcula automáticamente estadísticas individuales y globales después de cada partida.
 
-> ⚠️ Este proyecto está en **desarrollo activo** — las funciones principales ya están listas, pero aún está en fase de desarrollo.
+> 👉 Link al proyecto: https://mmpoker.netlify.app
 
 ---
 
@@ -20,6 +20,7 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
      - Victorias
      - Ganancias
      - Veces en premios (ITM - In The Money)
+     - Veces en la burbuja (OTB - On The Bubble)
      - Recompras, add-ons y bounties
    - Eliminar jugadores (solo si no forman parte de ninguna partida).
 
@@ -53,13 +54,10 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
    - Editar perfil (usuario, email, nombre completo).
    - Ver información y configuración de la cuenta.
 
-7. **Manejo de errores**
-   - Páginas personalizadas para errores 404 (No encontrado) y 403 (No autorizado).
-
-8. **Navegación**
+7. **Navegación**
    - Barra de navegación intuitiva con enlaces a todas las secciones.
 
-9. **UI Responsiva**
+8. **UI Responsiva**
    - Diseño mayormente responsivo; se sigue puliendo para móviles.
 
 ---
@@ -79,21 +77,49 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
 - **Mongoose**: ODM para gestionar esquemas y consultas.
 - **Passport.js**: Autenticación local y con Google.
 
+### **Despliegue**
+- **Frontend**: Netlify
+- **Backend**: Render
+- **Base de datos**: MongoDB Atlas
+- **Sesiones**: Redis
 - **Subida de imágenes:** Cloudinary
-
----
-
-## 📸 Capturas de Pantalla (Próximamente)
-
-Pronto agregaré imágenes del ranking, formularios de partida y vistas de estadísticas de jugadores.
 
 ---
 
 ## 🧑‍💻 Cómo Ejecutar Localmente
 
 ### Requisitos
-- Node.js y npm
-- MongoDB y MongoDB Shell (instalado localmente o en la nube)
+Para ejecutar el proyecto localmente, se necesitas dos archivos .env:
+* Uno para el **frontend**
+* Uno para el **backend**
+
+> ⚠️ Por razones de seguridad, los secretos reales no están incluidos en el proyecto. En su lugar, se proporciona un archivo .env.example para que los desarrolladores sepan qué variables deben crear.
+
+### Archivo de ejemplo para backend .env.example
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:8080/auth/google/callback
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_KEY=your_cloudinary_key
+CLOUDINARY_SECRET=your_cloudinary_secret
+
+REDIS_USERNAME=your_redis_username
+REDIS_PASSWORD=your_redis_password
+REDIS_HOST=your_redis_host
+REDIS_PORT=your_redis_port
+
+SESSION_COOKIE_NAME=your_session_cookie_name
+SESSION_SECRET=your_session_secret
+
+FRONTEND_URL=http://localhost:5173
+```
+
+### Archivo de ejemplo para frontend .env.example
+```bash
+VITE_BACKEND_URL=http://localhost:8080
+```
 
 ### Pasos
 
@@ -128,18 +154,41 @@ Pronto agregaré imágenes del ranking, formularios de partida y vistas de estad
       ```bash    
       http://localhost:5173
 
+
+## 📸 Capturas de Pantalla
+
+### Página Landing
+![Landing](/screenshots/LandingPage.png)
+
+### Clasificación
+![Clasificación](/screenshots/Leaderboard.png)
+
+### Página de creación de partida
+![Nueva Partida](/screenshots/NewGame.png)
+
+### Perfil de jugador
+![Perfil de Jugador](/screenshots/Player.png)
+
+### Página de estadísticas
+![Estadísticas](/screenshots/Stats.png)
+
+### Página de noticias
+![Noticias](/screenshots/Updates.png)
+
+### Página de inicio de sesión
+![Log In](/screenshots/Login.png)
+
+---
+
 ## 📅 Hoja de ruta / Próximamente
 
 ### Características próximas
 
 - **Responsividad móvil**  
-  Mejoras adicionales para móviles y tablets.
+  Rediseño completo de la responsividad para dispositivos móviles.
 
 - **Testing**  
   Pruebas unitarias e integrales.
-
-- **Despliegue en producción**  
-  Preparar para producción (variables de entorno, seguridad, etc.).
 
 ---
 

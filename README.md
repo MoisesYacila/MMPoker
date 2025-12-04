@@ -10,7 +10,7 @@
 
 A full-stack web app to track poker games, player stats, and rankings for casual poker nights or local leagues. Built with the MERN stack (MongoDB, Express, React, Node.js), this app automatically calculates individual and global stats after each game.
 
-> ⚠️ This is a **work in progress** — core features are in place, and development is ongoing!
+> 👉 Live App: https://mmpoker.netlify.app
 
 ---
 
@@ -22,6 +22,7 @@ A full-stack web app to track poker games, player stats, and rankings for casual
      - Wins
      - Earnings
      - ITM (In The Money) finishes
+     - OTB (On The Bubble) finishes
      - Rebuys, add-ons, and bounties
    - Delete players (if they are not part of any games).
 
@@ -53,13 +54,10 @@ A full-stack web app to track poker games, player stats, and rankings for casual
    - Edit profile (username, email, full name).
    - View account info and settings.
 
-7. **Error Handling**
-   - Custom error pages for 404 (Not Found) and 403 (Unauthorized).
-
-8. **Navigation**
+7. **Navigation**
    - Intuitive navigation bar with links to all key pages.
 
-9. **Responsive UI**
+8. **Responsive UI**
    - Mostly responsive design; mobile support is being polished.
 
 ---
@@ -79,20 +77,48 @@ A full-stack web app to track poker games, player stats, and rankings for casual
 - **Mongoose**: ODM for MongoDB to manage schemas and queries.
 - **Passport.js**: Authentication (Local + Google OAuth 2.0)
 
-- **Image Uploads:** Cloudinary
-
----
-
-## 📸 Screenshots (Coming Soon)
-
-I'll add visuals soon to show off the leaderboard, game forms, and player stats views!
+### **Hosting**
+- **Frontend**: Netlify
+- **Backend**: Render
+- **Database**: MongoDB Atlas
+- **Session**: Redis
+- **Image Uploads**: Cloudinary
 
 ---
 
 ## 🧑‍💻 How to Run Locally
 ### Prerequisites
-- Node.js and npm
-- MongoDB and MongoDB Shell (running locally or in the cloud)
+To run the project locally, you'll need two separate .env files:
+* One for the **frontend**
+* One for the **backend**
+
+> ⚠️ For security reasons, the real secrets are not included in the project. Instead, an .env.example file is provided so developers know what variables must be created.
+
+### Backend .env.example
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:8080/auth/google/callback
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_KEY=your_cloudinary_key
+CLOUDINARY_SECRET=your_cloudinary_secret
+
+REDIS_USERNAME=your_redis_username
+REDIS_PASSWORD=your_redis_password
+REDIS_HOST=your_redis_host
+REDIS_PORT=your_redis_port
+
+SESSION_COOKIE_NAME=your_session_cookie_name
+SESSION_SECRET=your_session_secret
+
+FRONTEND_URL=http://localhost:5173
+```
+
+### Frontend .env.example
+```bash
+VITE_BACKEND_URL=http://localhost:8080
+```
 
 ### Steps
 1. Clone the repository:
@@ -127,18 +153,41 @@ I'll add visuals soon to show off the leaderboard, game forms, and player stats 
     ```bash
     http://localhost:5173
 
+
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page](/screenshots/LandingPage.png)
+
+### Leaderboard
+![Leaderboard](/screenshots/Leaderboard.png)
+
+### New Game Page
+![New Game](/screenshots/NewGame.png)
+
+### Player Profile
+![Player Profile](/screenshots/Player.png)
+
+### Stats Page
+![Stats](/screenshots/Stats.png)
+
+### Updates Page
+![Updates](/screenshots/Updates.png)
+
+### Log In Page
+![Log In](/screenshots/Login.png)
+
+---
+
 ## 📅 Roadmap / Coming Soon
 
 ### Upcoming Features
 
 - **Mobile Responsiveness**  
-  Further polish for mobile and tablet devices.
+  Full mobile responsiveness redesign.
 
 - **Testing**  
   Add unit and integration tests.
-
-- **Production Deployment**  
-  Prepare for deployment (environment variables, security, etc.).
 
 ---
 
