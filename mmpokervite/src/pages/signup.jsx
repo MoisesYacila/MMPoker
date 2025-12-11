@@ -119,11 +119,11 @@ export default function SignUp() {
             <Box component='form'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>
-                <Card sx={{ width: '30%', textAlign: 'center', height: '65vh' }}>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                <Card sx={{ width: { xs: '90%', sm: '70%', md: '50%', lg: '30%' }, textAlign: 'center' }}>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, paddingY: 3 }}>
                         <Typography sx={{ marginBottom: '1rem', fontWeight: 'bold' }} variant="h5">Create your MMPoker account</Typography>
                         {/* onBlur is a good choice because we don't need to check every time the value changes, but we can check when the user clicks away */}
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }} onBlur={async (e) => {
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
                             // If the email format is invalid, set the error and return early
                             if (!isValidEmail(e.target.value)) {
                                 setDisabled(true);
@@ -153,7 +153,7 @@ export default function SignUp() {
                             helperText={getEmailHelperText()}
                             label='Email' variant="outlined" type="email" name="email">
                         </TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }} onBlur={async (e) => {
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
                             // If the username format is invalid, set the error and return early
                             if (!isValidUsername(e.target.value)) {
                                 setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, invalidFormat: true } });
@@ -182,15 +182,15 @@ export default function SignUp() {
                             error={validationErrors.username.isTaken || validationErrors.username.invalidFormat}
                             helperText={getUsernameHelperText()}
                             label='Username' variant="outlined" name="username"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
                             onChange={() => { setDisabled(false) }}
                             label='First Name' variant="outlined" name="first"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
                             onChange={() => { setDisabled(false) }}
                             label='Last Name' variant="outlined" name="last"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
-                        <Button disabled={disabled} type="submit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Create account</Button>
+                        <Button disabled={disabled} type="submit" variant="contained" sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}>Create account</Button>
                         <Typography sx={{ marginBottom: '1rem' }}>Already have an account? <Link to='/login' onClick={() => { setAlert({ ...alert, open: false }); }}>Log in</Link> </Typography>
                     </CardContent>
                 </Card>

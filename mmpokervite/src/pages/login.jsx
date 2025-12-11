@@ -86,16 +86,16 @@ export default function LogIn() {
             <Box component='form'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>
-                <Card sx={{ width: '30%', textAlign: 'center', height: '40vh' }}>
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', justifyContent: 'space-evenly' }}>
+                <Card sx={{ width: { xs: '90%', sm: '70%', md: '50%', lg: '30%' }, textAlign: 'center' }}>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, paddingY: 3 }}>
                         <Typography sx={{ marginBottom: '1rem', fontWeight: 'bold' }} variant="h4">Log in</Typography>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
                             label='Username' variant="outlined" name="username"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: '80%' }}
+                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
                             label='Password' variant="outlined" type="password" name="password"></TextField>
-                        <Button loading={submitted} loadingPosition='start' type="sumbit" variant="contained" sx={{ marginBottom: '1rem', width: '80%' }}>Log In</Button>
+                        <Button loading={submitted} loadingPosition='start' type="sumbit" variant="contained" sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}>Log In</Button>
                         <Button loading={submitted} loadingPosition='start' variant='outlined' onClick={handleGoogleLogin}
-                            sx={{ display: 'flex', marginBottom: '1rem', width: '80%' }}>
+                            sx={{ display: 'flex', marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}>
                             <GoogleIcon sx={{ marginRight: '1rem' }}></GoogleIcon>Log In with Google
                         </Button>
                         <Typography sx={{ marginBottom: '1rem' }}>New to MMPoker? <Link to='/signup' onClick={() => { setAlert({ ...alert, open: false }); }}>Create Account</Link> </Typography>
