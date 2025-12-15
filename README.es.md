@@ -11,6 +11,11 @@ Una aplicación web full-stack para registrar partidas de poker, estadísticas d
 
 ---
 
+> ⚠️ Nota: El backend está desplegado en el plan gratuito de Render.
+En la primera visita, puede tardar hasta ~40 segundos en activarse.
+
+---
+
 ## 🚀 Funcionalidades
 
 1. **Gestión de Jugadores**

@@ -14,6 +14,11 @@ A full-stack web app to track poker games, player stats, and rankings for casual
 
 ---
 
+> ⚠️ Note: The backend is hosted on Render's free tier.
+On first visit, it may take up to ~40 seconds to wake up.
+
+---
+
 ## 🚀 Features
 1. **Player Management**
    - Add new players with their names and nationalities.
