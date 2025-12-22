@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button,
     Collapse, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-    Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -145,8 +145,8 @@ export default function Account() {
                 <h1>Account</h1>
                 <h2>Settings</h2>
                 {/* Accordion components to display account settings */}
-                {/* MUI Syntax */}
-                <Accordion sx={{ width: '50%' }}>
+                {/* MUI Syntax. Width varies for responsive design */}
+                <Accordion sx={{ width: { xs: '90%', sm: '70%', md: '50%' } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         Profile Info
                     </AccordionSummary>
@@ -157,7 +157,7 @@ export default function Account() {
                         <p>Admin: {accountData.admin ? 'Yes' : 'No'}</p>
                     </AccordionDetails>
                 </Accordion>
-                <Accordion sx={{ width: '50%' }}>
+                <Accordion sx={{ width: { xs: '90%', sm: '70%', md: '50%' } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         Preferences
                     </AccordionSummary>
@@ -167,7 +167,7 @@ export default function Account() {
                         <p>Currency: USD</p>
                     </AccordionDetails>
                 </Accordion>
-                <Accordion sx={{ width: '50%' }}>
+                <Accordion sx={{ width: { xs: '90%', sm: '70%', md: '50%' } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         League Management
                     </AccordionSummary>
@@ -176,50 +176,53 @@ export default function Account() {
                     </AccordionDetails>
                 </Accordion>
                 {/* Admin panel. Admins can delete non admin accounts from here */}
-                {isAdmin ? <Accordion sx={{ width: '50%' }}>
+                {isAdmin ? <Accordion sx={{ width: { xs: '90%', sm: '70%', md: '50%' } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         Admin Panel
                     </AccordionSummary>
                     <AccordionDetails>
                         <h3>All accounts</h3>
                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Username</TableCell>
-                                        <TableCell>Email</TableCell>
-                                        <TableCell>Admin</TableCell>
-                                        <TableCell align='center'>Delete?</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {allAccounts.map((account, i) => {
-                                        return (<TableRow key={i}>
-                                            <TableCell>{account.username}</TableCell>
-                                            <TableCell>{account.email}</TableCell>
-                                            <TableCell>{account.admin ? 'Yes' : 'No'}</TableCell>
-                                            {/* If the account is not an admin, then admins can delete it */}
-                                            <TableCell align='center'>{!account.admin ?
-                                                <IconButton onClick={() => {
-                                                    log(account);
-                                                    setAccountToDelete(account);
-                                                    setOpenDeleteDialog2(true)
-                                                }}>
-                                                    <DeleteIcon></DeleteIcon>
-                                                </IconButton> :
-                                                <Tooltip title='Cannot delete admin&apos;s account. If you want to delete your account, use the button at the bottom of the page.'>
-                                                    <InfoOutlineIcon />
-                                                </Tooltip>
-                                            }</TableCell>
-                                        </TableRow>);
-                                    })}
+                            {/* Wrapping the table in a TableContainer to make sure the table doesn't overflow and to make it horizontally scrollable */}
+                            <TableContainer>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Username</TableCell>
+                                            <TableCell>Email</TableCell>
+                                            <TableCell>Admin</TableCell>
+                                            <TableCell align='center'>Delete?</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {allAccounts.map((account, i) => {
+                                            return (<TableRow key={i}>
+                                                <TableCell>{account.username}</TableCell>
+                                                <TableCell>{account.email}</TableCell>
+                                                <TableCell>{account.admin ? 'Yes' : 'No'}</TableCell>
+                                                {/* If the account is not an admin, then admins can delete it */}
+                                                <TableCell align='center'>{!account.admin ?
+                                                    <IconButton onClick={() => {
+                                                        log(account);
+                                                        setAccountToDelete(account);
+                                                        setOpenDeleteDialog2(true)
+                                                    }}>
+                                                        <DeleteIcon></DeleteIcon>
+                                                    </IconButton> :
+                                                    <Tooltip title='Cannot delete admin&apos;s account. If you want to delete your account, use the button at the bottom of the page.'>
+                                                        <InfoOutlineIcon />
+                                                    </Tooltip>
+                                                }</TableCell>
+                                            </TableRow>);
+                                        })}
 
-                                </TableBody>
-                            </Table>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                         </Box>
                     </AccordionDetails>
                 </Accordion> : null}
-                <Accordion sx={{ width: '50%' }}>
+                <Accordion sx={{ width: { xs: '90%', sm: '70%', md: '50%' } }}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         Edit Profile
                     </AccordionSummary>
@@ -272,7 +275,7 @@ export default function Account() {
                                 }}
                                 error={validationErrors.username.isTaken || validationErrors.username.invalidFormat}
                                 helperText={getUsernameHelperText()}
-                                sx={{ width: '40%', marginBottom: '1rem' }}
+                                sx={{ width: { xs: '90%', sm: '70%', md: '60%', lg: '40%' }, marginBottom: '1rem' }}
                             />
                             <TextField
                                 label="New Email"
@@ -314,7 +317,7 @@ export default function Account() {
                                 }}
                                 error={validationErrors.email.isTaken || validationErrors.email.invalidFormat}
                                 helperText={getEmailHelperText()}
-                                sx={{ width: '40%', marginBottom: '1rem' }}
+                                sx={{ width: { xs: '90%', sm: '70%', md: '60%', lg: '40%' }, marginBottom: '1rem' }}
                             />
                             <TextField
                                 label="New Full Name"
@@ -346,7 +349,7 @@ export default function Account() {
                                 }}
                                 error={validationErrors.fullName}
                                 helperText={validationErrors.fullName ? 'Enter a valid name with at least 5 characters.' : ''}
-                                sx={{ width: '40%', marginBottom: '1rem' }}
+                                sx={{ width: { xs: '90%', sm: '70%', md: '60%', lg: '40%' }, marginBottom: '1rem' }}
                             />
                             <div>
                                 {/* Disable the button if there are any errors in the validation */}

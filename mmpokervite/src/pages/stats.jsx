@@ -70,9 +70,10 @@ export default function Stats() {
                 <ToggleButton sx={{ width: '40%' }} value='average'>Average Stats</ToggleButton>
             </ToggleButtonGroup>
 
-            <Box className='total-stats'>
+            {/* sx for masonry style layout */}
+            <Box className='total-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3, xl: 4 }, marginX: '1rem' }}>
                 {/* From Material UI */}
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Games Played
@@ -91,7 +92,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most On The Bubble
@@ -108,7 +109,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Wins
@@ -125,7 +126,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most In The Money
@@ -142,7 +143,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Bounties
@@ -159,7 +160,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Profit
@@ -176,7 +177,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Rebuys
@@ -193,7 +194,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card className='total-stats-card'>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Add Ons
@@ -213,8 +214,9 @@ export default function Stats() {
             </Box>
 
             {/* Set of average stats. This set is hidden on load and will appear when user clicks on the average stats button */}
-            <Box className='average-stats hide' sx={{ display: 'flex', marginTop: '2rem', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+            {/* sx for masonry style layout */}
+            <Box className='average-stats hide' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3 }, marginX: '1rem' }} >
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Best Average Profit
@@ -234,7 +236,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Best In The Money %
@@ -251,7 +253,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most On The Bubble %
@@ -268,7 +270,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Bounties per Game
@@ -285,7 +287,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Rebuys per Game
@@ -302,7 +304,7 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                <Card sx={{ margin: '1rem 1rem', width: '25%' }}>
+                <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
                             Most Add Ons per Game

@@ -45,23 +45,9 @@ button:hover {
   display: none !important;
 }
 
-/* Masonry style layout */
-.total-stats {
-  margin-top: 2rem;
-  column-count: 3;
-  column-gap: 16px;
-  /* Old styles in case I need to come back to them */
-  /* display: flex; */
-  /* flex-wrap: wrap; */
-  /* justify-content: space-around; */
-}
-
-.total-stats-card {
+.stats-card {
   margin-bottom: 16px;
-  break-inside: avoid;
-  /* Old styles in case I need to come back to them */
-  /* width: 25%; */
-  /* margin: 1rem 1rem; */
+  break-inside: avoid; /* For masonry style layout */
 }
 
 .privacy-policy h2 {

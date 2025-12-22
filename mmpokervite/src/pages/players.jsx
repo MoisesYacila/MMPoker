@@ -86,11 +86,11 @@ export default function Players() {
             <h1>Players</h1>
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {loggedIn ? <Link to='/players/new' onClick={() => { setAlert({ ...alert, open: false }); }}>Add Player</Link> : null}
-                <List sx={{ width: '25%' }}>
+                <List sx={{ width: { xs: '90%', sm: '70%', md: '50%', lg: '25%' } }}>
                     {/* Use the arr.map function to make a list of components */}
                     {players.map((player, i) => {
                         return (
-                            <ListItem disablePadding key={i} sx={{ width: '100%' }}>
+                            <ListItem disablePadding key={i}>
                                 {/* async callback that gets the clicked player, and links to their personal page */}
                                 <ListItemButton disabled={submitted || disabled} onClick={async () => {
                                     setAlert({ ...alert, open: false });
