@@ -68,19 +68,24 @@ export default function Account() {
             });
     }, [id]);
 
-    // If the user is an admin, get all the accounts for the admin panel
+    // Fetch all accounts for the admin panel
     useEffect(() => {
-        if (isAdmin) {
-            api.get('/accounts')
-                .then((res) => {
-                    setAllAccounts(res.data);
-                    log('All accounts: ', res.data);
-                })
-                .catch((err) => {
-                    errorLog(err);
-                })
-        }
-    }, [submitted, isAdmin]);
+        getAllAccounts();
+    }, []);
+
+    // If the user is an admin, get all the accounts for the admin panel
+    const getAllAccounts = async () => {
+        // Using isAdmin from UserContext might be outdated, which might cause 401 errors and unexpected behavior, so we double check with the backend
+        const adminCheck = await api.get('/isAdmin');
+        if (!adminCheck.data.isAdmin) return;
+
+        api.get('/accounts')
+            .then((res) => {
+                setAllAccounts(res.data);
+                log('All accounts: ', res.data);
+            })
+            .catch((err) => { errorLog(err) });
+    };
 
     // Log out handler function
     const handleLogout = async () => {
@@ -340,7 +345,15 @@ export default function Account() {
                                         }
                                     }
                                     else {
-                                        setTempAccountData({ ...tempAccountData, fullName: '', fullNameChanged: false });
+                                        // If the input is empty, remove fullName from tempAccountData
+                                        setTempAccountData(prev => {
+                                            if (!prev) return prev;
+
+                                            // Disabling eslint here because we are using the variables to exclude them from the new object
+                                            // eslint-disable-next-line no-unused-vars
+                                            const { fullName, fullNameChanged, ...rest } = prev;
+                                            return rest;
+                                        });
                                     }
                                 }}
                                 onChange={(e) => {
@@ -391,11 +404,13 @@ export default function Account() {
                                 .then((res) => {
                                     log('Account updated successfully:', res.data);
                                     // Update the account data with the new info and reset the form and temp data
+                                    // Also, re fetch all accounts for the admin panel
                                     setAccountData(res.data);
                                     setForm({ username: '', email: '', fullName: '' });
                                     setTempAccountData({});
                                     setSubmitted(false);
-                                    setAlert({ message: 'Account updated successfully.', severity: 'success', open: true })
+                                    setAlert({ message: 'Account updated successfully.', severity: 'success', open: true });
+                                    getAllAccounts();
                                 }
                                 ).catch((err) => {
                                     errorLog('Error updating account:', err);

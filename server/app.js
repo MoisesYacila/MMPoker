@@ -1430,17 +1430,24 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
     const { username, email, fullName } = req.body;
     let changedUsername = false;
 
-    // Server side validation
-    if (!isValidEmail(email)) {
-        return res.status(400).send('Invalid email format');
-    }
-    if (!isValidUsername(username)) {
-        return res.status(400).send('Invalid username format');
-    }
-    if (!isValidFullName(fullName)) {
-        return res.status(400).send('Invalid full name format');
+    // Server side validation protects against invalid data and undefined values
+    if (typeof email === 'string' && email.trim() !== '') {
+        if (!isValidEmail(email)) {
+            return res.status(400).send('Invalid email format');
+        }
     }
 
+    if (typeof username === 'string' && username.trim() !== '') {
+        if (!isValidUsername(username)) {
+            return res.status(400).send('Invalid username format');
+        }
+    }
+
+    if (typeof fullName === 'string' && fullName.trim() !== '') {
+        if (!isValidFullName(fullName)) {
+            return res.status(400).send('Invalid full name format');
+        }
+    }
 
     try {
         // Find the account by id and update its information
@@ -1449,38 +1456,47 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
             return res.status(404).send('Account not found.');
         }
 
-        // Check if the username already exists in the database excluding the current account
-        // We do a case insensitive search by using usernameLower field
-        const existingUsername = await Account.findOne({
-            usernameLower: username.trim().toLowerCase(),
-            _id: { $ne: id }
-        });
+        // Make sure the username is valid before doing any logic, same for email and full name
+        if (typeof username === 'string' || username.trim() !== '') {
+            // Check if the username already exists in the database excluding the current account
+            // We do a case insensitive search by using usernameLower field
+            const existingUsername = await Account.findOne({
+                usernameLower: username.trim().toLowerCase(),
+                _id: { $ne: id }
+            });
 
-        // If the username already exists in the database and it's not the current account, return an error
-        if (existingUsername) {
-            return res.status(400).send('Username already taken');
+            // If the username already exists in the database and it's not the current account, return an error
+            if (existingUsername) {
+                return res.status(400).send('Username already taken');
+            }
+
+            // If we haven't returned yet, it means the username is valid and not taken, so we can update it
+            account.username = username.trim();
+            changedUsername = true;
         }
 
-        // If we haven't returned yet, it means the username is valid and not taken, so we can update it
-        account.username = username.trim();
-        changedUsername = true;
+        if (typeof email === 'string' && email.trim() !== '') {
+            // Check if the email already exists in the database excluding the current account
+            const existingEmail = await Account.findOne({
+                email: email.trim().toLowerCase(),
+                _id: { $ne: id }
+            });
 
-        // Check if the email already exists in the database excluding the current account
-        const existingEmail = await Account.findOne({
-            email: email.trim().toLowerCase(),
-            _id: { $ne: id }
-        });
+            // If the email already exists in the database and it's not the current account, return an error
+            if (existingEmail) {
+                return res.status(400).send('Email already taken');
+            }
 
-        // If the email already exists in the database and it's not the current account, return an error
-        if (existingEmail) {
-            return res.status(400).send('Email already taken');
+            // If we haven't returned yet, it means the email is valid and not taken, so we can update it
+            account.email = email.trim();
         }
 
-        // If we haven't returned yet, it means the email is valid and not taken, so we can update it
-        account.email = email.trim();
 
-        if (fullName != '')
-            account.fullName = fullName.trim();
+        if (typeof fullName === 'string' && fullName.trim() !== '') {
+            if (fullName && fullName != '')
+                account.fullName = fullName.trim();
+        }
+
 
         await account.save();
 
@@ -1490,9 +1506,14 @@ app.patch('/accounts/:id', isLoggedIn, async (req, res, next) => {
                 if (err) {
                     return next(err);
                 }
-
                 // Ensures the session is saved before sending the response
-                res.send(account);
+                req.session.save((err) => {
+                    if (err) {
+                        return next(err);
+                    }
+
+                    res.send(account);
+                });
             });
         }
         else {
