@@ -14,8 +14,70 @@
   flex: 1;
 }
 
+/* Initial width for xs and media queries for responsive design */
 #flags-select {
-  width: 30%;
+  width: 80%;
+}
+
+/* sm */
+@media (min-width: 600px) {
+  #flags-select {
+    width: 70%;
+  }
+}
+
+/* md */
+@media (min-width: 900px) {
+  #flags-select {
+    width: 50%;
+  }
+}
+
+/* lg */
+@media (min-width: 1200px) {
+  #flags-select {
+    width: 40%;
+  }
+}
+
+/* xl */
+@media (min-width: 1536px) {
+  #flags-select {
+    width: 30%;
+  }
+}
+
+/* Initial width for xs and media queries for responsive design */
+.text-area {
+  width: 80%;
+}
+
+/* sm */
+@media (min-width: 600px) {
+  .text-area {
+    width: 70%;
+  }
+}
+
+/* md */
+@media (min-width: 900px) {
+  .text-area {
+    width: 50%;
+  }
+}
+
+/* lg */
+@media (min-width: 1200px) {
+  .text-area {
+    width: 40%;
+  }
+}
+
+/* xl */
+@media (min-width: 1536px) {
+  .text-area {
+    width: 30%;
+  }
 }
 
 .player-data {

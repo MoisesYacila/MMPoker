@@ -7,6 +7,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import { Alert, Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import '../App.css';
 import api from '../api/axios';
 import { Button, CircularProgress, Stack } from '@mui/material';
@@ -81,18 +82,33 @@ export default function Player() {
                 </Alert>
             </Collapse>
             <h1>{playerData == null ? <CircularProgress /> : `${playerData.firstName} ${playerData.lastName}`}</h1>
-            <div className='player-data'>
-                <Typography variant='h4'>Earnings: ${playerData == null ? <CircularProgress /> : playerData.winnings}</Typography>
-                <Typography variant='h4'>Games Played: {playerData == null ? <CircularProgress /> : playerData.gamesPlayed}</Typography>
-                <Typography variant='h4'>Wins: {playerData == null ? <CircularProgress /> : playerData.wins}</Typography>
-                <Typography variant='h4'>In the Money: {playerData == null ? <CircularProgress /> : playerData.itmFinishes}</Typography>
-            </div>
-            <div className='player-data'>
-                <Typography variant='h4'>On the Bubble: {playerData == null ? <CircularProgress /> : playerData.onTheBubble}</Typography>
-                <Typography variant='h4'>Bounties: {playerData == null ? <CircularProgress /> : playerData.bounties}</Typography>
-                <Typography variant='h4'>Rebuys: {playerData == null ? <CircularProgress /> : playerData.rebuys}</Typography>
-                <Typography variant='h4'>Add Ons: ${playerData == null ? <CircularProgress /> : playerData.addOns}</Typography>
-            </div>
+            {/* Grid helps us show the items in different ways in different screen sizes. The grid has a max space of 12, so we distribute the space for each row depending on the screen size */}
+            <Grid container spacing={4} className='player-data' sx={{ margin: '2rem' }}>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Earnings: ${playerData == null ? <CircularProgress /> : playerData.winnings}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Games Played: {playerData == null ? <CircularProgress /> : playerData.gamesPlayed}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>In the Money: {playerData == null ? <CircularProgress /> : playerData.itmFinishes}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Wins: {playerData == null ? <CircularProgress /> : playerData.wins}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>On the Bubble: {playerData == null ? <CircularProgress /> : playerData.onTheBubble}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Bounties: {playerData == null ? <CircularProgress /> : playerData.bounties}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Rebuys: {playerData == null ? <CircularProgress /> : playerData.rebuys}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}>
+                    <Typography align='center' variant='h4'>Add Ons: ${playerData == null ? <CircularProgress /> : playerData.addOns}</Typography>
+                </Grid>
+            </Grid>
 
             {/* Show the edit and delete buttons for admins only */}
             {isAdmin ? <Stack direction='row' spacing={2} sx={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
@@ -109,7 +125,7 @@ export default function Player() {
 
             <h2>Games</h2>
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <List sx={{ width: '25%' }}>
+                <List sx={{ width: { xs: '90%', sm: '70%', md: '50%', lg: '25%' } }}>
                     {gameList.length == 0 ? <Typography variant='h6'>No games played yet.</Typography> : null}
                     {gameList.map((game, i) => {
                         const gameDay = new Date(game.date)

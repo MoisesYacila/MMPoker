@@ -177,7 +177,7 @@ export default function NewGame() {
                             updatedErrors[i].earnings = false;
                         }
                         setValErrors(updatedErrors);
-                    }} helperText={valErrors[i]?.earnings ? 'Enter a number' : ''} name="earnings" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                    }} helperText={valErrors[i]?.earnings ? 'Enter a number' : ''} name="earnings" defaultValue={0} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                 </TableCell>
                 <TableCell align="center">
                     <TextField
@@ -213,7 +213,7 @@ export default function NewGame() {
                         }
                         setValErrors(updatedErrors);
                     }} helperText={valErrors[i]?.bounties ? 'Enter a positive integer' : ''}
-                        name="bounties" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                        name="bounties" defaultValue={0} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                 </TableCell>
                 <TableCell align="center">
                     <TextField error={valErrors[i]?.rebuys ?? false} onChange={(e) => {
@@ -226,7 +226,7 @@ export default function NewGame() {
                         }
                         setValErrors(updatedErrors);
                     }} helperText={valErrors[i]?.rebuys ? 'Enter a positive integer' : ''}
-                        name="rebuys" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                        name="rebuys" defaultValue={0} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                 </TableCell>
                 <TableCell align="center">
                     <TextField error={valErrors[i]?.addOns ?? false} onChange={(e) => {
@@ -239,7 +239,9 @@ export default function NewGame() {
                         }
                         setValErrors(updatedErrors);
                     }} helperText={valErrors[i]?.addOns ? 'Enter a positive integer' : ''}
-                        name="addOns" defaultValue={0} sx={{ width: '35%' }}></TextField>
+                        // Adding the minWidth here because otherwise, the widths were not matching with the other text fields on small screens
+                        // Unitless minWidth will be converted to px
+                        name="addOns" defaultValue={0} sx={{ minWidth: 45, width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                 </TableCell>
             </TableRow>
         }
@@ -295,7 +297,7 @@ export default function NewGame() {
                     id="player-number"
                     label="Number of Players"
                     defaultValue='5'
-                    sx={{ width: '15%' }}
+                    sx={{ width: { xs: '50%', md: '30%', lg: '25%', xl: '15%' } }}
                     onChange={handleChange}
                 >
                     <MenuItem value={5}>5</MenuItem>
@@ -307,8 +309,6 @@ export default function NewGame() {
                 </TextField>
             </FormControl>
 
-            {/* <form method="POST" action="http://localhost:8080/players?_method=PATCH" > */}
-            {/* Actually both POST and PATCH requests are sent on the handleSubmit, but it doesn´t matter which one we use on the form component */}
             <Box component='form'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -335,7 +335,7 @@ export default function NewGame() {
                     </Table>
                 </TableContainer>
                 <Button loading={submitted} loadingPosition="start" variant="contained" type="submit"
-                    sx={{ width: '8%', marginBottom: '1rem' }}>
+                    sx={{ width: { xs: '30%', sm: '25%', md: '20%', lg: '15%', xl: '8%' }, marginBottom: '1rem' }}>
                     Add Game
                 </Button>
             </Box>

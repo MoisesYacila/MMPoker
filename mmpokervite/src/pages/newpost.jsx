@@ -97,7 +97,7 @@ export default function NewPost() {
                 <TextField
                     label="Title"
                     variant="outlined" name='title'
-                    sx={{ width: '30%', marginBottom: '1rem' }}
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }}
                     onChange={(e) => setTitle(e.target.value)}
                     required />
                 {/* MUI's Text Area */}
@@ -105,7 +105,8 @@ export default function NewPost() {
                     name='content'
                     minRows={10}
                     placeholder="Content"
-                    style={{ width: '30%', marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4' }}
+                    className='text-area'
+                    style={{ marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4' }}
                     onChange={(e) => setContent(e.target.value)}
                     required
                 />

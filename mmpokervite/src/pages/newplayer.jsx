@@ -97,7 +97,7 @@ export default function NewPlayer() {
                         validateName(e.target.value) ? setFirstNameError(false) : setFirstNameError(true);
                         setFirstName(e.target.value);
                     }}
-                    sx={{ width: '30%', marginBottom: '1rem' }} required />
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }} required />
                 <TextField id="last"
                     label="Last Name"
                     variant="outlined" name='last' value={lastName}
@@ -108,7 +108,7 @@ export default function NewPlayer() {
                         validateName(e.target.value) ? setLastNameError(false) : setLastNameError(true);
                         setLastName(e.target.value);
                     }}
-                    sx={{ width: '30%', marginBottom: '1rem' }} required />
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }} required />
                 {/* Read ReactFlagsSelect docs if needed */}
                 <ReactFlagsSelect selected={nationality}
                     onSelect={(code) => {
@@ -116,7 +116,7 @@ export default function NewPlayer() {
                         setNationalityError(false);
                     }} id="flags-select"
                     searchable
-                    customLabels={{ "VE": "Venezuela", "BO": "Bolivia", "IR": "Iran", "LA": "Laos", "MK": "Macedonia", "MD": "Moldova", "VN": "Vietnam" }} />
+                    customLabels={{ "VE": "Venezuela", "BO": "Bolivia", "IR": "Iran", "LA": "Laos", "MK": "Macedonia", "MD": "Moldova", "VN": "Vietnam" }} />   
                 <Button loading={submitted} loadingPosition='start' variant="contained" size='large' type='submit' sx={{ marginTop: '1rem' }}>Add Player</Button>
             </Box>
         </Box>
