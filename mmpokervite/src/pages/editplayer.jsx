@@ -106,7 +106,7 @@ export default function EditPlayer() {
                         validateName(e.target.value) ? setValidationErrors({ ...validationErrors, firstName: false }) : setValidationErrors({ ...validationErrors, firstName: true });
                         setFirstName(e.target.value);
                     }}
-                    sx={{ width: '30%', marginBottom: '1rem' }} required>
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }} required>
                 </TextField>
                 <TextField label="Last Name" variant="outlined" name='lastName' value={lastName}
                     error={validationErrors.lastName}
@@ -116,7 +116,7 @@ export default function EditPlayer() {
                         validateName(e.target.value) ? setValidationErrors({ ...validationErrors, lastName: false }) : setValidationErrors({ ...validationErrors, lastName: true });
                         setLastName(e.target.value);
                     }}
-                    sx={{ width: '30%', marginBottom: '1rem' }} required>
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }} required>
                 </TextField>
                 <ReactFlagsSelect selected={nationality}
                     onSelect={(code) => {

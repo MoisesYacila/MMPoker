@@ -108,7 +108,7 @@ export default function Post() {
                             <h1>{postData.title}</h1>
                             <h4>Posted by {postData?.author?.username ? postData?.author?.username : <CircularProgress />} on {new Date(postData.date).toLocaleDateString()}</h4>
                             {postData.image && (
-                                <img src={postData.image} alt="Post" style={{ width: '20%' }} />
+                                <img src={postData.image} alt="Post" className='post-image' />
                             )}
                             <p>{postData.content}</p>
                             {/* Show the button red if the user has already liked it and gray otherwise. Disable the button if the user is not logged in */}
@@ -154,8 +154,9 @@ export default function Post() {
                         </Box>
                         {/* Text area component from MUI for adding a comment */}
                         <TextareaAutosize name='comment' minRows={3} placeholder='Add your comment here...' value={comment}
+                            className='text-area'
                             style={{
-                                width: '30%', marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4',
+                                marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4',
                                 display: textFieldActive ? 'block' : 'none'
                             }}
                             onChange={(e) => setComment(e.target.value)}>

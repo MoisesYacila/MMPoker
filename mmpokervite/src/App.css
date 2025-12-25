@@ -80,6 +80,39 @@
   }
 }
 
+/* Initial width for xs and media queries for responsive design */
+.post-image {
+  width: 70%;
+}
+
+/* sm */
+@media (min-width: 600px) {
+  .post-image {
+    width: 50%;
+  }
+}
+
+/* md */
+@media (min-width: 900px) {
+  .post-image {
+    width: 40%;
+  }
+}
+
+/* lg */
+@media (min-width: 1200px) {
+  .post-image {
+    width: 30%;
+  }
+}
+
+/* xl */
+@media (min-width: 1536px) {
+  .post-image {
+    width: 20%;
+  }
+}
+
 .player-data {
   display: flex;
   justify-content: space-between;

@@ -85,7 +85,7 @@ export default function Updates() {
                                             component="img"
                                             image={post.image}
                                             alt="Post image"
-                                            sx={{ width: '20%', height: 'auto' }}
+                                            sx={{ width: { xs: '40%', sm: '35%', md: '30%', lg: '25%', xl: '15%' }, height: 'auto' }}
                                         />
                                     )}
                                     <Box sx={{ display: 'flex', width: post.image ? '80%' : '100%', flexDirection: 'column' }}>

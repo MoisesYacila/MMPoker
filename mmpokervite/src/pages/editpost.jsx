@@ -117,7 +117,7 @@ export default function EditPost() {
                 <TextField
                     label="Title"
                     variant="outlined" name='title'
-                    sx={{ width: '30%', marginBottom: '1rem' }}
+                    sx={{ width: { xs: '80%', sm: '70%', md: '50%', lg: '40%', xl: '30%' }, marginBottom: '1rem' }}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required />
@@ -126,7 +126,8 @@ export default function EditPost() {
                     name='content'
                     minRows={10}
                     placeholder="Content"
-                    style={{ width: '30%', marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4' }}
+                    className='text-area'
+                    style={{ marginBottom: '1rem', padding: '10px', fontSize: '16px', backgroundColor: '#f5f3f4' }}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     required

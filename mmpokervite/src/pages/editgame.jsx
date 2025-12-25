@@ -238,7 +238,7 @@ export default function EditGame() {
                     // If numPlayers is 0, we set it to 5 by default, otherwise we use the current value
                     // This is to avoid out of range errors when the gameData has not been loaded yet
                     value={numPlayers == 0 ? 5 : numPlayers}
-                    sx={{ width: '15%' }}
+                    sx={{ width: { xs: '50%', md: '30%', lg: '25%', xl: '15%' } }}
                     onChange={(e) => {
                         setNumPlayers(Number(e.target.value))
                     }}
@@ -329,7 +329,7 @@ export default function EditGame() {
                                                         }
                                                         setValErrors(updatedErrors);
                                                     }}
-                                                    value={row.earnings} sx={{ width: '35%' }}></TextField>
+                                                    value={row.earnings} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <TextField
@@ -381,7 +381,7 @@ export default function EditGame() {
                                                         }
                                                         setValErrors(updatedErrors);
                                                     }}
-                                                    value={row.bounties} sx={{ width: '35%' }}></TextField>
+                                                    value={row.bounties} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <TextField name="rebuys" error={valErrors[i]?.rebuys ?? false} helperText={valErrors[i]?.rebuys ? 'Enter a positive integer' : ''}
@@ -401,7 +401,7 @@ export default function EditGame() {
                                                         }
                                                         setValErrors(updatedErrors);
                                                     }}
-                                                    value={row.rebuys} sx={{ width: '35%' }}></TextField>
+                                                    value={row.rebuys} sx={{ width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <TextField name="addOns" error={valErrors[i]?.addOns ?? false} helperText={valErrors[i]?.addOns ? 'Enter a positive integer' : ''}
@@ -421,7 +421,7 @@ export default function EditGame() {
                                                         }
                                                         setValErrors(updatedErrors);
                                                     }}
-                                                    value={row.addOns} sx={{ width: '35%' }}></TextField>
+                                                    value={row.addOns} sx={{ minWidth: 45, width: { xs: '100%', md: '75%', lg: '40%', xl: '25%' } }}></TextField>
                                             </TableCell>
                                         </TableRow>
                                     )
