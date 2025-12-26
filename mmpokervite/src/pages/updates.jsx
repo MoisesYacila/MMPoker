@@ -129,6 +129,7 @@ export default function Updates() {
                         </Card>
                     );
                 })}
+                {allPosts.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New posts will appear here.</Typography> : null}
                 {/* Dialog for confirming post deletion */}
                 <Dialog open={openDialog} onClose={handleCloseDialog}>
                     <DialogTitle>Delete Post</DialogTitle>

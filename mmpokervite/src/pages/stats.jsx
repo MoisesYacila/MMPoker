@@ -4,6 +4,7 @@ import {
     Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography,
     List, ListItem, ListItemText, ListItemButton
 } from '@mui/material';
+import { errorLog } from '../utils/logger.js';
 
 
 export default function Stats() {
@@ -11,28 +12,24 @@ export default function Stats() {
     const [totalLeaders, setTotalLeaders] = useState({});
     const [averageLeaders, setAverageLeaders] = useState({});
 
-    // We will toggle the hide class to only show one of the two categories of stats
-    // Also we'll initialize the averageLeaders state to the data we get from the DB
+    // Handle toggle button change
     const handleChange = async (e, newValue) => {
-        if (averageLeaders.bestAverageProfit == null) {
+        // If newValue is null, do nothing, as that means the user clicked the already selected button
+        if (newValue == null) return;
+
+        // Fetch average leaders when switching to average mode (load once)
+        if (newValue === 'average' && !averageLeaders.bestAvgProfit) {
             await api.get('/players/leaders/average')
                 .then((res) => {
-                    // The way that we get the data from the DB aggregation is an array with a single object containing the data
-                    // So we need to get the first element of the array and set it to the state
+                    // The aggregation returns an array with a single object containing the data
+                    // If there is no data, the object will contain empty arrays
                     setAverageLeaders(res.data[0]);
                 })
+                .catch((err) => {
+                   errorLog('Failed fetching average leaders', err); 
+                });
         }
-        // Value will be null if we click on the same button multiple times
-        // Toggle classes only when the value actually changes
-        if (newValue != null) {
-            setMode(newValue);
-            const box1 = document.querySelector('.total-stats');
-            const box2 = document.querySelector('.average-stats');
-
-            // We will display only one of the two modes and hide the other by toggling the hide class on the Box elements
-            box1.classList.toggle('hide');
-            box2.classList.toggle('hide');
-        }
+        setMode(newValue);
     }
 
     // This function will format the numbers to be either an integer or a float with 2 decimal points to show on the page
@@ -45,10 +42,13 @@ export default function Stats() {
         async function getTotalLeaders() {
             await api.get('/players/leaders/total')
                 .then((res) => {
-                    // The way that we get the data from the DB aggregation is an array with a single object containing the data
-                    // So we need to get the first element of the array and set it to the state
+                    // The aggregation returns an array with a single object containing the data
+                    // If there is no data, the object will contain empty arrays
                     setTotalLeaders(res.data[0]);
                 })
+                .catch((err) => {
+                    errorLog('Failed fetching total leaders', err);
+                });
         }
         getTotalLeaders();
     }, []);
@@ -70,8 +70,10 @@ export default function Stats() {
                 <ToggleButton sx={{ width: '40%' }} value='average'>Average Stats</ToggleButton>
             </ToggleButtonGroup>
 
+            {/* Show this text when there is no data to show. We can tell if the length of any of the inner arrays is 0, or if we don't have the properties in the object */}
+            { mode === 'most' && (!totalLeaders.mostGames || totalLeaders.mostGames.length === 0) ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Global stats will appear here.</Typography> : null }
             {/* sx for masonry style layout */}
-            <Box className='total-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3, xl: 4 }, marginX: '1rem' }}>
+            { mode === 'most' && totalLeaders.mostGames?.length > 0 ? <Box className='total-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3, xl: 4 }, marginX: '1rem' }}>
                 {/* From Material UI */}
                 <Card className='stats-card'>
                     <CardContent>
@@ -211,11 +213,14 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-            </Box>
+                </Box> : null}
+            
 
-            {/* Set of average stats. This set is hidden on load and will appear when user clicks on the average stats button */}
+
+            {/* Show this text when there is no data to show. We can tell if the length of any of the inner arrays is 0, or if we don't have the properties in the object */}
+            { mode === 'average' && (!averageLeaders.bestAvgProfit || averageLeaders.bestAvgProfit.length === 0) ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Average stats will appear here.</Typography> : null }
             {/* sx for masonry style layout */}
-            <Box className='average-stats hide' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3 }, marginX: '1rem' }} >
+            {mode === 'average' && averageLeaders.bestAvgProfit?.length > 0 ? <Box className='average-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3 }, marginX: '1rem' }} >
                 <Card className='stats-card'>
                     <CardContent>
                         <Typography variant='h5' component='div' align='center'>
@@ -321,7 +326,8 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-            </Box>
+            </Box> : null}
+            
         </Box>
 
     )

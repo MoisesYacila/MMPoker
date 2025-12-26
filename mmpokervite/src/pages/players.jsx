@@ -4,7 +4,7 @@ import api from '../api/axios';
 import FlagIcon from '../components/FlagIcon';
 import {
     Alert, Box, Button, Collapse, Dialog, DialogTitle, DialogContent, DialogContentText,
-    DialogActions, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText
+    DialogActions, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import PersonIcon from '@mui/icons-material/Person';
@@ -133,6 +133,7 @@ export default function Players() {
                             </ListItem>)
                     })}
                 </List>
+                {players.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New players will appear here.</Typography> : null}
             </Box>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Permanently Delete Player?</DialogTitle>

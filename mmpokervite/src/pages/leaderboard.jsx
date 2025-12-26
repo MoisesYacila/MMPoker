@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
     Alert, Collapse, IconButton, Button, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TableSortLabel
+    TableSortLabel, Typography
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAlert } from '../AlertContext';
@@ -261,6 +261,7 @@ export default function Leaderboard() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            {players.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. Standings will appear here.</Typography> : null}
         </div>
     )
 }

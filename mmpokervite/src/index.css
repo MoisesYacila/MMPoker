@@ -40,11 +40,6 @@ button:hover {
   border-color: #646cff;
 }
 
-.hide {
-  /* !important helps us override Material UI styles */
-  display: none !important;
-}
-
 .stats-card {
   margin-bottom: 16px;
   break-inside: avoid; /* For masonry style layout */
