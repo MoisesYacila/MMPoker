@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { useAlert } from '../AlertContext';
 import { useUser } from '../UserContext';
 import {
-    Alert, Box, Button, Card, CardHeader, CardMedia, CardContent, Collapse, Dialog, DialogActions, DialogTitle,
+    Alert, Box, Button, Card, CardHeader, CardMedia, CardContent, CircularProgress, Collapse, Dialog, DialogActions, DialogTitle,
     DialogContent, DialogContentText, IconButton, Menu, MenuItem, Typography, CardActionArea
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -21,12 +21,14 @@ export default function Updates() {
     const [openDialog, setOpenDialog] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const { alert, setAlert } = useAlert();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Fetch all posts from the server
         api.get('/posts')
             .then((res) => {
                 setAllPosts(res.data);
+                setLoading(false);
             })
             .catch((error) => {
                 errorLog('Error fetching posts:', error);
@@ -129,7 +131,8 @@ export default function Updates() {
                         </Card>
                     );
                 })}
-                {allPosts.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New posts will appear here.</Typography> : null}
+                {loading ? <CircularProgress sx={{ marginTop: '2rem' }} /> : null}
+                {allPosts.length == 0 && !loading ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New posts will appear here.</Typography> : null}
                 {/* Dialog for confirming post deletion */}
                 <Dialog open={openDialog} onClose={handleCloseDialog}>
                     <DialogTitle>Delete Post</DialogTitle>

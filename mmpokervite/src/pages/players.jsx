@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import FlagIcon from '../components/FlagIcon';
 import {
-    Alert, Box, Button, Collapse, Dialog, DialogTitle, DialogContent, DialogContentText,
+    Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogTitle, DialogContent, DialogContentText,
     DialogActions, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -20,6 +20,7 @@ export default function Players() {
     const [submitted, setSubmitted] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [selectedPlayerId, setSelectedPlayerId] = useState('');
+    const [loading, setLoading] = useState(true);
     // We need these values to be updated in state together, so we can put them in an object and track its changes
     const [playerData, setPlayerData] = useState({
         id: '',
@@ -37,6 +38,7 @@ export default function Players() {
                 let playersArr = [];
                 res.data.forEach(player => playersArr.push(player));
                 setPlayers(playersArr);
+                setLoading(false);
             })
     }, [])
 
@@ -133,7 +135,8 @@ export default function Players() {
                             </ListItem>)
                     })}
                 </List>
-                {players.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New players will appear here.</Typography> : null}
+                {loading ? <CircularProgress sx={{ marginTop: '2rem' }} /> : null}
+                {players.length == 0 && !loading ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. New players will appear here.</Typography> : null}
             </Box>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Permanently Delete Player?</DialogTitle>

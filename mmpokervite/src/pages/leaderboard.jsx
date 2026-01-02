@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
-    Alert, Collapse, IconButton, Button, Table,
+    Alert, CircularProgress, Collapse, IconButton, Button, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow,
     TableSortLabel, Typography
 } from '@mui/material';
@@ -18,6 +18,7 @@ export default function Leaderboard() {
     const navigate = useNavigate();
     const { isAdmin } = useUser();
     const [disabled, setDisabled] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { alert, setAlert } = useAlert();
 
     //This gets all the players from the DB and saves their data in the players array
@@ -29,6 +30,7 @@ export default function Leaderboard() {
                 // By default, we'll show the players sorted by their winnings
                 playersArr.sort((a, b) => { return b.winnings - a.winnings });
                 setPlayers(playersArr);
+                setLoading(false);
             }).catch((err) => {
                 errorLog('Error fetching players for leaderboard:', err);
             });
@@ -261,7 +263,8 @@ export default function Leaderboard() {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {players.length == 0 ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. Standings will appear here.</Typography> : null}
+            {loading ? <CircularProgress sx={{ marginTop: '2rem' }} /> : null}
+            {players.length == 0 && !loading ? <Typography variant='h5' sx={{ marginTop: '2rem' }}>No data to show. Standings will appear here.</Typography> : null}
         </div>
     )
 }

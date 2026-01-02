@@ -1,7 +1,7 @@
 import api from '../api/axios';
 import { useEffect, useState } from 'react';
 import {
-    Box, Card, CardContent, ToggleButton, ToggleButtonGroup, Typography,
+    Box, Card, CardContent, CircularProgress, ToggleButton, ToggleButtonGroup, Typography,
     List, ListItem, ListItemText, ListItemButton
 } from '@mui/material';
 import { errorLog } from '../utils/logger.js';
@@ -11,6 +11,7 @@ export default function Stats() {
     const [mode, setMode] = useState('most');
     const [totalLeaders, setTotalLeaders] = useState({});
     const [averageLeaders, setAverageLeaders] = useState({});
+    const [loading, setLoading] = useState(true);
 
     // Handle toggle button change
     const handleChange = async (e, newValue) => {
@@ -19,11 +20,14 @@ export default function Stats() {
 
         // Fetch average leaders when switching to average mode (load once)
         if (newValue === 'average' && !averageLeaders.bestAvgProfit) {
+            // Reset loading state to show loading spinner
+            setLoading(true);
             await api.get('/players/leaders/average')
                 .then((res) => {
                     // The aggregation returns an array with a single object containing the data
                     // If there is no data, the object will contain empty arrays
                     setAverageLeaders(res.data[0]);
+                    setLoading(false);
                 })
                 .catch((err) => {
                    errorLog('Failed fetching average leaders', err); 
@@ -45,6 +49,7 @@ export default function Stats() {
                     // The aggregation returns an array with a single object containing the data
                     // If there is no data, the object will contain empty arrays
                     setTotalLeaders(res.data[0]);
+                    setLoading(false);
                 })
                 .catch((err) => {
                     errorLog('Failed fetching total leaders', err);
@@ -71,7 +76,7 @@ export default function Stats() {
             </ToggleButtonGroup>
 
             {/* Show this text when there is no data to show. We can tell if the length of any of the inner arrays is 0, or if we don't have the properties in the object */}
-            { mode === 'most' && (!totalLeaders.mostGames || totalLeaders.mostGames.length === 0) ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Global stats will appear here.</Typography> : null }
+            {mode === 'most' && (!totalLeaders.mostGames || totalLeaders.mostGames.length === 0) && !loading ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Global stats will appear here.</Typography> : null}
             {/* sx for masonry style layout */}
             { mode === 'most' && totalLeaders.mostGames?.length > 0 ? <Box className='total-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3, xl: 4 }, marginX: '1rem' }}>
                 {/* From Material UI */}
@@ -213,12 +218,14 @@ export default function Stats() {
                         </List>
                     </CardContent>
                 </Card>
-                </Box> : null}
-            
+            </Box> : null}
 
 
+            {loading ? <Box sx={{ textAlign: 'center' }}>
+                <CircularProgress sx={{ marginTop: '2rem' }} />
+            </Box> : null}
             {/* Show this text when there is no data to show. We can tell if the length of any of the inner arrays is 0, or if we don't have the properties in the object */}
-            { mode === 'average' && (!averageLeaders.bestAvgProfit || averageLeaders.bestAvgProfit.length === 0) ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Average stats will appear here.</Typography> : null }
+            {mode === 'average' && (!averageLeaders.bestAvgProfit || averageLeaders.bestAvgProfit.length === 0) && !loading ? <Typography variant='h5' sx={{ marginTop: '2rem', textAlign: 'center' }}>No data to show. Average stats will appear here.</Typography> : null}
             {/* sx for masonry style layout */}
             {mode === 'average' && averageLeaders.bestAvgProfit?.length > 0 ? <Box className='average-stats' sx={{ marginTop: '2rem', columnCount: { sm: 1, md: 2, lg: 3 }, marginX: '1rem' }} >
                 <Card className='stats-card'>
