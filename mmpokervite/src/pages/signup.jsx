@@ -8,7 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useUser } from '../UserContext';
 import { useAlert } from '../AlertContext';
-import { isValidEmail, isValidFullName, isValidUsername } from '../../../shared/validators';
+import { isValidEmail, isValidFullName, isValidUsername, isValidPassword } from '../../../shared/validators';
 import { log, errorLog } from '../utils/logger.js';
 
 export default function SignUp() {
@@ -16,6 +16,8 @@ export default function SignUp() {
     const navigate = useNavigate();
     const { setLoggedIn, loggedIn, setIsAdmin, setId, setUserFullName } = useUser();
     const [disabled, setDisabled] = useState(false);
+    // The form will be controlled, so we need to store the values in state
+    const [form, setForm] = useState({ email: '', username: '', first: '', last: '', password: '' });
     const [validationErrors, setValidationErrors] = useState({
         // No errors initially
         username: {
@@ -26,7 +28,8 @@ export default function SignUp() {
         email: {
             isTaken: false,
             invalidFormat: false
-        }
+        },
+        password: false
     });
 
     useEffect(() => {
@@ -45,24 +48,24 @@ export default function SignUp() {
         if (disabled) return;
         setDisabled(true);
 
-        let first = e.target.first.value.trim();
-        let last = e.target.last.value.trim();
+        // Since the form is controlled, we can get the values from state, destructuring for convenience
+        const { first, last, email, username, password } = form;
         let fullName = `${first} ${last}`;
 
         // Validate full name format
         if (!isValidFullName(fullName) || first.length < 2 || last.length < 2) {
             setDisabled(false);
-            setAlert({ message: 'Enter a valid full name with at least 4 characters.', severity: 'error', open: true });
+            setAlert({ message: 'Enter a valid full name with at least 4 characters. First and last name must have a minimum length of 2.', severity: 'error', open: true });
             return;
         }
 
         // Post request to the server with form data
         api.post('/signup', {
-            email: e.target.email.value,
-            username: e.target.username.value,
-            firstName: e.target.first.value,
-            lastName: e.target.last.value,
-            password: e.target.password.value
+            email,
+            username,
+            firstName: first,
+            lastName: last,
+            password
         }).then((res) => {
             log(res.data);
             setLoggedIn(true);
@@ -116,6 +119,7 @@ export default function SignUp() {
             </Collapse>
             {/* Form to create a new account
             name is used to get the value of the input field in the handleSubmit function */}
+            {/* The form is controlled, meaning, every input is linked to a state variable through the value attribute */}
             <Box component='form'
                 onSubmit={handleSubmit}
                 sx={{ display: 'flex', justifyContent: 'center', marginTop: '5rem' }}>
@@ -123,21 +127,25 @@ export default function SignUp() {
                     <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, paddingY: 3 }}>
                         <Typography sx={{ marginBottom: '1rem', fontWeight: 'bold' }} variant="h5">Create your MMPoker account</Typography>
                         {/* onBlur is a good choice because we don't need to check every time the value changes, but we can check when the user clicks away */}
-                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
+                        <TextField required value={form.email} sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
+                            // Trim whitespace from email
+                            const trimmedEmail = e.target.value.trim();
+                            setForm(prev => ({ ...prev, email: trimmedEmail }));
+
                             // If the email format is invalid, set the error and return early
-                            if (!isValidEmail(e.target.value)) {
+                            if (!isValidEmail(trimmedEmail)) {
                                 setDisabled(true);
-                                setValidationErrors({ ...validationErrors, email: { ...validationErrors.email, invalidFormat: true } });
+                                setValidationErrors(prev => ({ ...prev, email: { ...prev.email, invalidFormat: true } }));
                                 return;
                             }
 
                             // Validate email uniqueness
                             // In a GET request, we must send data as params
                             // When we get the response back, we only update the email error state
-                            await api.get(`/accounts/validateData/`, { params: { email: e.target.value.trim() } })
+                            await api.get(`/accounts/validateData/`, { params: { email: trimmedEmail } })
                                 .then((res) => {
                                     log('Email validation response:', res.data);
-                                    setValidationErrors({ ...validationErrors, email: { ...validationErrors.email, isTaken: res.data.isEmailTaken } });
+                                    setValidationErrors(prev => ({ ...prev, email: { ...prev.email, isTaken: res.data.isEmailTaken } }));
                                     setDisabled(res.data.isEmailTaken);
                                 })
                                 .catch((error) => {
@@ -145,18 +153,23 @@ export default function SignUp() {
                                 });
                         }}
                             // Reset email errors when user starts typing
-                            onChange={() => {
-                                setValidationErrors({ ...validationErrors, email: { isTaken: false, invalidFormat: false } });
+                            onChange={(e) => {
+                                setForm(prev => ({ ...prev, email: e.target.value }));
+                                setValidationErrors(prev => ({ ...prev, email: { isTaken: false, invalidFormat: false } }));
                                 setDisabled(false);
                             }}
                             error={validationErrors.email.isTaken || validationErrors.email.invalidFormat}
                             helperText={getEmailHelperText()}
                             label='Email' variant="outlined" type="email" name="email">
                         </TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
+                        <TextField required value={form.username} sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }} onBlur={async (e) => {
+                            // Trim whitespace from username
+                            const trimmedUsername = e.target.value.trim();
+                            setForm(prev => ({ ...prev, username: trimmedUsername }));
+
                             // If the username format is invalid, set the error and return early
-                            if (!isValidUsername(e.target.value)) {
-                                setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, invalidFormat: true } });
+                            if (!isValidUsername(trimmedUsername)) {
+                                setValidationErrors(prev => ({ ...prev, username: { ...prev.username, invalidFormat: true } }));
                                 setDisabled(true);
                                 return;
                             }
@@ -164,10 +177,10 @@ export default function SignUp() {
                             // Validate username uniqueness
                             // In a GET request, we must send data as params
                             // When we get the response back, we only update the username error state
-                            await api.get(`/accounts/validateData/`, { params: { username: e.target.value.trim() } })
+                            await api.get(`/accounts/validateData/`, { params: { username: trimmedUsername } })
                                 .then((res) => {
                                     log('Username validation response:', res.data);
-                                    setValidationErrors({ ...validationErrors, username: { ...validationErrors.username, isTaken: res.data.isUsernameTaken } });
+                                    setValidationErrors(prev => ({ ...prev, username: { ...prev.username, isTaken: res.data.isUsernameTaken } }));
                                     setDisabled(res.data.isUsernameTaken);
                                 })
                                 .catch((error) => {
@@ -175,21 +188,52 @@ export default function SignUp() {
                                 });
                         }}
                             // Clear username error when user starts typing
-                            onChange={() => {
-                                setValidationErrors({ ...validationErrors, username: { isTaken: false, invalidFormat: false } });
+                            onChange={(e) => {
+                                setForm(prev => ({ ...prev, username: e.target.value }));
+                                setValidationErrors(prev => ({ ...prev, username: { isTaken: false, invalidFormat: false } }));
                                 setDisabled(false);
                             }}
                             error={validationErrors.username.isTaken || validationErrors.username.invalidFormat}
                             helperText={getUsernameHelperText()}
                             label='Username' variant="outlined" name="username"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
-                            onChange={() => { setDisabled(false) }}
+                        <TextField required value={form.first} sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
+                            onBlur={(e) => {
+                                // Trim whitespace from first name
+                                const trimmedFirst = e.target.value.trim();
+                                setForm(prev => ({ ...prev, first: trimmedFirst }));
+                            }}
+                            onChange={(e) => {
+                                setForm(prev => ({ ...prev, first: e.target.value }));
+                                setDisabled(false)
+                            }}
                             label='First Name' variant="outlined" name="first"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
-                            onChange={() => { setDisabled(false) }}
+                        <TextField required value={form.last} sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
+                            onBlur={(e) => {
+                                // Trim whitespace from last name
+                                const trimmedLast = e.target.value.trim();
+                                setForm(prev => ({ ...prev, last: trimmedLast }));
+                            }}
+                            onChange={(e) => {
+                                setForm(prev => ({ ...prev, last: e.target.value }));
+                                setDisabled(false)
+                            }}
                             label='Last Name' variant="outlined" name="last"></TextField>
-                        <TextField required sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
-                            label='Password' variant="outlined" type="password" name="password"></TextField>
+                        <TextField required value={form.password} sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}
+                            label='Password' variant="outlined" type="password" name="password"
+                            onBlur={(e) => {
+                                // If the password format is invalid, set the error and disable the submit button
+                                const isValid = isValidPassword(e.target.value);
+                                setValidationErrors(prev => ({ ...prev, password: !isValid }));
+                                setDisabled(!isValid);
+                            }
+                            }
+                            // Reset password error when user starts typing
+                            onChange={(e) => {
+                                setForm(prev => ({ ...prev, password: e.target.value }));
+                                setValidationErrors(prev => ({ ...prev, password: false }));
+                                setDisabled(false);
+                            }}
+                            error={validationErrors.password} helperText={'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.'}></TextField>
                         <Button disabled={disabled} type="submit" variant="contained" sx={{ marginBottom: '1rem', width: { xs: '100%', sm: '80%' } }}>Create account</Button>
                         <Typography sx={{ marginBottom: '1rem' }}>Already have an account? <Link to='/login' onClick={() => { setAlert({ ...alert, open: false }); }}>Log in</Link> </Typography>
                     </CardContent>
