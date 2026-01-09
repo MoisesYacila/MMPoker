@@ -937,7 +937,7 @@ app.post('/signup', async (req, res, next) => {
                 return next(err);
             }
             else {
-                res.send('Created account');
+                res.send(registeredAccount);
             }
         });
     }
